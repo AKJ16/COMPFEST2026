@@ -3,11 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-// Satu slot di inventory bar.
-// Menampilkan icon + jumlah weapon.
-// Slot tetap muncul walaupun jumlah = 0 (icon menjadi abu-abu, tidak bisa diklik).
-// Bisa diklik untuk memilih weapon, dan menampilkan tooltip saat di-hover.
-public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
+public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     [Header("Slot Size")]
     [SerializeField] private float slotSize = 80f;
@@ -22,8 +18,9 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
     public WeaponData Data { get; private set; }
     public int CurrentCount { get; private set; }
 
-    // Dipanggil InventoryUIController tiap slot ini diklik.
     public event System.Action<InventorySlotUI> OnSlotClicked;
+
+    private DragDrop activeDragObject;
 
     private void Awake()
     {
@@ -31,9 +28,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
         var existingCount = transform.Find("CountText");
 
         _backgroundImage = GetComponent<Image>();
-
-        if (_backgroundImage == null)
-            _backgroundImage = gameObject.AddComponent<Image>();
+        if (_backgroundImage == null) _backgroundImage = gameObject.AddComponent<Image>();
 
         _backgroundImage.color = _normalBackground;
 
@@ -51,9 +46,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
     private void BuildLayout()
     {
         RectTransform rect = GetComponent<RectTransform>();
-
-        if (rect == null)
-            rect = gameObject.AddComponent<RectTransform>();
+        if (rect == null) rect = gameObject.AddComponent<RectTransform>();
 
         rect.sizeDelta = new Vector2(slotSize, slotSize);
 
@@ -115,9 +108,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
 
     public void SetSelected(bool selected)
     {
-        if (_backgroundImage == null)
-            return;
-
+        if (_backgroundImage == null) return;
         _backgroundImage.color = selected ? _selectedBackground : _normalBackground;
     }
 
@@ -127,9 +118,44 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
         OnSlotClicked?.Invoke(this);
     }
 
+    #region Drag and Drop Integration
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        if (CurrentCount <= 0 || Data == null) return;
+        if (StageManager.Instance != null && StageManager.Instance.Result != StageResult.InProgress) return;
+
+        // Hide tooltip while dragging
+        WeaponTooltipUI.Instance.Hide();
+
+        // Spawn Drag Item World Representation
+        GameObject dragGO = new GameObject($"Drag_{Data.weaponName}");
+        Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(new Vector3(eventData.position.x, eventData.position.y, 10f));
+        dragGO.transform.position = mouseWorldPos;
+
+        var sr = dragGO.AddComponent<SpriteRenderer>();
+        sr.sprite = Data.icon;
+
+        var col = dragGO.AddComponent<BoxCollider2D>();
+        col.size = new Vector2(Data.Width, Data.Height);
+
+        activeDragObject = dragGO.AddComponent<DragDrop>();
+        activeDragObject.Initialize(Data);
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        // Handled directly inside DragDrop.cs Update loop
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        activeDragObject = null;
+    }
+    #endregion
+
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (Data == null) return;
+        if (Data == null || activeDragObject != null) return;
         WeaponTooltipUI.Instance.Show(Data, transform.position);
     }
 

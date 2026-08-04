@@ -11,6 +11,9 @@ public class GameOverManager : MonoBehaviour
     [SerializeField] private UIMenuTransition transition;
     [SerializeField] private string mainMenuSceneName = "MainMenu";
 
+    [Header("Optional Display")]
+    [SerializeField] private TextMeshProUGUI scoreText;
+
     private bool isGameOver = false;
 
     private void Awake()
@@ -36,12 +39,30 @@ public class GameOverManager : MonoBehaviour
         if (isGameOver) return;
         isGameOver = true;
 
+        StartCoroutine(GameOverSequence());
+    }
+
+    private IEnumerator GameOverSequence()
+    {
+        // 1. WAIT 0.4s FIRST so enemy bounce-down animation plays completely on screen
+        yield return new WaitForSecondsRealtime(0.5f);
+
+        // 2. NOW show the Game Over transition & screen dim
         if (transition != null)
         {
             transition.Show();
         }
 
-        StartCoroutine(SlowTimeAndFreeze());
+        // 3. Smoothly pause time
+        yield return StartCoroutine(SlowTimeAndFreeze());
+    }
+
+    public void SetScore(int finalScore)
+    {
+        if (scoreText != null)
+        {
+            scoreText.text = finalScore.ToString();
+        }
     }
 
     private IEnumerator SlowTimeAndFreeze()

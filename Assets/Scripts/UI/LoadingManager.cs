@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -35,6 +36,58 @@ public class LoadingManager : MonoBehaviour
         StartCoroutine(LoadSequence(sceneName));
     }
 
+    /// <summary>
+    /// Fades to black, executes a setup action (like advancing stages), then fades back in.
+    /// </summary>
+    public void FadeOutIn(Action onBlackScreen)
+    {
+        StartCoroutine(FadeOutInSequence(onBlackScreen));
+    }
+
+    private IEnumerator FadeOutInSequence(Action onBlackScreen)
+    {
+        Time.timeScale = 1f;
+
+        if (canvasGroup == null)
+        {
+            onBlackScreen?.Invoke();
+            yield break;
+        }
+
+        canvasGroup.blocksRaycasts = true;
+
+        // 1. Fade to 100% Black
+        float elapsed = 0f;
+        while (elapsed < fadeDuration)
+        {
+            float dt = Mathf.Min(Time.unscaledDeltaTime, 0.05f);
+            elapsed += dt;
+            canvasGroup.alpha = Mathf.Clamp01(elapsed / fadeDuration);
+            yield return null;
+        }
+        canvasGroup.alpha = 1f;
+
+        // 2. Execute Stage Setup Callback while screen is 100% black
+        onBlackScreen?.Invoke();
+
+        // Wait 2 frames for scene objects to update
+        yield return null;
+        yield return null;
+
+        // 3. Fade In from Black
+        elapsed = 0f;
+        while (elapsed < fadeDuration)
+        {
+            float dt = Mathf.Min(Time.unscaledDeltaTime, 0.05f);
+            elapsed += dt;
+            canvasGroup.alpha = Mathf.Clamp01(1f - (elapsed / fadeDuration));
+            yield return null;
+        }
+
+        canvasGroup.alpha = 0f;
+        canvasGroup.blocksRaycasts = false;
+    }
+
     private IEnumerator LoadSequence(string sceneName)
     {
         Time.timeScale = 1f;
@@ -47,29 +100,25 @@ public class LoadingManager : MonoBehaviour
 
         canvasGroup.blocksRaycasts = true;
 
-        // Fade to 100% Black FIRST
         float elapsed = 0f;
         while (elapsed < fadeDuration)
         {
-            float dt = Mathf.Min(Time.unscaledDeltaTime, 0.05f); // Prevent lag spike jumps
+            float dt = Mathf.Min(Time.unscaledDeltaTime, 0.05f);
             elapsed += dt;
             canvasGroup.alpha = Mathf.Clamp01(elapsed / fadeDuration);
             yield return null;
         }
         canvasGroup.alpha = 1f;
 
-        // Start Async Load in background
         AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName);
         operation.allowSceneActivation = false;
 
-        // Wait while Unity loads scene data into memory
         while (operation.progress < 0.9f)
         {
-            canvasGroup.alpha = 1f; // Force 100% black overlay
+            canvasGroup.alpha = 1f;
             yield return null;
         }
 
-        // Activate the new scene
         operation.allowSceneActivation = true;
 
         while (!operation.isDone)
@@ -78,17 +127,14 @@ public class LoadingManager : MonoBehaviour
             yield return null;
         }
 
-        // WAIT 2 FRAMES for Stage 1 Awake/Start lag spike to settle
         canvasGroup.alpha = 1f;
         yield return null;
         canvasGroup.alpha = 1f;
         yield return null;
 
-        // Smooth Fade In from Black
         elapsed = 0f;
         while (elapsed < fadeDuration)
         {
-            // Clamp DeltaTime so the first frame after loading cannot skip the fade animation
             float dt = Mathf.Min(Time.unscaledDeltaTime, 0.05f);
             elapsed += dt;
             canvasGroup.alpha = Mathf.Clamp01(1f - (elapsed / fadeDuration));

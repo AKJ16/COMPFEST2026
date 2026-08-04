@@ -4,41 +4,57 @@ using UnityEngine.EventSystems;
 
 public class DragDrop : MonoBehaviour
 {
-    [Header("Item Grid Dimensions (Nanti ini dimasukin script weapon aja)")]
-    [SerializeField] private int width = 1;
-    [SerializeField] private int height = 1;
-
     [Header("Settings")]
     [SerializeField] private LayerMask draggableLayer;
 
-    public int Width => width;
-    public int Height => height;
-
+    private WeaponData data;
     private Camera cam;
     private bool isDragging;
     private bool isPlaced;
     private Vector3 offset;
     private float zDepth;
 
+    public WeaponData Data => data;
+    public int Width => data != null ? data.Width : 1;
+    public int Height => data != null ? data.Height : 1;
+
     private void Awake()
     {
         cam = Camera.main;
     }
 
+    /// <summary>
+    /// Initializes this object when spawned by InventorySlotUI.
+    /// </summary>
+    public void Initialize(WeaponData weaponData)
+    {
+        data = weaponData;
+
+        if (cam == null) cam = Camera.main;
+
+        if (TryGetComponent<SpriteRenderer>(out var sr))
+        {
+            sr.sprite = data.icon;
+            sr.sortingOrder = 50; // Render above grid
+        }
+
+        isDragging = true;
+        zDepth = cam.WorldToScreenPoint(transform.position).z;
+
+        Vector2 pointerPos = GetPointerPosition();
+        Vector3 mouseWorldPos = cam.ScreenToWorldPoint(new Vector3(pointerPos.x, pointerPos.y, zDepth));
+        offset = transform.position - mouseWorldPos;
+    }
+
     private void Update()
     {
-        if (isPlaced || Time.timeScale == 0f) return;
+        if (isPlaced) return;
 
         HandleInput();
     }
 
     private void HandleInput()
     {
-        if (IsPrimaryClickedThisFrame())
-        {
-            StartDrag();
-        }
-
         if (isDragging && IsPrimaryClickHeld())
         {
             ApplyDrag();
@@ -50,32 +66,14 @@ public class DragDrop : MonoBehaviour
         }
     }
 
-    private void StartDrag()
-    {
-        if (IsPointerOverUI()) return;
-
-        Vector2 pointerPos = GetPointerPosition();
-        Ray ray = cam.ScreenPointToRay(pointerPos);
-        RaycastHit2D hit = Physics2D.GetRayIntersection(ray, Mathf.Infinity, draggableLayer);
-
-        if (hit.collider != null && hit.collider.gameObject == gameObject)
-        {
-            isDragging = true;
-            zDepth = cam.WorldToScreenPoint(transform.position).z;
-
-            Vector3 mouseWorldPos = cam.ScreenToWorldPoint(new Vector3(pointerPos.x, pointerPos.y, zDepth));
-            offset = transform.position - mouseWorldPos;
-        }
-    }
-
     private void ApplyDrag()
     {
         Vector2 pointerPos = GetPointerPosition();
         Vector3 mouseWorldPos = cam.ScreenToWorldPoint(new Vector3(pointerPos.x, pointerPos.y, zDepth));
         transform.position = mouseWorldPos + offset;
 
-        // Send continuous hover updates to GridManager while dragging
-        if (GridManager.Instance != null)
+        // Update hover tiles on GridManager
+        if (GridManager.Instance != null && data != null)
         {
             GridManager.Instance.UpdateHover(this, transform.position);
         }
@@ -85,32 +83,31 @@ public class DragDrop : MonoBehaviour
     {
         isDragging = false;
 
-        if (GridManager.Instance != null)
+        if (GridManager.Instance != null && data != null)
         {
-            // Clear hover highlights before evaluating drop
             GridManager.Instance.ClearHover();
 
-            if (GridManager.Instance.TryPlaceItem(this, transform.position, out Vector3 snappedPos))
+            Vector2Int origin = GridManager.Instance.WorldToGridPosition(transform.position, Width, Height);
+
+            // Execute backend placement
+            WeaponInstance placedInstance = InventorySystem.Instance.PlaceFromInventory(data, origin);
+
+            if (placedInstance != null)
             {
-                transform.position = snappedPos;
-                LockAndAttack();
+                // Placement Success: Snap to cell center & lock
+                transform.position = GridManager.Instance.GridToWorldPosition(origin.x, origin.y, Width, Height);
+                GridManager.Instance.OccupyCells(origin.x, origin.y, Width, Height);
+                isPlaced = true;
+                Debug.Log($"Successfully placed {data.weaponName} at {origin}!");
+                return;
             }
         }
+
+        // Failed placement / dropped out of grid -> Destroy drag proxy
+        Destroy(gameObject);
     }
 
-    private void LockAndAttack()
-    {
-        isPlaced = true;
-        Debug.Log($"{gameObject.name} placed on grid!");
-    }
-
-    #region Input Helpers (Mobile and Windows compatible)
-    private bool IsPrimaryClickedThisFrame()
-    {
-        return (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) ||
-               (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame);
-    }
-
+    #region Input Helpers
     private bool IsPrimaryClickHeld()
     {
         return (Mouse.current != null && Mouse.current.leftButton.isPressed) ||

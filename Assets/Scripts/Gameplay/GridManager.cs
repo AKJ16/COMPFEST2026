@@ -13,16 +13,15 @@ public class GridManager : MonoBehaviour
     public static GridManager Instance { get; private set; }
 
     [Header("Grid Setup")]
-    [SerializeField] private int columns = 6;
-    [SerializeField] private int rows = 4;
+    [SerializeField] private int columns = 5;
+    [SerializeField] private int rows = 5;
     [SerializeField] private float cellSize = 1f;
 
-    [Header("Grid Cell Visual")]
+    [Header("Visual Cell Prefab")]
     [SerializeField] private GridCell cellPrefab;
     [SerializeField] private Transform cellContainer;
 
-    [Header("Disabled Slots")]
-    [Tooltip("Add a disabled cell on the list. Disabled cells wont be spawned and left as a void")]
+    [Header("Difficulty / Disabled Slots")]
     [SerializeField] private List<Vector2Int> initialDisabledCells = new List<Vector2Int>();
 
     [Header("Gizmo Visualization Colors")]
@@ -31,8 +30,9 @@ public class GridManager : MonoBehaviour
     [SerializeField] private Color disabledColor = new Color(0.2f, 0.2f, 0.2f, 0.8f);
 
     private CellState[,] grid;
-    private GridCell[,] cellViews; 
+    private GridCell[,] cellViews;
     private Vector3 gridOrigin;
+
     private List<Vector2Int> currentlyHoveredCoords = new List<Vector2Int>();
 
     private void Awake()
@@ -43,6 +43,12 @@ public class GridManager : MonoBehaviour
             return;
         }
         Instance = this;
+
+        if (WeaponGridManager.Instance != null)
+        {
+            columns = WeaponGridManager.Instance.GridWidth;
+            rows = WeaponGridManager.Instance.GridHeight;
+        }
 
         InitializeGrid();
     }
@@ -55,7 +61,7 @@ public class GridManager : MonoBehaviour
 
         if (cellContainer == null) cellContainer = transform;
 
-        // Mark initial disabled data states
+        // Apply disabled states
         foreach (Vector2Int coord in initialDisabledCells)
         {
             if (IsValidCell(coord.x, coord.y))
@@ -64,12 +70,11 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        // Instantiate visual cell prefabs ONLY for valid/enabled cells
+        // Spawn visual cell prefabs
         for (int x = 0; x < columns; x++)
         {
             for (int y = 0; y < rows; y++)
             {
-                // SKIP SPAWNING IF DISABLED (leaves an empty void)
                 if (grid[x, y] == CellState.Disabled)
                 {
                     cellViews[x, y] = null;
@@ -88,7 +93,70 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    public bool CanPlaceItem(int gridX, int gridY, int width, int height)
+    /// <summary>
+    /// Updates grid dimensions and disabled cell layout for a new stage, then rebuilds visual cells.
+    /// </summary>
+    public void SetGridDimensions(int newColumns, int newRows, List<Vector2Int> newDisabledCells)
+    {
+        // 1. Destroy all placed weapon objects resting on the grid
+        DragDrop[] placedWeapons = FindObjectsOfType<DragDrop>();
+        foreach (var weapon in placedWeapons)
+        {
+            Destroy(weapon.gameObject);
+        }
+
+        // 2. Destroy existing visual cell prefabs
+        if (cellViews != null)
+        {
+            for (int x = 0; x < columns; x++)
+            {
+                for (int y = 0; y < rows; y++)
+                {
+                    if (cellViews[x, y] != null)
+                    {
+                        Destroy(cellViews[x, y].gameObject);
+                        cellViews[x, y] = null;
+                    }
+                }
+            }
+        }
+
+        // 3. Update dimensions & disabled cells
+        columns = newColumns;
+        rows = newRows;
+        initialDisabledCells = newDisabledCells != null ? new List<Vector2Int>(newDisabledCells) : new List<Vector2Int>();
+
+        // 4. Rebuild grid
+        InitializeGrid();
+    }
+
+    public void ResetVisualGrid()
+    {
+        DragDrop[] placedWeapons = FindObjectsOfType<DragDrop>();
+        foreach (var weapon in placedWeapons)
+        {
+            Destroy(weapon.gameObject);
+        }
+
+        if (grid == null) return;
+
+        for (int x = 0; x < columns; x++)
+        {
+            for (int y = 0; y < rows; y++)
+            {
+                if (grid[x, y] != CellState.Disabled)
+                {
+                    grid[x, y] = CellState.Empty;
+                    if (cellViews[x, y] != null)
+                    {
+                        cellViews[x, y].SetState(CellState.Empty);
+                    }
+                }
+            }
+        }
+    }
+
+    public bool CanPlaceItem(int gridX, int gridY, int width, int height, WeaponData data = null)
     {
         for (int x = 0; x < width; x++)
         {
@@ -98,29 +166,30 @@ public class GridManager : MonoBehaviour
                 int targetY = gridY + y;
 
                 if (!IsValidCell(targetX, targetY)) return false;
-
-                // Must be Empty (NOT Occupied and NOT Disabled)
                 if (grid[targetX, targetY] != CellState.Empty) return false;
             }
         }
+
+        if (WeaponGridManager.Instance != null && data != null)
+        {
+            if (!WeaponGridManager.Instance.CanPlace(data, new Vector2Int(gridX, gridY)))
+                return false;
+        }
+
         return true;
     }
 
-    public bool TryPlaceItem(DragDrop item, Vector3 itemWorldPos, out Vector3 snappedWorldPos)
+    public void OccupyCells(int gridX, int gridY, int width, int height)
     {
-        snappedWorldPos = Vector3.zero;
-
-        Vector2Int gridCoord = WorldToGridPosition(itemWorldPos, item.Width, item.Height);
-
-        if (CanPlaceItem(gridCoord.x, gridCoord.y, item.Width, item.Height))
+        for (int x = 0; x < width; x++)
         {
-            for (int x = 0; x < item.Width; x++)
+            for (int y = 0; y < height; y++)
             {
-                for (int y = 0; y < item.Height; y++)
-                {
-                    int targetX = gridCoord.x + x;
-                    int targetY = gridCoord.y + y;
+                int targetX = gridX + x;
+                int targetY = gridY + y;
 
+                if (IsValidCell(targetX, targetY))
+                {
                     grid[targetX, targetY] = CellState.Occupied;
 
                     if (cellViews[targetX, targetY] != null)
@@ -129,22 +198,16 @@ public class GridManager : MonoBehaviour
                     }
                 }
             }
-
-            snappedWorldPos = GridToWorldPosition(gridCoord.x, gridCoord.y, item.Width, item.Height);
-            return true;
         }
-
-        return false;
     }
 
     #region Hover System
-
     public void UpdateHover(DragDrop item, Vector3 worldPos)
     {
         ClearHover();
 
         Vector2Int gridCoord = WorldToGridPosition(worldPos, item.Width, item.Height);
-        bool isValidPlacement = CanPlaceItem(gridCoord.x, gridCoord.y, item.Width, item.Height);
+        bool isValidPlacement = CanPlaceItem(gridCoord.x, gridCoord.y, item.Width, item.Height, item.Data);
 
         for (int x = 0; x < item.Width; x++)
         {
@@ -155,7 +218,6 @@ public class GridManager : MonoBehaviour
 
                 if (IsValidCell(targetX, targetY))
                 {
-                    // If a cell view exists at this location, trigger hover highlight
                     if (cellViews[targetX, targetY] != null)
                     {
                         cellViews[targetX, targetY].SetHover(true, isValidPlacement);
@@ -177,30 +239,9 @@ public class GridManager : MonoBehaviour
         }
         currentlyHoveredCoords.Clear();
     }
-
     #endregion
 
-    #region Dynamic Cell Disabling
-
-    public void DisableCell(int x, int y)
-    {
-        if (IsValidCell(x, y))
-        {
-            grid[x, y] = CellState.Disabled;
-
-            // Destroy cell visual if dynamically disabled at runtime
-            if (cellViews[x, y] != null)
-            {
-                Destroy(cellViews[x, y].gameObject);
-                cellViews[x, y] = null;
-            }
-        }
-    }
-
-    #endregion
-
-    #region Helpers & Coordinate Conversion
-
+    #region Helpers & Conversions
     public bool IsValidCell(int x, int y)
     {
         return x >= 0 && x < columns && y >= 0 && y < rows;
@@ -224,11 +265,9 @@ public class GridManager : MonoBehaviour
 
         return new Vector3(centerX, centerY, transform.position.z);
     }
-
     #endregion
 
-    #region Visualization Helpers
-
+    #region Gizmos
     private void OnDrawGizmos()
     {
         Vector3 origin = transform.position;
@@ -239,7 +278,6 @@ public class GridManager : MonoBehaviour
             {
                 Vector3 cellCenter = origin + new Vector3((x + 0.5f) * cellSize, (y + 0.5f) * cellSize, 0);
 
-                // Determine Gizmo color based on state
                 if (Application.isPlaying && grid != null)
                 {
                     switch (grid[x, y])
@@ -258,7 +296,6 @@ public class GridManager : MonoBehaviour
                 }
                 else
                 {
-                    // In Editor mode, check initialDisabledCells list
                     if (initialDisabledCells.Contains(new Vector2Int(x, y)))
                     {
                         Gizmos.color = disabledColor;
@@ -271,7 +308,6 @@ public class GridManager : MonoBehaviour
 
                 Gizmos.DrawWireCube(cellCenter, new Vector3(cellSize, cellSize, 0.1f));
 
-                // Draw X over disabled cells in gizmos for clarity
                 if (Gizmos.color == disabledColor)
                 {
                     float half = cellSize * 0.4f;
@@ -281,6 +317,5 @@ public class GridManager : MonoBehaviour
             }
         }
     }
-
     #endregion
 }

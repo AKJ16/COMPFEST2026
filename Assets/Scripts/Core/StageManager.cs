@@ -1,64 +1,131 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum StageResult { InProgress, Win, Lose }
 
-// Menggantikan TurnManager lama. TIDAK ADA hitungan turn/countdown.
-// Satu stage = satu fase: player taro weapon sebanyak yang dia mau/bisa,
-// tiap taro langsung nembak/apply efek (lihat WeaponEffectsSystem).
-// Fase berakhir ketika:
-//   - Enemy mati -> Win
-//   - Tidak ada lagi kemungkinan taro (grid penuh / inventory habis) dan enemy
-//     masih hidup -> Lose
+[System.Serializable]
+public class StageReward
+{
+    public WeaponData weaponData;
+    public int amount = 1;
+}
+
+[System.Serializable]
+public class StageConfig
+{
+    public int stageNumber = 1;
+    public EnemyHealth stageEnemy;
+
+    [Header("Grid Dimensions for this Stage")]
+    public int gridColumns = 5;
+    public int gridRows = 5;
+
+    [Header("Disabled Tiles & Bonus Weapons")]
+    public List<Vector2Int> disabledGridCells;
+    public StageReward[] bonusWeapons;
+}
+
 public class StageManager : MonoBehaviour
 {
     public static StageManager Instance { get; private set; }
 
+    [Header("Stage Configurations")]
+    [SerializeField] private List<StageConfig> stages = new List<StageConfig>();
+
     private EnemyHealth _currentEnemy;
+    private int _currentStageIndex = 0;
 
     public StageResult Result { get; private set; } = StageResult.InProgress;
-    public int CurrentStageNumber { get; private set; } = 1;
+    public int CurrentStageNumber => _currentStageIndex + 1;
     public EnemyHealth CurrentEnemy => _currentEnemy;
 
     public event Action<StageResult> OnStageEnded;
-
-    [Header("Manual Testing Only (hapus kalau sistem stage Adriel sudah jadi)")]
-    [Tooltip("Index array = nomor stage. Index 0 = Enemy_Stage0 (tutorial), index 1 = Enemy_Stage1, dst.")]
-    [SerializeField] private EnemyHealth[] testEnemiesByStage;
-    [Tooltip("Kalau dicentang, begitu Play dimulai otomatis masuk ke Stage 0 tanpa perlu klik context menu.")]
-    [SerializeField] private bool autoStartStage0OnPlay = true;
 
     private void Awake()
     {
         Instance = this;
     }
 
-    private void Start()
-    {
-        if (autoStartStage0OnPlay)
-            GoToStageForTesting(0);
-    }
-
-    // Panggil ini setiap masuk stage baru (spawn enemy, reset grid & inventory duluan
-    // sebelum ini di-call).
     public void StartStage(int stageNumber, EnemyHealth enemy)
     {
-        CurrentStageNumber = stageNumber;
-        Result = StageResult.InProgress;
-        _currentEnemy = enemy;
-
-        WeaponGridManager.Instance.ResetGrid();
-        WeaponEffectsSystem.Instance.StartStage(enemy);
-
-        _currentEnemy.OnStateChanged += HandleEnemyStateChanged;
+        _currentStageIndex = Mathf.Max(0, stageNumber - 1);
+        SetupStageInternal(_currentStageIndex, enemy, isInitialStart: true);
     }
 
-    // Dipanggil InventorySystem setiap kali habis ada placement.
+    private void SetupStageInternal(int stageIndex, EnemyHealth overrideEnemy = null, bool isInitialStart = false)
+    {
+        Result = StageResult.InProgress;
+
+        // 1. Determine Enemy
+        if (overrideEnemy != null)
+        {
+            _currentEnemy = overrideEnemy;
+        }
+        else if (stageIndex < stages.Count && stages[stageIndex].stageEnemy != null)
+        {
+            _currentEnemy = stages[stageIndex].stageEnemy;
+        }
+
+        // 2. Toggle active enemy in scene
+        for (int i = 0; i < stages.Count; i++)
+        {
+            if (stages[i].stageEnemy != null)
+            {
+                stages[i].stageEnemy.gameObject.SetActive(stages[i].stageEnemy == _currentEnemy);
+            }
+        }
+
+        // 3. Determine Grid Dimensions
+        int targetColumns = stageIndex < stages.Count ? stages[stageIndex].gridColumns : 5;
+        int targetRows = stageIndex < stages.Count ? stages[stageIndex].gridRows : 5;
+        var targetDisabled = stageIndex < stages.Count ? stages[stageIndex].disabledGridCells : null;
+
+        // 4. Update Backend & Visual Grid Dimensions
+        if (WeaponGridManager.Instance != null)
+        {
+            WeaponGridManager.Instance.SetGridSize(targetColumns, targetRows);
+        }
+
+        if (GridManager.Instance != null)
+        {
+            GridManager.Instance.SetGridDimensions(targetColumns, targetRows, targetDisabled);
+        }
+
+        // 5. Add Stage Bonus Weapons (PERSISTING existing inventory!)
+        if (!isInitialStart && stageIndex < stages.Count && stages[stageIndex].bonusWeapons != null)
+        {
+            foreach (var reward in stages[stageIndex].bonusWeapons)
+            {
+                if (reward.weaponData != null)
+                {
+                    InventorySystem.Instance.AddWeapon(reward.weaponData, reward.amount);
+                    Debug.Log($"Added bonus weapon to inventory: +{reward.amount} {reward.weaponData.weaponName}");
+                }
+            }
+        }
+
+        // 6. Reset systems
+        WeaponEffectsSystem.Instance.StartStage(_currentEnemy);
+
+        if (_currentEnemy != null)
+        {
+            _currentEnemy.OnStateChanged += HandleEnemyStateChanged;
+        }
+
+        // 7. Restart Timer
+        if (TimerManager.Instance != null)
+        {
+            TimerManager.Instance.StartTimer();
+        }
+    }
+
     public void CheckForEndOfStage()
     {
         if (Result != StageResult.InProgress) return;
 
-        if (_currentEnemy.State == EnemyState.Dead)
+        if (_currentEnemy != null && _currentEnemy.State == EnemyState.Dead)
         {
             EndStage(StageResult.Win);
             return;
@@ -70,18 +137,12 @@ public class StageManager : MonoBehaviour
         }
     }
 
-    // Tombol "commit"/nyerah manual kalau mau, opsional dipanggil dari UI.
-    public void ForceEndTurn()
-    {
-        if (Result != StageResult.InProgress) return;
-
-        EndStage(_currentEnemy.State == EnemyState.Dead ? StageResult.Win : StageResult.Lose);
-    }
-
     private void HandleEnemyStateChanged(EnemyState state)
     {
         if (state == EnemyState.Dead && Result == StageResult.InProgress)
+        {
             EndStage(StageResult.Win);
+        }
     }
 
     private void EndStage(StageResult result)
@@ -91,48 +152,43 @@ public class StageManager : MonoBehaviour
 
         if (_currentEnemy != null)
             _currentEnemy.OnStateChanged -= HandleEnemyStateChanged;
+
+        if (result == StageResult.Win)
+        {
+            if (TimerManager.Instance != null)
+            {
+                TimerManager.Instance.StopTimer();
+            }
+
+            StartCoroutine(AdvanceToNextStageSequence());
+        }
     }
 
-    // =========================================================
-    // MANUAL TESTING — klik kanan komponen ini di Inspector saat Play
-    // =========================================================
-
-    [ContextMenu("TEST: Go To Stage 0 (Tutorial)")]
-    private void TestGoToStage0() => GoToStageForTesting(0);
-
-    [ContextMenu("TEST: Go To Stage 1")]
-    private void TestGoToStage1() => GoToStageForTesting(1);
-
-    [ContextMenu("TEST: Go To Stage 2")]
-    private void TestGoToStage2() => GoToStageForTesting(2);
-
-    [ContextMenu("TEST: Go To Stage 3")]
-    private void TestGoToStage3() => GoToStageForTesting(3);
-
-    private void GoToStageForTesting(int stageNumber)
+    private IEnumerator AdvanceToNextStageSequence()
     {
-        if (testEnemiesByStage == null || stageNumber < 0 || stageNumber >= testEnemiesByStage.Length)
-        {
-            Debug.LogWarning($"StageManager: 'Test Enemies By Stage' belum di-setup lengkap untuk stage {stageNumber}. Cek ukuran array & isi Inspector.");
-            return;
-        }
+        yield return new WaitForSecondsRealtime(0.7f);
 
-        var enemy = testEnemiesByStage[stageNumber];
-        if (enemy == null)
-        {
-            Debug.LogWarning($"StageManager: slot index {stageNumber} di 'Test Enemies By Stage' masih kosong. Drag Enemy_Stage{stageNumber} ke situ.");
-            return;
-        }
+        int nextIndex = _currentStageIndex + 1;
 
-        // Matikan semua enemy test dulu, baru nyalain yang punya stage ini —
-        // biar cuma satu enemy yang aktif/keliatan di scene setiap saat.
-        for (int i = 0; i < testEnemiesByStage.Length; i++)
+        if (nextIndex < stages.Count)
         {
-            if (testEnemiesByStage[i] != null)
-                testEnemiesByStage[i].gameObject.SetActive(i == stageNumber);
+            if (LoadingManager.Instance != null)
+            {
+                LoadingManager.Instance.FadeOutIn(() =>
+                {
+                    _currentStageIndex = nextIndex;
+                    SetupStageInternal(_currentStageIndex);
+                });
+            }
+            else
+            {
+                _currentStageIndex = nextIndex;
+                SetupStageInternal(_currentStageIndex);
+            }
         }
-
-        StartStage(stageNumber, enemy);
-        Debug.Log($"[TEST] Pindah ke Stage {stageNumber} (enemy: {enemy.name})");
+        else
+        {
+            Debug.Log("🎉 ALL STAGES CLEARED! VICTORY!");
+        }
     }
 }

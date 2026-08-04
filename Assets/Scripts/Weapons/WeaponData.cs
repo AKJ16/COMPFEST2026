@@ -24,6 +24,10 @@ public class WeaponData : ScriptableObject
     public int gridSize = 1;
     public GridOrientation orientation = GridOrientation.Single;
 
+    // Helper dimensions for Grid calculations
+    public int Width => orientation == GridOrientation.Horizontal ? gridSize : 1;
+    public int Height => orientation == GridOrientation.Vertical ? gridSize : 1;
+
     [Header("Stage Unlock")]
     public int unlockStage = 1;
 
@@ -46,9 +50,6 @@ public class WeaponData : ScriptableObject
     [Tooltip("Particle effect spawned via VFXManager when this weapon fires, e.g. fire burst for Staff, slash trail for Sword. Leave null until art/VFX is ready.")]
     public ParticleSystem attackVfxPrefab;
 
-    // Reusable: daftar cell (relatif ke origin) yang bakal ditempatin weapon ini.
-    // Dipakai WeaponInstance (buat placement asli) dan bisa dipakai Adriel
-    // buat hover-preview di grid (ghost shape sebelum weapon disimpan).
     public List<Vector2Int> GetOccupiedCells(Vector2Int origin)
     {
         var cells = new List<Vector2Int> { origin };

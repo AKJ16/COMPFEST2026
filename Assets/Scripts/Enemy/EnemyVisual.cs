@@ -1,55 +1,48 @@
+using System.Collections;
 using UnityEngine;
 
-// Visual placeholder untuk enemy: lingkaran solid + reaksi warna
-// (flash putih saat Hurt, abu-abu transparan saat Dead).
-// Begitu ada art final: drag sprite-nya ke field "Custom Sprite" di Inspector —
-// placeholder lingkaran otomatis di-skip, gak perlu ubah kode lagi.
 [RequireComponent(typeof(EnemyHealth))]
 public class EnemyVisual : MonoBehaviour
 {
-    [Header("Placeholder Look (dipakai kalau sprite di bawah kosong)")]
-    [SerializeField] private Color enemyColor = Color.red;
-    [SerializeField] private float size = 1.5f;
+    [Header("Hit / Hurt Juice")]
+    [SerializeField] private float hurtBounceHeight = 0.35f;
+    [SerializeField] private float hurtDuration = 0.2f;
 
-    [Header("Real Art (opsional, isi kalau sudah ada asset)")]
-    [Tooltip("Sprite normal/idle. Kalau kosong, pakai placeholder lingkaran.")]
-    [SerializeField] private Sprite idleSprite;
-    [Tooltip("Sprite saat kena hit. Kalau kosong, fallback ke flash putih di sprite idle.")]
-    [SerializeField] private Sprite hurtSprite;
-    [Tooltip("Sprite saat mati. Kalau kosong, fallback ke tint abu-abu transparan.")]
-    [SerializeField] private Sprite deadSprite;
-    [Tooltip("Sprite taunt/pose menang enemy — dipakai saat PLAYER kalah (StageManager.Result == Lose), bukan saat enemy mati.")]
-    [SerializeField] private Sprite tauntSprite;
+    [Header("Timer Out Juice")]
+    [SerializeField] private float timeUpDropDistance = 0.4f;
+    [SerializeField] private float timeUpDuration = 0.5f;
+
+    [Header("Death Juice")]
+    [SerializeField] private float deathBounceHeight = 0.5f;
+    [SerializeField] private float deathDuration = 0.6f;
 
     private SpriteRenderer _spriteRenderer;
     private EnemyHealth _health;
-    private Sprite _baseSprite;
-    private Color _baseColor;
-    private float _hurtFlashTimer;
+    private Vector3 _originalPos;
+    private Coroutine _currentAnimRoutine;
 
     private void Awake()
     {
         _health = GetComponent<EnemyHealth>();
-
         _spriteRenderer = GetComponent<SpriteRenderer>();
+
         if (_spriteRenderer == null)
             _spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
 
-        // Pakai sprite idle asli kalau ada, kalau nggak baru bikin placeholder lingkaran.
-        _baseSprite = idleSprite != null ? idleSprite : CreatePlaceholderSprite();
-        _spriteRenderer.sprite = _baseSprite;
+        // Default color is White
+        _spriteRenderer.color = Color.white;
+        _originalPos = transform.localPosition;
+    }
 
-        // Kalau pakai sprite asli, biasanya kamu mau warna aslinya (no-tint),
-        // bukan di-tint merah kayak placeholder.
-        _baseColor = idleSprite != null ? Color.white : enemyColor;
-        _spriteRenderer.color = _baseColor;
-
-        transform.localScale = Vector3.one * size;
-
+    private void Start()
+    {
         _health.OnStateChanged += HandleStateChanged;
 
         if (StageManager.Instance != null)
             StageManager.Instance.OnStageEnded += HandleStageEnded;
+
+        if (TimerManager.Instance != null)
+            TimerManager.Instance.onTimeUp.AddListener(HandleTimeUp);
     }
 
     private void OnDestroy()
@@ -59,19 +52,9 @@ public class EnemyVisual : MonoBehaviour
 
         if (StageManager.Instance != null)
             StageManager.Instance.OnStageEnded -= HandleStageEnded;
-    }
 
-    private void Update()
-    {
-        if (_hurtFlashTimer > 0f)
-        {
-            _hurtFlashTimer -= Time.deltaTime;
-            if (_hurtFlashTimer <= 0f)
-            {
-                _spriteRenderer.sprite = _baseSprite;
-                _spriteRenderer.color = _baseColor;
-            }
-        }
+        if (TimerManager.Instance != null)
+            TimerManager.Instance.onTimeUp.RemoveListener(HandleTimeUp);
     }
 
     private void HandleStateChanged(EnemyState state)
@@ -79,63 +62,106 @@ public class EnemyVisual : MonoBehaviour
         switch (state)
         {
             case EnemyState.Hurt:
-                if (hurtSprite != null)
-                {
-                    _spriteRenderer.sprite = hurtSprite;
-                    _spriteRenderer.color = Color.white;
-                }
-                else
-                {
-                    // Fallback kalau belum ada sprite hurt: flash putih di sprite yang sama.
-                    _spriteRenderer.color = Color.white;
-                }
-                _hurtFlashTimer = 0.1f;
+                PlayRoutine(HurtRoutine());
                 break;
 
             case EnemyState.Dead:
-                if (deadSprite != null)
-                {
-                    _spriteRenderer.sprite = deadSprite;
-                    _spriteRenderer.color = Color.white;
-                }
-                else
-                {
-                    // Fallback kalau belum ada sprite dead: tint abu-abu transparan.
-                    _spriteRenderer.color = new Color(0.3f, 0.3f, 0.3f, 0.5f);
-                }
+                PlayRoutine(DeathRoutine());
                 break;
         }
     }
 
-    // Enemy menang = player kalah. Ini kebalikan dari Dead, jadi datangnya dari
-    // StageManager (level stage), bukan dari EnemyHealth (level enemy itu sendiri).
+    private void HandleTimeUp()
+    {
+        if (_health != null && _health.State != EnemyState.Dead)
+        {
+            PlayRoutine(TimeUpBounceDownRoutine());
+        }
+    }
+
     private void HandleStageEnded(StageResult result)
     {
-        if (result != StageResult.Lose || tauntSprite == null) return;
+        if (result == StageResult.Lose && _health != null && _health.State != EnemyState.Dead)
+        {
+            PlayRoutine(TimeUpBounceDownRoutine());
+        }
+    }
 
-        _spriteRenderer.sprite = tauntSprite;
+    private void PlayRoutine(IEnumerator routine)
+    {
+        if (_currentAnimRoutine != null)
+            StopCoroutine(_currentAnimRoutine);
+
+        _currentAnimRoutine = StartCoroutine(routine);
+    }
+
+    // 1. HIT: Bounce UP + Flash RED -> Return to White
+    private IEnumerator HurtRoutine()
+    {
+        float elapsed = 0f;
+        _spriteRenderer.color = Color.red;
+
+        while (elapsed < hurtDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = elapsed / hurtDuration;
+
+            // Parabolic jump arc UP
+            float yOffset = Mathf.Sin(t * Mathf.PI) * hurtBounceHeight;
+            transform.localPosition = _originalPos + new Vector3(0f, yOffset, 0f);
+
+            // Lerp color from RED back to default WHITE
+            _spriteRenderer.color = Color.Lerp(Color.red, Color.white, t);
+
+            yield return null;
+        }
+
+        transform.localPosition = _originalPos;
         _spriteRenderer.color = Color.white;
     }
 
-    // Bikin sprite lingkaran solid lewat kode (gak butuh file gambar).
-    // Cuma dipakai kalau customSprite kosong.
-    private Sprite CreatePlaceholderSprite()
+    // 2. TIMER OUT: Bounce DOWN
+    private IEnumerator TimeUpBounceDownRoutine()
     {
-        int resolution = 64;
-        Texture2D tex = new Texture2D(resolution, resolution);
-        Vector2 center = new Vector2(resolution / 2f, resolution / 2f);
-        float radius = resolution / 2f;
+        float elapsed = 0f;
 
-        for (int x = 0; x < resolution; x++)
+        while (elapsed < timeUpDuration)
         {
-            for (int y = 0; y < resolution; y++)
-            {
-                float dist = Vector2.Distance(new Vector2(x, y), center);
-                tex.SetPixel(x, y, dist <= radius ? Color.white : new Color(0f, 0f, 0f, 0f));
-            }
-        }
-        tex.Apply();
+            elapsed += Time.unscaledDeltaTime;
+            float t = elapsed / timeUpDuration;
 
-        return Sprite.Create(tex, new Rect(0, 0, resolution, resolution), new Vector2(0.5f, 0.5f), resolution);
+            // Dip DOWN arc
+            float yOffset = -Mathf.Sin(t * Mathf.PI) * timeUpDropDistance;
+            transform.localPosition = _originalPos + new Vector3(0f, yOffset, 0f);
+
+            yield return null;
+        }
+
+        transform.localPosition = _originalPos;
+    }
+
+    // 3. DEAD: Bounce UP + Turn RED + Fade Out Alpha (1 -> 0)
+    private IEnumerator DeathRoutine()
+    {
+        float elapsed = 0f;
+
+        while (elapsed < deathDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = elapsed / deathDuration;
+
+            // Arc jump UP
+            float yOffset = Mathf.Sin(t * Mathf.PI) * deathBounceHeight;
+            transform.localPosition = _originalPos + new Vector3(0f, yOffset, 0f);
+
+            // Red color with fading Alpha (1 -> 0)
+            float alpha = Mathf.Lerp(1f, 0f, t);
+            _spriteRenderer.color = new Color(1f, 0f, 0f, alpha);
+
+            yield return null;
+        }
+
+        _spriteRenderer.color = new Color(1f, 0f, 0f, 0f);
+        gameObject.SetActive(false);
     }
 }
