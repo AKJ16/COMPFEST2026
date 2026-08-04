@@ -18,6 +18,11 @@ public class StageConfig
     public int stageNumber = 1;
     public EnemyHealth stageEnemy;
 
+    [Header("Boss Announcement Settings")]
+    public bool isBossStage = false;
+    [TextArea(2, 3)]
+    public string phase2MechanicDescription = "IMMUNE TO POISON! Direct damage only!";
+
     [Header("Grid Dimensions for this Stage")]
     public int gridColumns = 5;
     public int gridRows = 5;
@@ -68,7 +73,7 @@ public class StageManager : MonoBehaviour
             _currentEnemy = stages[stageIndex].stageEnemy;
         }
 
-        // 2. Toggle active enemy in scene
+        // 2. Toggle active enemy
         for (int i = 0; i < stages.Count; i++)
         {
             if (stages[i].stageEnemy != null)
@@ -77,12 +82,11 @@ public class StageManager : MonoBehaviour
             }
         }
 
-        // 3. Determine Grid Dimensions
+        // 3. Grid Setup
         int targetColumns = stageIndex < stages.Count ? stages[stageIndex].gridColumns : 5;
         int targetRows = stageIndex < stages.Count ? stages[stageIndex].gridRows : 5;
         var targetDisabled = stageIndex < stages.Count ? stages[stageIndex].disabledGridCells : null;
 
-        // 4. Update Backend & Visual Grid Dimensions
         if (WeaponGridManager.Instance != null)
         {
             WeaponGridManager.Instance.SetGridSize(targetColumns, targetRows);
@@ -93,7 +97,7 @@ public class StageManager : MonoBehaviour
             GridManager.Instance.SetGridDimensions(targetColumns, targetRows, targetDisabled);
         }
 
-        // 5. Add Stage Bonus Weapons (PERSISTING existing inventory!)
+        // 4. Add Stage Bonus Weapons
         if (!isInitialStart && stageIndex < stages.Count && stages[stageIndex].bonusWeapons != null)
         {
             foreach (var reward in stages[stageIndex].bonusWeapons)
@@ -101,12 +105,11 @@ public class StageManager : MonoBehaviour
                 if (reward.weaponData != null)
                 {
                     InventorySystem.Instance.AddWeapon(reward.weaponData, reward.amount);
-                    Debug.Log($"Added bonus weapon to inventory: +{reward.amount} {reward.weaponData.weaponName}");
                 }
             }
         }
 
-        // 6. Reset systems
+        // 5. Reset systems
         WeaponEffectsSystem.Instance.StartStage(_currentEnemy);
 
         if (_currentEnemy != null)
@@ -114,10 +117,25 @@ public class StageManager : MonoBehaviour
             _currentEnemy.OnStateChanged += HandleEnemyStateChanged;
         }
 
-        // 7. Restart Timer
+        // 6. Reset & Start Timer
         if (TimerManager.Instance != null)
         {
+            TimerManager.Instance.ResetTimer();
             TimerManager.Instance.StartTimer();
+        }
+
+        // 7. Trigger Stage Banner Dropdown
+        if (StageBannerUI.Instance != null)
+        {
+            StageBannerUI.Instance.ShowStageBanner(CurrentStageNumber);
+        }
+
+        // 8. Bind Boss Announcement UI
+        if (BossIntroUI.Instance != null && _currentEnemy != null)
+        {
+            bool isBoss = stageIndex < stages.Count && stages[stageIndex].isBossStage;
+            string p2Desc = stageIndex < stages.Count ? stages[stageIndex].phase2MechanicDescription : "";
+            BossIntroUI.Instance.BindEnemy(_currentEnemy, isBoss, p2Desc);
         }
     }
 
@@ -153,14 +171,19 @@ public class StageManager : MonoBehaviour
         if (_currentEnemy != null)
             _currentEnemy.OnStateChanged -= HandleEnemyStateChanged;
 
+        if (TimerManager.Instance != null)
+            TimerManager.Instance.StopTimer();
+
         if (result == StageResult.Win)
         {
-            if (TimerManager.Instance != null)
-            {
-                TimerManager.Instance.StopTimer();
-            }
-
             StartCoroutine(AdvanceToNextStageSequence());
+        }
+        else if (result == StageResult.Lose)
+        {
+            if (GameOverManager.Instance != null)
+            {
+                GameOverManager.Instance.TriggerGameOver(1.0f);
+            }
         }
     }
 
@@ -176,6 +199,11 @@ public class StageManager : MonoBehaviour
             {
                 LoadingManager.Instance.FadeOutIn(() =>
                 {
+                    if (StageBannerUI.Instance != null)
+                    {
+                        StageBannerUI.Instance.ResetBanner();
+                    }
+
                     _currentStageIndex = nextIndex;
                     SetupStageInternal(_currentStageIndex);
                 });
@@ -189,6 +217,11 @@ public class StageManager : MonoBehaviour
         else
         {
             Debug.Log("🎉 ALL STAGES CLEARED! VICTORY!");
+
+            if (WinManager.Instance != null)
+            {
+                WinManager.Instance.TriggerWin(0.8f);
+            }
         }
     }
 }

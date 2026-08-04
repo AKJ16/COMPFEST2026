@@ -9,7 +9,7 @@ public class InventoryUIController : MonoBehaviour
     private readonly Dictionary<WeaponData, InventorySlotUI> _slots = new Dictionary<WeaponData, InventorySlotUI>();
 
     private InventorySlotUI _selectedSlot;
-    private int _lastKnownStage = -1; // -1 = belum pernah dicek
+    private int _lastKnownStage = -1;
 
     public WeaponData SelectedWeapon { get; private set; }
     public event System.Action<WeaponData> OnWeaponSelected;
@@ -28,9 +28,7 @@ public class InventoryUIController : MonoBehaviour
 
     private void Update()
     {
-        // Cek tiap frame apakah stage sudah berubah (misal tutorial -> stage 1).
-        // Kalau berubah, refresh slot mana yang boleh keliatan.
-        int currentStage = StageManager.Instance.CurrentStageNumber;
+        int currentStage = StageManager.Instance != null ? StageManager.Instance.CurrentStageNumber : 1;
         if (currentStage != _lastKnownStage)
         {
             _lastKnownStage = currentStage;
@@ -52,12 +50,21 @@ public class InventoryUIController : MonoBehaviour
         {
             slot = Instantiate(slotPrefab, barContainer);
             _slots[data] = slot;
-            slot.Setup(data, newCount);
-            slot.OnSlotClicked += HandleSlotClicked;
+
+            // 1. Activate slot FIRST so it is active in hierarchy if unlocked
             slot.gameObject.SetActive(IsUnlocked(data));
+
+            // 2. Setup initial slot data with count = 0
+            slot.Setup(data, 0);
+
+            // 3. Update count (triggers popup on Stage 2+ for newly unlocked weapons)
+            slot.UpdateCount(newCount);
+
+            slot.OnSlotClicked += HandleSlotClicked;
         }
         else
         {
+            slot.gameObject.SetActive(IsUnlocked(data));
             slot.UpdateCount(newCount);
         }
     }
@@ -72,7 +79,8 @@ public class InventoryUIController : MonoBehaviour
 
     private bool IsUnlocked(WeaponData data)
     {
-        return data.unlockStage <= StageManager.Instance.CurrentStageNumber;
+        int currentStage = StageManager.Instance != null ? StageManager.Instance.CurrentStageNumber : 1;
+        return data.unlockStage <= currentStage;
     }
 
     private void HandleSlotClicked(InventorySlotUI clickedSlot)

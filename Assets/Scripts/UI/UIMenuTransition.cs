@@ -19,7 +19,6 @@ public class UIMenuTransition : MonoBehaviour
         ResetUI();
     }
 
-    /// Resets all UI elements to fully transparent and non-blocking.
     public void ResetUI()
     {
         if (dimOverlay != null)
@@ -60,17 +59,20 @@ public class UIMenuTransition : MonoBehaviour
     {
         ResetUI();
 
-        if (mainPanelCanvasGroup == null)
-        {
-            Debug.LogWarning($"[UIMenuTransition] 'Main Panel Canvas Group' is NOT assigned on {gameObject.name}! Please assign it in the Inspector.", gameObject);
-        }
-
+        // Immediately block raycasts so Pause button behind dim cannot be re-clicked
         if (rootCanvasGroup != null)
         {
             rootCanvasGroup.alpha = 1f;
+            rootCanvasGroup.blocksRaycasts = true;
+            rootCanvasGroup.interactable = true;
         }
 
-        // Fade in background dim overlay ONLY (Keep main panel strictly invisible)
+        if (dimOverlay != null)
+        {
+            dimOverlay.blocksRaycasts = true;
+        }
+
+        // STEP 1: Fade in background dim overlay
         float elapsed = 0f;
         while (elapsed < dimDuration)
         {
@@ -82,7 +84,6 @@ public class UIMenuTransition : MonoBehaviour
                 dimOverlay.alpha = t;
             }
 
-            // Force main panel to stay completely invisible during dimming
             if (mainPanelCanvasGroup != null)
             {
                 mainPanelCanvasGroup.alpha = 0f;
@@ -93,7 +94,7 @@ public class UIMenuTransition : MonoBehaviour
 
         if (dimOverlay != null) dimOverlay.alpha = 1f;
 
-        // Fade in main panel now that screen is dimmed
+        // STEP 2: Fade in main panel
         elapsed = 0f;
         while (elapsed < panelFadeDuration)
         {
@@ -107,24 +108,16 @@ public class UIMenuTransition : MonoBehaviour
             yield return null;
         }
 
-        // Enable raycast blocking once fully visible
         if (mainPanelCanvasGroup != null)
         {
             mainPanelCanvasGroup.alpha = 1f;
             mainPanelCanvasGroup.blocksRaycasts = true;
             mainPanelCanvasGroup.interactable = true;
         }
-
-        if (rootCanvasGroup != null)
-        {
-            rootCanvasGroup.blocksRaycasts = true;
-            rootCanvasGroup.interactable = true;
-        }
     }
 
     private IEnumerator HideSequence()
     {
-        // Immediately disable raycast blocking when hide starts
         if (mainPanelCanvasGroup != null)
         {
             mainPanelCanvasGroup.blocksRaycasts = false;
@@ -136,7 +129,6 @@ public class UIMenuTransition : MonoBehaviour
             rootCanvasGroup.interactable = false;
         }
 
-        // Fade out main panel
         float elapsed = 0f;
         while (elapsed < panelFadeDuration)
         {
@@ -150,7 +142,6 @@ public class UIMenuTransition : MonoBehaviour
             yield return null;
         }
 
-        // Fade out dim overlay
         elapsed = 0f;
         while (elapsed < dimDuration)
         {

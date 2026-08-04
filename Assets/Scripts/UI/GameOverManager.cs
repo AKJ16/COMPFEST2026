@@ -30,31 +30,28 @@ public class GameOverManager : MonoBehaviour
     {
         if (TimerManager.Instance != null)
         {
-            TimerManager.Instance.onTimeUp.AddListener(TriggerGameOver);
+            // Time Out: Wait 0.6s for brief pause + bounce down before opening menu
+            TimerManager.Instance.onTimeUp.AddListener(() => TriggerGameOver(0.6f));
         }
     }
 
-    public void TriggerGameOver()
+    public void TriggerGameOver(float initialDelay = 1.0f)
     {
         if (isGameOver) return;
         isGameOver = true;
 
-        StartCoroutine(GameOverSequence());
+        StartCoroutine(GameOverSequence(initialDelay));
     }
 
-    private IEnumerator GameOverSequence()
+    private IEnumerator GameOverSequence(float initialDelay)
     {
-        // 1. WAIT 0.4s FIRST so enemy bounce-down animation plays completely on screen
-        yield return new WaitForSecondsRealtime(0.5f);
+        // Wait for Attack + Pause + Bounce Down sequence to complete
+        yield return new WaitForSecondsRealtime(initialDelay);
 
-        // 2. NOW show the Game Over transition & screen dim
         if (transition != null)
         {
             transition.Show();
         }
-
-        // 3. Smoothly pause time
-        yield return StartCoroutine(SlowTimeAndFreeze());
     }
 
     public void SetScore(int finalScore)
@@ -65,20 +62,20 @@ public class GameOverManager : MonoBehaviour
         }
     }
 
-    private IEnumerator SlowTimeAndFreeze()
-    {
-        float elapsed = 0f;
-        float duration = transition != null ? transition.GetDimDuration() : 0.3f;
+    //private IEnumerator SlowTimeAndFreeze()
+    //{
+    //    float elapsed = 0f;
+    //    float duration = transition != null ? transition.GetDimDuration() : 0.3f;
 
-        while (elapsed < duration)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            Time.timeScale = Mathf.Lerp(1f, 0f, elapsed / duration);
-            yield return null;
-        }
+    //    while (elapsed < duration)
+    //    {
+    //        elapsed += Time.unscaledDeltaTime;
+    //        Time.timeScale = Mathf.Lerp(1f, 0f, elapsed / duration);
+    //        yield return null;
+    //    }
 
-        Time.timeScale = 0f;
-    }
+    //    Time.timeScale = 0f;
+    //}
 
     public void RetryGame()
     {

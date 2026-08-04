@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: Sword
   category: 0
   description: Deal 3 Damage.
-  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  icon: {fileID: 712035800519618848, guid: 5c660fb56c26c2640b752c524b4df931, type: 3}
   baseDamage: 3
   gridSize: 2
   orientation: 1
@@ -25,3 +25,5 @@ MonoBehaviour:
   modifierValue: 0
   appliesPoison: 0
   poisonDamagePerTick: 0
+  attackSfx: {fileID: 0}
+  attackVfxPrefab: {fileID: 0}

@@ -17,7 +17,7 @@ MonoBehaviour:
   description: 'Deal 2 Damage.
 
     Affected by Books.'
-  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  icon: {fileID: -4421300922047078791, guid: a274732981b28af4980a86f55a74c7ed, type: 3}
   baseDamage: 2
   gridSize: 2
   orientation: 2
@@ -27,3 +27,5 @@ MonoBehaviour:
   modifierValue: 0
   appliesPoison: 0
   poisonDamagePerTick: 0
+  attackSfx: {fileID: 0}
+  attackVfxPrefab: {fileID: 0}

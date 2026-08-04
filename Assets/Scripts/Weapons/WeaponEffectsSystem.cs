@@ -2,27 +2,11 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-// Otak dari mekanik "Order in Disorder".
-//
-// ATURAN PENTING:
-// - Attack weapon (Sword, Staff, Poison Dagger) LANGSUNG nembak enemy begitu ditaro.
-// - Book of Multiplier/Addition = BUFF FORWARD: begitu ditaro, dia nyimpen bonus
-//   untuk weapon target (misal Staff) yang ditaro SESUDAHNYA. Weapon yang udah
-//   kena taro & nembak SEBELUM Book ini, tidak ke-buff (attack-nya udah kejadian).
-//   -> Ini yang bikin "order" krusial: Book harus ditaro sebelum Staff.
-// - Hourglass = REPEAT BACKWARD + SPATIAL: begitu ditaro, dia lihat neighbor yang
-//   SUDAH ada di grid (siapapun, kapanpun ditaronya) dan me-replay damage yang
-//   sudah mereka hasilkan (ResolvedDamage), termasuk re-trigger poison-nya.
 public class WeaponEffectsSystem : MonoBehaviour
 {
     public static WeaponEffectsSystem Instance { get; private set; }
 
     [SerializeField] private EnemyHealth currentEnemy;
-
-    // Buff aktif per WeaponData target, terkumpul secara berurutan sepanjang stage.
-    // Reset tiap StartStage.
-    private readonly Dictionary<WeaponData, float> _activeMultiplier = new Dictionary<WeaponData, float>();
-    private readonly Dictionary<WeaponData, float> _activeAddition = new Dictionary<WeaponData, float>();
 
     private void Awake()
     {
@@ -32,13 +16,17 @@ public class WeaponEffectsSystem : MonoBehaviour
     public void StartStage(EnemyHealth enemy)
     {
         currentEnemy = enemy;
-        _activeMultiplier.Clear();
-        _activeAddition.Clear();
     }
 
-    // Dipanggil InventorySystem SEGERA setelah sebuah weapon berhasil ditaro di grid.
     public void ResolvePlacement(WeaponInstance instance)
     {
+        // 1. Tick existing poison at the start of placement turn
+        if (currentEnemy != null)
+        {
+            currentEnemy.TickPoisonTurn();
+        }
+
+        // 2. Resolve placement effects
         switch (instance.Data.category)
         {
             case WeaponCategory.Attack:
@@ -48,71 +36,68 @@ public class WeaponEffectsSystem : MonoBehaviour
             case WeaponCategory.Modifier:
                 if (instance.Data.modifierType == ModifierType.Repeat)
                     ResolveHourglass(instance);
-                else
-                    ResolveBuff(instance);
                 break;
 
             case WeaponCategory.Utility:
-                // slot buat mekanik stage 3+ nanti
                 break;
         }
     }
 
-    private void ResolveAttack(WeaponInstance instance)
+    private void ResolveAttack(WeaponInstance attackInstance)
     {
-        float multiplier = _activeMultiplier.GetValueOrDefault(instance.Data, 1f);
-        float addition = _activeAddition.GetValueOrDefault(instance.Data, 0f);
+        float multiplier = 1f;
+        float addition = 0f;
 
-        int finalDamage = Mathf.RoundToInt((instance.Data.baseDamage + addition) * multiplier);
-        instance.ResolvedDamage = finalDamage;
+        // Check surrounding 8-directional neighbors (orthogonal + diagonals) for Books/Modifiers
+        var adjacentModifiers = WeaponGridManager.Instance.GetNeighborsOf(attackInstance)
+            .Where(n => n.Data.category == WeaponCategory.Modifier && n.Data.modifierType != ModifierType.Repeat);
 
-        currentEnemy.TakeDamage(finalDamage);
+        foreach (var modifier in adjacentModifiers)
+        {
+            // Verify this surrounding Book targets this specific Attack weapon
+            if (modifier.Data.targets != null && modifier.Data.targets.Contains(attackInstance.Data))
+            {
+                switch (modifier.Data.modifierType)
+                {
+                    case ModifierType.Multiplier:
+                        multiplier *= modifier.Data.modifierValue;
+                        break;
 
-        if (instance.Data.appliesPoison)
-            currentEnemy.ApplyPoison(instance.Data.poisonDamagePerTick);
+                    case ModifierType.Addition:
+                        addition += modifier.Data.modifierValue;
+                        break;
+                }
+            }
+        }
 
-        PlayAttackFeedback(instance.Data);
+        // Formula: (BaseDamage * Multiplier) + Addition
+        int finalDamage = Mathf.RoundToInt((attackInstance.Data.baseDamage * multiplier) + addition);
+        attackInstance.ResolvedDamage = finalDamage;
+
+        if (currentEnemy != null)
+        {
+            currentEnemy.TakeDamage(finalDamage);
+
+            if (attackInstance.Data.appliesPoison)
+                currentEnemy.ApplyPoison(attackInstance, attackInstance.Data.poisonDamagePerTick);
+        }
+
+        PlayAttackFeedback(attackInstance.Data);
     }
 
-    // SFX + VFX spesifik per-weapon. Dipanggil tiap kali sebuah Attack weapon
-    // beneran ngedeal damage — baik pas ditaro pertama kali, maupun pas
-    // di-replay sama Hourglass.
     private void PlayAttackFeedback(WeaponData data)
     {
         if (currentEnemy == null) return;
 
         Vector3 feedbackPosition = currentEnemy.transform.position;
 
-        if (data.attackSfx != null)
+        if (data.attackSfx != null && AudioManager.Instance != null)
             AudioManager.Instance.PlaySFX(data.attackSfx);
 
-        VFXManager.Instance.PlayWeaponEffect(data.attackVfxPrefab, feedbackPosition);
+        if (VFXManager.Instance != null)
+            VFXManager.Instance.PlayWeaponEffect(data.attackVfxPrefab, feedbackPosition);
     }
 
-    // Book: tidak damage, cuma nge-set buff untuk placement attack berikutnya.
-    private void ResolveBuff(WeaponInstance bookInstance)
-    {
-        var targets = bookInstance.Data.targets;
-        if (targets == null || targets.Length == 0) return;
-
-        foreach (var targetData in targets)
-        {
-            switch (bookInstance.Data.modifierType)
-            {
-                case ModifierType.Multiplier:
-                    float currentMult = _activeMultiplier.GetValueOrDefault(targetData, 1f);
-                    _activeMultiplier[targetData] = currentMult * bookInstance.Data.modifierValue;
-                    break;
-
-                case ModifierType.Addition:
-                    float currentAdd = _activeAddition.GetValueOrDefault(targetData, 0f);
-                    _activeAddition[targetData] = currentAdd + bookInstance.Data.modifierValue;
-                    break;
-            }
-        }
-    }
-
-    // Hourglass: replay attack weapon yang SUDAH ditaro di sekitarnya.
     private void ResolveHourglass(WeaponInstance hourglassInstance)
     {
         var neighbors = WeaponGridManager.Instance.GetNeighborsOf(hourglassInstance)
@@ -120,13 +105,13 @@ public class WeaponEffectsSystem : MonoBehaviour
 
         foreach (var neighbor in neighbors)
         {
-            // Replay damage yang SUDAH ter-resolve waktu neighbor itu ditaro dulu,
-            // bukan dihitung ulang dari buff sekarang — supaya konsisten dengan
-            // "attack terjadi instan saat itu juga, lalu bisa di-replay apa adanya".
-            currentEnemy.TakeDamage(neighbor.ResolvedDamage);
+            if (currentEnemy != null)
+            {
+                currentEnemy.TakeDamage(neighbor.ResolvedDamage);
 
-            if (neighbor.Data.appliesPoison)
-                currentEnemy.ApplyPoison(neighbor.Data.poisonDamagePerTick);
+                if (neighbor.Data.appliesPoison)
+                    currentEnemy.ApplyPoison(neighbor, neighbor.Data.poisonDamagePerTick);
+            }
 
             PlayAttackFeedback(neighbor.Data);
         }

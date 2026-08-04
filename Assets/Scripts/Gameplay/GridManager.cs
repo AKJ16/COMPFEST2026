@@ -57,11 +57,11 @@ public class GridManager : MonoBehaviour
     {
         grid = new CellState[columns, rows];
         cellViews = new GridCell[columns, rows];
-        gridOrigin = transform.position;
+
+        gridOrigin = transform.position - new Vector3((columns * cellSize) / 2f, (rows * cellSize) / 2f, 0f);
 
         if (cellContainer == null) cellContainer = transform;
 
-        // Apply disabled states
         foreach (Vector2Int coord in initialDisabledCells)
         {
             if (IsValidCell(coord.x, coord.y))
@@ -70,7 +70,6 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        // Spawn visual cell prefabs
         for (int x = 0; x < columns; x++)
         {
             for (int y = 0; y < rows; y++)
@@ -93,19 +92,14 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Updates grid dimensions and disabled cell layout for a new stage, then rebuilds visual cells.
-    /// </summary>
     public void SetGridDimensions(int newColumns, int newRows, List<Vector2Int> newDisabledCells)
     {
-        // 1. Destroy all placed weapon objects resting on the grid
-        DragDrop[] placedWeapons = FindObjectsOfType<DragDrop>();
+        DragDrop[] placedWeapons = Object.FindObjectsByType<DragDrop>();
         foreach (var weapon in placedWeapons)
         {
             Destroy(weapon.gameObject);
         }
 
-        // 2. Destroy existing visual cell prefabs
         if (cellViews != null)
         {
             for (int x = 0; x < columns; x++)
@@ -121,18 +115,16 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        // 3. Update dimensions & disabled cells
         columns = newColumns;
         rows = newRows;
         initialDisabledCells = newDisabledCells != null ? new List<Vector2Int>(newDisabledCells) : new List<Vector2Int>();
 
-        // 4. Rebuild grid
         InitializeGrid();
     }
 
     public void ResetVisualGrid()
     {
-        DragDrop[] placedWeapons = FindObjectsOfType<DragDrop>();
+        DragDrop[] placedWeapons = Object.FindObjectsByType<DragDrop>();
         foreach (var weapon in placedWeapons)
         {
             Destroy(weapon.gameObject);
@@ -154,6 +146,15 @@ public class GridManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Checks if a single cell is valid and currently Empty (NOT Occupied and NOT Disabled).
+    /// </summary>
+    public bool IsCellEmpty(int x, int y)
+    {
+        if (!IsValidCell(x, y)) return false;
+        return grid != null && grid[x, y] == CellState.Empty;
     }
 
     public bool CanPlaceItem(int gridX, int gridY, int width, int height, WeaponData data = null)
@@ -270,7 +271,7 @@ public class GridManager : MonoBehaviour
     #region Gizmos
     private void OnDrawGizmos()
     {
-        Vector3 origin = transform.position;
+        Vector3 origin = transform.position - new Vector3((columns * cellSize) / 2f, (rows * cellSize) / 2f, 0f);
 
         for (int x = 0; x < columns; x++)
         {

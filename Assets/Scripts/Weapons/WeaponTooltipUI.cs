@@ -12,6 +12,8 @@ public class WeaponTooltipUI : MonoBehaviour
 
     [Header("Tooltip Size")]
     [SerializeField] private float width = 220f;
+    [SerializeField] private float fontSizeTitle = 25f;
+    [SerializeField] private float fontSizeText = 20f;
     [SerializeField] private float padding = 10f;
 
     private RectTransform _rect;
@@ -54,7 +56,7 @@ public class WeaponTooltipUI : MonoBehaviour
         GameObject nameGO = new GameObject("NameText", typeof(RectTransform));
         nameGO.transform.SetParent(transform, false);
         _nameText = nameGO.AddComponent<TextMeshProUGUI>();
-        _nameText.fontSize = 18;
+        _nameText.fontSize = fontSizeTitle;
         _nameText.fontStyle = FontStyles.Bold;
         _nameText.color = Color.white;
         _nameText.raycastTarget = false;
@@ -62,7 +64,7 @@ public class WeaponTooltipUI : MonoBehaviour
         GameObject descGO = new GameObject("DescriptionText", typeof(RectTransform));
         descGO.transform.SetParent(transform, false);
         _descriptionText = descGO.AddComponent<TextMeshProUGUI>();
-        _descriptionText.fontSize = 14;
+        _descriptionText.fontSize = fontSizeText;
         _descriptionText.color = new Color(0.85f, 0.85f, 0.85f);
         _descriptionText.raycastTarget = false;
         _descriptionText.textWrappingMode = TextWrappingModes.Normal;

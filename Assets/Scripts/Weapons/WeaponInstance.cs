@@ -1,18 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Wraps a WeaponData with runtime state (position, sequence order, resolved damage).
-// SequenceIndex = urutan ke berapa weapon ini ditaro di grid pada stage ini.
-// Ini yang dipakai Book untuk tahu "siapa yang ditaro duluan" (order matters).
 public class WeaponInstance
 {
     public WeaponData Data { get; }
     public Vector2Int OriginCell { get; private set; }
     public int SequenceIndex { get; private set; }
 
-    // Damage final yang sudah dihitung + buff yang aktif SAAT weapon ini ditaro.
-    // Tidak berubah lagi setelahnya walau ada Book baru ditaro belakangan
-    // (karena attack sudah keburu terjadi, sesuai aturan order).
     public int ResolvedDamage { get; set; }
 
     public List<Vector2Int> OccupiedCells { get; } = new List<Vector2Int>();
@@ -32,13 +26,20 @@ public class WeaponInstance
         OccupiedCells.AddRange(Data.GetOccupiedCells(cell));
     }
 
+    /// <summary>
+    /// Checks if this weapon is adjacent to another weapon (includes Up, Down, Left, Right, and Diagonals/Edges).
+    /// </summary>
     public bool IsAdjacentTo(WeaponInstance other)
     {
         foreach (var cellA in OccupiedCells)
         {
             foreach (var cellB in other.OccupiedCells)
             {
-                if (Vector2Int.Distance(cellA, cellB) <= 1.01f)
+                int dx = Mathf.Abs(cellA.x - cellB.x);
+                int dy = Mathf.Abs(cellA.y - cellB.y);
+
+                // 8-directional neighbor: within 1 cell in any direction (including diagonal corners)
+                if (dx <= 1 && dy <= 1 && !(dx == 0 && dy == 0))
                     return true;
             }
         }

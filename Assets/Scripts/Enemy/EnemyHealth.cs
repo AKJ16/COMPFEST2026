@@ -1,21 +1,13 @@
-using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 
 public enum EnemyState { Idle, Hurt, Dead }
 
-// Handles enemy health, poison DoT ticking, and state transitions.
-// WeaponEffectsSystem calls TakeDamage / ApplyPoison; VFX/Audio hook into OnStateChanged.
-//
-// BOSS PHASE (opsional, dipakai Enemy_Stage3):
-// Kalau hasTwoPhases dicentang, begitu HP turun ke phase2ThresholdPercent (misal 50%),
-// enemy masuk Phase 2: poison yang lagi jalan langsung berhenti, dan gak bisa
-// di-apply lagi setelahnya. Maksa player ganti strategi ke damage langsung.
 public class EnemyHealth : MonoBehaviour
 {
     [SerializeField] private int maxHealth = 10;
-    [SerializeField] private float poisonTickInterval = 1f;
 
-    [Header("Boss Phase (opsional, kosongkan/uncheck untuk enemy biasa)")]
+    [Header("Boss Phase (opsional)")]
     [SerializeField] private bool hasTwoPhases = false;
     [Range(0.1f, 0.9f)]
     [SerializeField] private float phase2ThresholdPercent = 0.5f;
@@ -27,26 +19,29 @@ public class EnemyHealth : MonoBehaviour
 
     public event System.Action<EnemyState> OnStateChanged;
     public event System.Action<int> OnDamaged;
+    public event System.Action<int, bool> OnDamagedDetail; // (damageAmount, isPoison)
     public event System.Action OnPhaseTwoStarted;
 
-    private int _poisonPerTick;
-    private float _poisonTimer;
-    private bool _isPoisoned;
+    private readonly System.Collections.Generic.Dictionary<WeaponInstance, int> _poisonSources = new System.Collections.Generic.Dictionary<WeaponInstance, int>();
 
     private void Awake()
     {
         CurrentHealth = maxHealth;
     }
 
-    private void Update()
+    public void TickPoisonTurn()
     {
-        if (!_isPoisoned || State == EnemyState.Dead) return;
+        if (State == EnemyState.Dead || _poisonSources.Count == 0) return;
 
-        _poisonTimer += Time.deltaTime;
-        if (_poisonTimer >= poisonTickInterval)
+        int totalPoisonDamage = 0;
+        foreach (var kvp in _poisonSources)
         {
-            _poisonTimer = 0f;
-            TakeDamage(_poisonPerTick, isPoisonTick: true);
+            totalPoisonDamage += kvp.Value;
+        }
+
+        if (totalPoisonDamage > 0)
+        {
+            TakeDamage(totalPoisonDamage, isPoisonTick: true);
         }
     }
 
@@ -56,6 +51,7 @@ public class EnemyHealth : MonoBehaviour
 
         CurrentHealth = Mathf.Max(0, CurrentHealth - amount);
         OnDamaged?.Invoke(amount);
+        OnDamagedDetail?.Invoke(amount, isPoisonTick);
 
         if (CurrentHealth <= 0)
         {
@@ -69,12 +65,11 @@ public class EnemyHealth : MonoBehaviour
             SetState(EnemyState.Hurt);
     }
 
-    public void ApplyPoison(int damagePerTick)
+    public void ApplyPoison(WeaponInstance sourceInstance, int damagePerTick)
     {
-        if (IsInPhase2) return;
+        if (IsInPhase2 || sourceInstance == null) return;
 
-        _isPoisoned = true;
-        _poisonPerTick = Mathf.Max(_poisonPerTick, damagePerTick);
+        _poisonSources[sourceInstance] = damagePerTick;
     }
 
     private void CheckForPhaseTransition()
@@ -85,8 +80,7 @@ public class EnemyHealth : MonoBehaviour
         if (healthPercent <= phase2ThresholdPercent)
         {
             IsInPhase2 = true;
-            _isPoisoned = false;
-            _poisonPerTick = 0;
+            _poisonSources.Clear();
             OnPhaseTwoStarted?.Invoke();
         }
     }
@@ -98,7 +92,7 @@ public class EnemyHealth : MonoBehaviour
 
         if (newState == EnemyState.Dead)
         {
-            _isPoisoned = false;
+            _poisonSources.Clear();
         }
     }
 }

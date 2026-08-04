@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Poison Dagger
   category: 0
-  description: 'Deal 1 Damage.
+  description: 'Deal 1 damage.
 
-    Apply Poison (1 damage every turn).'
-  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    Apply Poison.'
+  icon: {fileID: 2429764162891173159, guid: 63998e05035af7b44bb5ad1ace170084, type: 3}
   baseDamage: 1
   gridSize: 1
   orientation: 0
@@ -27,3 +27,5 @@ MonoBehaviour:
   modifierValue: 0
   appliesPoison: 1
   poisonDamagePerTick: 1
+  attackSfx: {fileID: 0}
+  attackVfxPrefab: {fileID: 0}

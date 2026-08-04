@@ -12,13 +12,7 @@ public class WeaponGridManager : MonoBehaviour
     public int GridWidth => gridWidth;
     public int GridHeight => gridHeight;
 
-    [Header("Visual Placeholder")]
     [SerializeField] private float cellSize = 1f;
-    [SerializeField] private Vector2 gridOrigin = new Vector2(-2f, -2f);
-
-    [SerializeField] private Color defaultColor = Color.white;
-    [SerializeField] private Color attackColor = new Color(0.6f, 0.6f, 0.6f);
-    [SerializeField] private Color modifierColor = new Color(1f, 0.84f, 0.3f);
 
     private readonly List<WeaponInstance> _placedWeapons = new List<WeaponInstance>();
     private readonly Dictionary<WeaponInstance, List<GameObject>> _visuals = new Dictionary<WeaponInstance, List<GameObject>>();
@@ -29,9 +23,6 @@ public class WeaponGridManager : MonoBehaviour
         Instance = this;
     }
 
-    /// <summary>
-    /// Resizes the backend grid dimensions and clears placed weapons.
-    /// </summary>
     public void SetGridSize(int width, int height)
     {
         gridWidth = width;
@@ -56,10 +47,16 @@ public class WeaponGridManager : MonoBehaviour
 
         foreach (var cell in candidate.OccupiedCells)
         {
+            // 1. Grid boundary check
             if (cell.x < 0 || cell.x >= gridWidth || cell.y < 0 || cell.y >= gridHeight)
                 return false;
 
+            // 2. Check if another weapon is already placed here
             if (_placedWeapons.Any(w => w.OccupiedCells.Contains(cell)))
+                return false;
+
+            // 3. CHECK IF CELL IS DISABLED IN GRIDMANAGER
+            if (GridManager.Instance != null && !GridManager.Instance.IsCellEmpty(cell.x, cell.y))
                 return false;
         }
         return true;
@@ -86,6 +83,13 @@ public class WeaponGridManager : MonoBehaviour
         }
     }
 
+    private Vector3 GridToWorld(Vector2Int cell)
+    {
+        float originX = transform.position.x - (gridWidth * cellSize / 2f);
+        float originY = transform.position.y - (gridHeight * cellSize / 2f);
+        return new Vector3(originX + (cell.x + 0.5f) * cellSize, originY + (cell.y + 0.5f) * cellSize, 0f);
+    }
+
     public IEnumerable<WeaponInstance> GetNeighborsOf(WeaponInstance instance)
     {
         return _placedWeapons.Where(w => w != instance && w.IsAdjacentTo(instance));
@@ -97,8 +101,15 @@ public class WeaponGridManager : MonoBehaviour
         {
             for (int y = 0; y < gridHeight; y++)
             {
-                if (CanPlace(data, new Vector2Int(x, y)))
+                if (GridManager.Instance != null)
+                {
+                    if (GridManager.Instance.CanPlaceItem(x, y, data.Width, data.Height, data))
+                        return true;
+                }
+                else if (CanPlace(data, new Vector2Int(x, y)))
+                {
                     return true;
+                }
             }
         }
         return false;

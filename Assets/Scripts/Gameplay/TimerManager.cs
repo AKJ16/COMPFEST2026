@@ -28,7 +28,6 @@ public class TimerManager : MonoBehaviour
     private void Start()
     {
         StartTimer();
-        Debug.Log("Start");
     }
 
     private void Update()
@@ -46,8 +45,14 @@ public class TimerManager : MonoBehaviour
         }
     }
 
+    public void ResetTimer()
+    {
+        timeRemaining = maxTime;
+    }
+
     public void StartTimer()
     {
+        timeRemaining = maxTime;
         isRunning = true;
     }
 

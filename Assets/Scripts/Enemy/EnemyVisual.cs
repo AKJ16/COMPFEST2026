@@ -6,11 +6,12 @@ public class EnemyVisual : MonoBehaviour
 {
     [Header("Hit / Hurt Juice")]
     [SerializeField] private float hurtBounceHeight = 0.35f;
-    [SerializeField] private float hurtDuration = 0.2f;
+    [SerializeField] private float hurtDuration = 0.25f;
+    [SerializeField] private Color poisonColor = new Color(0.2f, 0.85f, 0.3f);
 
     [Header("Timer Out Juice")]
     [SerializeField] private float timeUpDropDistance = 0.4f;
-    [SerializeField] private float timeUpDuration = 0.5f;
+    [SerializeField] private float timeUpDuration = 0.35f;
 
     [Header("Death Juice")]
     [SerializeField] private float deathBounceHeight = 0.5f;
@@ -21,6 +22,10 @@ public class EnemyVisual : MonoBehaviour
     private Vector3 _originalPos;
     private Coroutine _currentAnimRoutine;
 
+    private bool _gotPoisonDamageThisFrame = false;
+    private bool _gotNormalDamageThisFrame = false;
+    private Coroutine _damageFrameRoutine = null;
+
     private void Awake()
     {
         _health = GetComponent<EnemyHealth>();
@@ -29,7 +34,6 @@ public class EnemyVisual : MonoBehaviour
         if (_spriteRenderer == null)
             _spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
 
-        // Default color is White
         _spriteRenderer.color = Color.white;
         _originalPos = transform.localPosition;
     }
@@ -37,6 +41,7 @@ public class EnemyVisual : MonoBehaviour
     private void Start()
     {
         _health.OnStateChanged += HandleStateChanged;
+        _health.OnDamagedDetail += HandleDamagedDetail;
 
         if (StageManager.Instance != null)
             StageManager.Instance.OnStageEnded += HandleStageEnded;
@@ -48,7 +53,10 @@ public class EnemyVisual : MonoBehaviour
     private void OnDestroy()
     {
         if (_health != null)
+        {
             _health.OnStateChanged -= HandleStateChanged;
+            _health.OnDamagedDetail -= HandleDamagedDetail;
+        }
 
         if (StageManager.Instance != null)
             StageManager.Instance.OnStageEnded -= HandleStageEnded;
@@ -57,17 +65,55 @@ public class EnemyVisual : MonoBehaviour
             TimerManager.Instance.onTimeUp.RemoveListener(HandleTimeUp);
     }
 
+    private void HandleDamagedDetail(int damageAmount, bool isPoison)
+    {
+        if (isPoison) _gotPoisonDamageThisFrame = true;
+        else _gotNormalDamageThisFrame = true;
+
+        if (_damageFrameRoutine == null)
+        {
+            _damageFrameRoutine = StartCoroutine(ProcessDamageFrame());
+        }
+    }
+
+    private IEnumerator ProcessDamageFrame()
+    {
+        yield return new WaitForEndOfFrame();
+
+        if (_health != null && _health.State != EnemyState.Dead)
+        {
+            Color flashColor;
+            bool shouldBounce;
+
+            if (_gotPoisonDamageThisFrame && _gotNormalDamageThisFrame)
+            {
+                flashColor = poisonColor;
+                shouldBounce = true;
+            }
+            else if (_gotPoisonDamageThisFrame)
+            {
+                flashColor = poisonColor;
+                shouldBounce = false;
+            }
+            else
+            {
+                flashColor = Color.red;
+                shouldBounce = true;
+            }
+
+            PlayRoutine(HurtRoutine(flashColor, shouldBounce));
+        }
+
+        _gotPoisonDamageThisFrame = false;
+        _gotNormalDamageThisFrame = false;
+        _damageFrameRoutine = null;
+    }
+
     private void HandleStateChanged(EnemyState state)
     {
-        switch (state)
+        if (state == EnemyState.Dead)
         {
-            case EnemyState.Hurt:
-                PlayRoutine(HurtRoutine());
-                break;
-
-            case EnemyState.Dead:
-                PlayRoutine(DeathRoutine());
-                break;
+            PlayRoutine(DeathRoutine());
         }
     }
 
@@ -75,7 +121,7 @@ public class EnemyVisual : MonoBehaviour
     {
         if (_health != null && _health.State != EnemyState.Dead)
         {
-            PlayRoutine(TimeUpBounceDownRoutine());
+            StartCoroutine(DelayedBounceDownSequence(0.15f));
         }
     }
 
@@ -83,7 +129,7 @@ public class EnemyVisual : MonoBehaviour
     {
         if (result == StageResult.Lose && _health != null && _health.State != EnemyState.Dead)
         {
-            PlayRoutine(TimeUpBounceDownRoutine());
+            StartCoroutine(DelayedBounceDownSequence(0.6f));
         }
     }
 
@@ -95,23 +141,24 @@ public class EnemyVisual : MonoBehaviour
         _currentAnimRoutine = StartCoroutine(routine);
     }
 
-    // 1. HIT: Bounce UP + Flash RED -> Return to White
-    private IEnumerator HurtRoutine()
+    private IEnumerator HurtRoutine(Color flashColor, bool shouldBounce)
     {
         float elapsed = 0f;
-        _spriteRenderer.color = Color.red;
+        _spriteRenderer.color = flashColor;
 
         while (elapsed < hurtDuration)
         {
-            elapsed += Time.unscaledDeltaTime;
+            // Fixed: Uses Time.deltaTime so pausing smoothly freezes hit movement
+            elapsed += Time.deltaTime;
             float t = elapsed / hurtDuration;
 
-            // Parabolic jump arc UP
-            float yOffset = Mathf.Sin(t * Mathf.PI) * hurtBounceHeight;
-            transform.localPosition = _originalPos + new Vector3(0f, yOffset, 0f);
+            if (shouldBounce)
+            {
+                float yOffset = Mathf.Sin(t * Mathf.PI) * hurtBounceHeight;
+                transform.localPosition = _originalPos + new Vector3(transform.localPosition.x, yOffset, transform.localPosition.y);
+            }
 
-            // Lerp color from RED back to default WHITE
-            _spriteRenderer.color = Color.Lerp(Color.red, Color.white, t);
+            _spriteRenderer.color = Color.Lerp(flashColor, Color.white, t);
 
             yield return null;
         }
@@ -120,27 +167,35 @@ public class EnemyVisual : MonoBehaviour
         _spriteRenderer.color = Color.white;
     }
 
-    // 2. TIMER OUT: Bounce DOWN
+    private IEnumerator DelayedBounceDownSequence(float delayBeforeBounce)
+    {
+        if (delayBeforeBounce > 0f)
+        {
+            yield return new WaitForSecondsRealtime(delayBeforeBounce);
+        }
+
+        yield return StartCoroutine(TimeUpBounceDownRoutine());
+    }
+
     private IEnumerator TimeUpBounceDownRoutine()
     {
         float elapsed = 0f;
+        _spriteRenderer.color = Color.white;
 
         while (elapsed < timeUpDuration)
         {
             elapsed += Time.unscaledDeltaTime;
             float t = elapsed / timeUpDuration;
 
-            // Dip DOWN arc
             float yOffset = -Mathf.Sin(t * Mathf.PI) * timeUpDropDistance;
-            transform.localPosition = _originalPos + new Vector3(0f, yOffset, 0f);
+            transform.localPosition = _originalPos + new Vector3(transform.localPosition.x, yOffset, transform.localPosition.y);
 
             yield return null;
         }
 
-        transform.localPosition = _originalPos;
+        transform.localPosition = _originalPos + new Vector3(0f, -timeUpDropDistance * 0.4f, 0f);
     }
 
-    // 3. DEAD: Bounce UP + Turn RED + Fade Out Alpha (1 -> 0)
     private IEnumerator DeathRoutine()
     {
         float elapsed = 0f;
@@ -150,11 +205,9 @@ public class EnemyVisual : MonoBehaviour
             elapsed += Time.unscaledDeltaTime;
             float t = elapsed / deathDuration;
 
-            // Arc jump UP
             float yOffset = Mathf.Sin(t * Mathf.PI) * deathBounceHeight;
-            transform.localPosition = _originalPos + new Vector3(0f, yOffset, 0f);
+            transform.localPosition = _originalPos + new Vector3(transform.localPosition.x, yOffset, transform.localPosition.y);
 
-            // Red color with fading Alpha (1 -> 0)
             float alpha = Mathf.Lerp(1f, 0f, t);
             _spriteRenderer.color = new Color(1f, 0f, 0f, alpha);
 

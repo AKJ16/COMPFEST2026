@@ -82,7 +82,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: -9163426285224168042, guid: f2cd962a7a7cac94a93e2c1c093cdfa0, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -106,6 +106,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridCell
   spriteRenderer: {fileID: 6054923256626296870}
-  emptySprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  occupiedSprite: {fileID: 10917, guid: 0000000000000000f000000000000000, type: 0}
-  disabledSprite: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
+  emptyColor: {r: 1, g: 1, b: 1, a: 1}
+  occupiedColor: {r: 0.5566037, g: 0.7783019, b: 1, a: 1}
+  validHoverColor: {r: 0.54905653, g: 1, b: 0.54905653, a: 1}
+  invalidHoverColor: {r: 1, g: 0.49622637, b: 0.49622637, a: 1}

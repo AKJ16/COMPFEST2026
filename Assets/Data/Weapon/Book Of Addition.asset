@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Book of Addition
   category: 1
-  description: Staff gains +X Damage.
-  icon: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
+  description: Staff gains +2 damage.
+  icon: {fileID: -8389836826693077589, guid: ef17308d7c110cf49b59397b64c24470, type: 3}
   baseDamage: 0
   gridSize: 1
   orientation: 0
@@ -26,3 +26,5 @@ MonoBehaviour:
   modifierValue: 2
   appliesPoison: 0
   poisonDamagePerTick: 0
+  attackSfx: {fileID: 0}
+  attackVfxPrefab: {fileID: 0}

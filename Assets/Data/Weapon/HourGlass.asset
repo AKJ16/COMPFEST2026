@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Hour Glass
   category: 1
-  description: Adjacent weapons activate twice.
-  icon: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
+  description: Adjacent weapons perform an additional attack.
+  icon: {fileID: 7505502180699641903, guid: 93f7a61de60d2b747ac79deea79b8f52, type: 3}
   baseDamage: 0
   gridSize: 2
   orientation: 2
@@ -25,3 +25,5 @@ MonoBehaviour:
   modifierValue: 0
   appliesPoison: 0
   poisonDamagePerTick: 0
+  attackSfx: {fileID: 0}
+  attackVfxPrefab: {fileID: 0}

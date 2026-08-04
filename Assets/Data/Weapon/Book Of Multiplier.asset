@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Book of Multiplayer
   category: 1
-  description: Multiply Staff Damage.
-  icon: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
+  description: Double the staff damage.
+  icon: {fileID: -1368427707301921974, guid: a2be44163c617eb43a00c386d58be4f0, type: 3}
   baseDamage: 0
   gridSize: 1
   orientation: 0
@@ -26,3 +26,5 @@ MonoBehaviour:
   modifierValue: 2
   appliesPoison: 0
   poisonDamagePerTick: 0
+  attackSfx: {fileID: 0}
+  attackVfxPrefab: {fileID: 0}

@@ -85,12 +85,23 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
     {
         Data = data;
         _iconImage.sprite = data.icon;
-        UpdateCount(count);
+        CurrentCount = count;
+        _countText.text = "x" + count;
         SetSelected(false);
     }
 
     public void UpdateCount(int count)
     {
+        int addedAmount = count - CurrentCount;
+
+        // RULE: No popups on Stage 1! Only trigger popups on Stage 2+ for active slots
+        bool isNotStage1 = StageManager.Instance != null && StageManager.Instance.CurrentStageNumber > 1;
+
+        if (addedAmount > 0 && Data != null && gameObject.activeInHierarchy && isNotStage1)
+        {
+            ShowRewardPopUp(addedAmount);
+        }
+
         CurrentCount = count;
         _countText.text = "x" + count;
 
@@ -104,6 +115,24 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
             _iconImage.color = new Color(1f, 1f, 1f, 0.25f);
             _countText.color = new Color(1f, 1f, 1f, 0.45f);
         }
+    }
+
+    private void ShowRewardPopUp(int amount)
+    {
+        // Force Canvas to recalculate layout so new slot positions are accurate
+        Canvas.ForceUpdateCanvases();
+
+        GameObject popUpGO = new GameObject($"+{amount}_PopUp", typeof(RectTransform));
+
+        Transform canvasParent = GetComponentInParent<Canvas>() != null ? GetComponentInParent<Canvas>().transform : transform;
+        popUpGO.transform.SetParent(canvasParent, false);
+
+        RectTransform rect = popUpGO.GetComponent<RectTransform>();
+        rect.position = transform.position + new Vector3(0f, 50f, 0f);
+        rect.sizeDelta = new Vector2(100f, 40f);
+
+        var popUp = popUpGO.AddComponent<InventoryRewardPopUp>();
+        popUp.Setup(amount);
     }
 
     public void SetSelected(bool selected)
@@ -124,10 +153,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
         if (CurrentCount <= 0 || Data == null) return;
         if (StageManager.Instance != null && StageManager.Instance.Result != StageResult.InProgress) return;
 
-        // Hide tooltip while dragging
         WeaponTooltipUI.Instance.Hide();
 
-        // Spawn Drag Item World Representation
         GameObject dragGO = new GameObject($"Drag_{Data.weaponName}");
         Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(new Vector3(eventData.position.x, eventData.position.y, 10f));
         dragGO.transform.position = mouseWorldPos;
@@ -144,7 +171,6 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
 
     public void OnDrag(PointerEventData eventData)
     {
-        // Handled directly inside DragDrop.cs Update loop
     }
 
     public void OnEndDrag(PointerEventData eventData)

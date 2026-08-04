@@ -85,7 +85,7 @@ public class MainMenuManager : MonoBehaviour
             float t = elapsed / logoDropDuration;
 
             // Ease-out back / bounce curve math
-            float s = 1.70158f;
+            float s = 1f;
             float t2 = t - 1.0f;
             float bounce = (t2 * t2 * ((s + 1) * t2 + s) + 1.0f);
 
