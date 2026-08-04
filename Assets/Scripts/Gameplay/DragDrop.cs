@@ -27,7 +27,7 @@ public class DragDrop : MonoBehaviour
 
     private void Update()
     {
-        if (isPlaced) return;
+        if (isPlaced || Time.timeScale == 0f) return;
 
         HandleInput();
     }
