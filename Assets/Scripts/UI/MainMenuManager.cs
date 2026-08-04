@@ -19,6 +19,9 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private float buttonFadeDuration = 0.5f;
     [SerializeField] private GameObject quitButton;
 
+    [Header("Audio BGM")]
+    [SerializeField] private AudioClip menuMusic;
+
     [Header("Scene Settings")]
     [SerializeField] private string gameplaySceneName = "Gameplay";
 
@@ -26,20 +29,17 @@ public class MainMenuManager : MonoBehaviour
     {
         Time.timeScale = 1f;
 
-        // Initial State: Screen completely black
         if (blackScreenOverlay != null)
         {
             blackScreenOverlay.alpha = 1f;
             blackScreenOverlay.blocksRaycasts = true;
         }
 
-        // Initial State: Logo off-screen
         if (logoRect != null)
         {
             logoRect.anchoredPosition = logoStartPos;
         }
 
-        // Initial State: Buttons invisible & non-interactable
         if (buttonGroup != null)
         {
             buttonGroup.alpha = 0f;
@@ -57,6 +57,12 @@ public class MainMenuManager : MonoBehaviour
 
     private void Start()
     {
+        // Play Menu BGM
+        if (AudioManager.Instance != null && menuMusic != null)
+        {
+            AudioManager.Instance.PlayMusic(menuMusic);
+        }
+
         StartCoroutine(MainMenuSequence());
     }
 
@@ -64,7 +70,6 @@ public class MainMenuManager : MonoBehaviour
     {
         float elapsed = 0f;
 
-        // Fade Screen from Black
         if (blackScreenOverlay != null)
         {
             while (elapsed < screenFadeInDuration)
@@ -77,15 +82,13 @@ public class MainMenuManager : MonoBehaviour
             blackScreenOverlay.blocksRaycasts = false;
         }
 
-        // Title / Logo Drops Down with Bounce
         elapsed = 0f;
         while (elapsed < logoDropDuration)
         {
             elapsed += Time.deltaTime;
             float t = elapsed / logoDropDuration;
 
-            // Ease-out back / bounce curve math
-            float s = 1f;
+            float s = 1.70158f;
             float t2 = t - 1.0f;
             float bounce = (t2 * t2 * ((s + 1) * t2 + s) + 1.0f);
 
@@ -104,7 +107,6 @@ public class MainMenuManager : MonoBehaviour
 
         yield return new WaitForSeconds(delayBeforeButtons);
 
-        // Buttons Fade In
         elapsed = 0f;
         while (elapsed < buttonFadeDuration)
         {

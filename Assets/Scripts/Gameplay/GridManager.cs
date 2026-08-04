@@ -24,6 +24,9 @@ public class GridManager : MonoBehaviour
     [Header("Difficulty / Disabled Slots")]
     [SerializeField] private List<Vector2Int> initialDisabledCells = new List<Vector2Int>();
 
+    [Header("Audio SFX")]
+    [SerializeField] private AudioClip placeItemSfx; // Drag your grid snap audio clip here!
+
     [Header("Gizmo Visualization Colors")]
     [SerializeField] private Color gridColor = Color.cyan;
     [SerializeField] private Color occupiedColor = Color.red;
@@ -148,9 +151,6 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Checks if a single cell is valid and currently Empty (NOT Occupied and NOT Disabled).
-    /// </summary>
     public bool IsCellEmpty(int x, int y)
     {
         if (!IsValidCell(x, y)) return false;
@@ -182,6 +182,12 @@ public class GridManager : MonoBehaviour
 
     public void OccupyCells(int gridX, int gridY, int width, int height)
     {
+        // Play Grid Placement Snap Sound Effect
+        if (placeItemSfx != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX(placeItemSfx);
+        }
+
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)

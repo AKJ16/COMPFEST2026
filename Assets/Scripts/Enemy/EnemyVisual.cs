@@ -7,7 +7,7 @@ public class EnemyVisual : MonoBehaviour
     [Header("Hit / Hurt Juice")]
     [SerializeField] private float hurtBounceHeight = 0.35f;
     [SerializeField] private float hurtDuration = 0.25f;
-    [SerializeField] private Color poisonColor = new Color(0.2f, 0.85f, 0.3f);
+    [SerializeField] private Color poisonColor = new Color(0.2f, 0.85f, 0.3f); // Toxic Greenish Hue
 
     [Header("Timer Out Juice")]
     [SerializeField] private float timeUpDropDistance = 0.4f;
@@ -17,11 +17,17 @@ public class EnemyVisual : MonoBehaviour
     [SerializeField] private float deathBounceHeight = 0.5f;
     [SerializeField] private float deathDuration = 0.6f;
 
+    [Header("Audio SFX (Opsional)")]
+    [SerializeField] private AudioClip hurtSfx;
+    [SerializeField] private AudioClip poisonSfx;
+    [SerializeField] private AudioClip deathSfx; // Added Death SFX
+
     private SpriteRenderer _spriteRenderer;
     private EnemyHealth _health;
     private Vector3 _originalPos;
     private Coroutine _currentAnimRoutine;
 
+    // Turn frame damage collectors
     private bool _gotPoisonDamageThisFrame = false;
     private bool _gotNormalDamageThisFrame = false;
     private Coroutine _damageFrameRoutine = null;
@@ -84,21 +90,33 @@ public class EnemyVisual : MonoBehaviour
         {
             Color flashColor;
             bool shouldBounce;
+            AudioClip sfxToPlay = null;
 
             if (_gotPoisonDamageThisFrame && _gotNormalDamageThisFrame)
             {
+                // BOTH: Poison Hue + Bounce + HURT AUDIO
                 flashColor = poisonColor;
                 shouldBounce = true;
+                sfxToPlay = hurtSfx;
             }
             else if (_gotPoisonDamageThisFrame)
             {
+                // POISON ONLY: Poison Hue + NO Bounce + POISON AUDIO
                 flashColor = poisonColor;
                 shouldBounce = false;
+                sfxToPlay = poisonSfx;
             }
             else
             {
+                // NORMAL DAMAGE ONLY: Red + Bounce + HURT AUDIO
                 flashColor = Color.red;
                 shouldBounce = true;
+                sfxToPlay = hurtSfx;
+            }
+
+            if (sfxToPlay != null && AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlaySFX(sfxToPlay);
             }
 
             PlayRoutine(HurtRoutine(flashColor, shouldBounce));
@@ -148,14 +166,13 @@ public class EnemyVisual : MonoBehaviour
 
         while (elapsed < hurtDuration)
         {
-            // Fixed: Uses Time.deltaTime so pausing smoothly freezes hit movement
             elapsed += Time.deltaTime;
             float t = elapsed / hurtDuration;
 
             if (shouldBounce)
             {
                 float yOffset = Mathf.Sin(t * Mathf.PI) * hurtBounceHeight;
-                transform.localPosition = _originalPos + new Vector3(transform.localPosition.x, yOffset, transform.localPosition.y);
+                transform.localPosition = _originalPos + new Vector3(transform.localPosition.x, yOffset, transform.localPosition.z);
             }
 
             _spriteRenderer.color = Color.Lerp(flashColor, Color.white, t);
@@ -188,7 +205,7 @@ public class EnemyVisual : MonoBehaviour
             float t = elapsed / timeUpDuration;
 
             float yOffset = -Mathf.Sin(t * Mathf.PI) * timeUpDropDistance;
-            transform.localPosition = _originalPos + new Vector3(transform.localPosition.x, yOffset, transform.localPosition.y);
+            transform.localPosition = _originalPos + new Vector3(transform.localPosition.x, yOffset, transform.localPosition.z);
 
             yield return null;
         }
@@ -198,6 +215,12 @@ public class EnemyVisual : MonoBehaviour
 
     private IEnumerator DeathRoutine()
     {
+        // Play death SFX on defeat
+        if (deathSfx != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX(deathSfx);
+        }
+
         float elapsed = 0f;
 
         while (elapsed < deathDuration)
@@ -206,7 +229,7 @@ public class EnemyVisual : MonoBehaviour
             float t = elapsed / deathDuration;
 
             float yOffset = Mathf.Sin(t * Mathf.PI) * deathBounceHeight;
-            transform.localPosition = _originalPos + new Vector3(transform.localPosition.x, yOffset, transform.localPosition.y);
+            transform.localPosition = _originalPos + new Vector3(transform.localPosition.x, yOffset, transform.localPosition.z);
 
             float alpha = Mathf.Lerp(1f, 0f, t);
             _spriteRenderer.color = new Color(1f, 0f, 0f, alpha);

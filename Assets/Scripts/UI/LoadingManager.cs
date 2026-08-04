@@ -36,9 +36,6 @@ public class LoadingManager : MonoBehaviour
         StartCoroutine(LoadSequence(sceneName));
     }
 
-    /// <summary>
-    /// Fades to black, executes a setup action (like advancing stages), then fades back in.
-    /// </summary>
     public void FadeOutIn(Action onBlackScreen)
     {
         StartCoroutine(FadeOutInSequence(onBlackScreen));
@@ -56,7 +53,6 @@ public class LoadingManager : MonoBehaviour
 
         canvasGroup.blocksRaycasts = true;
 
-        // 1. Fade to 100% Black
         float elapsed = 0f;
         while (elapsed < fadeDuration)
         {
@@ -67,14 +63,11 @@ public class LoadingManager : MonoBehaviour
         }
         canvasGroup.alpha = 1f;
 
-        // 2. Execute Stage Setup Callback while screen is 100% black
         onBlackScreen?.Invoke();
 
-        // Wait 2 frames for scene objects to update
         yield return null;
         yield return null;
 
-        // 3. Fade In from Black
         elapsed = 0f;
         while (elapsed < fadeDuration)
         {
@@ -100,6 +93,13 @@ public class LoadingManager : MonoBehaviour
 
         canvasGroup.blocksRaycasts = true;
 
+        // Fade out playing music alongside screen fade
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.FadeOutMusic(fadeDuration);
+        }
+
+        // 1. Fade to Black
         float elapsed = 0f;
         while (elapsed < fadeDuration)
         {
@@ -110,6 +110,7 @@ public class LoadingManager : MonoBehaviour
         }
         canvasGroup.alpha = 1f;
 
+        // 2. Load Scene Asynchronously
         AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName);
         operation.allowSceneActivation = false;
 
@@ -132,6 +133,7 @@ public class LoadingManager : MonoBehaviour
         canvasGroup.alpha = 1f;
         yield return null;
 
+        // 3. Fade In from Black
         elapsed = 0f;
         while (elapsed < fadeDuration)
         {

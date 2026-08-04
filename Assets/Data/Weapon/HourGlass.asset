@@ -25,5 +25,5 @@ MonoBehaviour:
   modifierValue: 0
   appliesPoison: 0
   poisonDamagePerTick: 0
-  attackSfx: {fileID: 0}
+  attackSfx: {fileID: 8300000, guid: 04bb708b21cb417429feaaae81e7caa4, type: 3}
   attackVfxPrefab: {fileID: 0}

@@ -39,6 +39,10 @@ public class StageManager : MonoBehaviour
     [Header("Stage Configurations")]
     [SerializeField] private List<StageConfig> stages = new List<StageConfig>();
 
+    [Header("Audio BGM & SFX")]
+    [SerializeField] private AudioClip gameplayMusic;
+    [SerializeField] private AudioClip stageWinSfx;
+
     private EnemyHealth _currentEnemy;
     private int _currentStageIndex = 0;
 
@@ -63,7 +67,12 @@ public class StageManager : MonoBehaviour
     {
         Result = StageResult.InProgress;
 
-        // 1. Determine Enemy
+        // Play Gameplay BGM
+        if (AudioManager.Instance != null && gameplayMusic != null)
+        {
+            AudioManager.Instance.PlayMusic(gameplayMusic);
+        }
+
         if (overrideEnemy != null)
         {
             _currentEnemy = overrideEnemy;
@@ -73,7 +82,6 @@ public class StageManager : MonoBehaviour
             _currentEnemy = stages[stageIndex].stageEnemy;
         }
 
-        // 2. Toggle active enemy
         for (int i = 0; i < stages.Count; i++)
         {
             if (stages[i].stageEnemy != null)
@@ -82,7 +90,6 @@ public class StageManager : MonoBehaviour
             }
         }
 
-        // 3. Grid Setup
         int targetColumns = stageIndex < stages.Count ? stages[stageIndex].gridColumns : 5;
         int targetRows = stageIndex < stages.Count ? stages[stageIndex].gridRows : 5;
         var targetDisabled = stageIndex < stages.Count ? stages[stageIndex].disabledGridCells : null;
@@ -97,7 +104,6 @@ public class StageManager : MonoBehaviour
             GridManager.Instance.SetGridDimensions(targetColumns, targetRows, targetDisabled);
         }
 
-        // 4. Add Stage Bonus Weapons
         if (!isInitialStart && stageIndex < stages.Count && stages[stageIndex].bonusWeapons != null)
         {
             foreach (var reward in stages[stageIndex].bonusWeapons)
@@ -109,7 +115,6 @@ public class StageManager : MonoBehaviour
             }
         }
 
-        // 5. Reset systems
         WeaponEffectsSystem.Instance.StartStage(_currentEnemy);
 
         if (_currentEnemy != null)
@@ -117,20 +122,17 @@ public class StageManager : MonoBehaviour
             _currentEnemy.OnStateChanged += HandleEnemyStateChanged;
         }
 
-        // 6. Reset & Start Timer
         if (TimerManager.Instance != null)
         {
             TimerManager.Instance.ResetTimer();
             TimerManager.Instance.StartTimer();
         }
 
-        // 7. Trigger Stage Banner Dropdown
         if (StageBannerUI.Instance != null)
         {
             StageBannerUI.Instance.ShowStageBanner(CurrentStageNumber);
         }
 
-        // 8. Bind Boss Announcement UI
         if (BossIntroUI.Instance != null && _currentEnemy != null)
         {
             bool isBoss = stageIndex < stages.Count && stages[stageIndex].isBossStage;
@@ -176,6 +178,12 @@ public class StageManager : MonoBehaviour
 
         if (result == StageResult.Win)
         {
+            // Play Stage Win SFX
+            if (AudioManager.Instance != null && stageWinSfx != null)
+            {
+                AudioManager.Instance.PlaySFX(stageWinSfx);
+            }
+
             StartCoroutine(AdvanceToNextStageSequence());
         }
         else if (result == StageResult.Lose)

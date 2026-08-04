@@ -11,6 +11,9 @@ public class WinManager : MonoBehaviour
     [SerializeField] private UIMenuTransition transition;
     [SerializeField] private string mainMenuSceneName = "MainMenu";
 
+    [Header("Audio SFX")]
+    [SerializeField] private AudioClip victorySfx;
+
     [Header("Optional Display")]
     [SerializeField] private TextMeshProUGUI victoryText;
 
@@ -36,8 +39,13 @@ public class WinManager : MonoBehaviour
 
     private IEnumerator WinSequence(float initialDelay)
     {
-        // Wait for final boss death animation (bounce up + red + fade out) to complete
         yield return new WaitForSecondsRealtime(initialDelay);
+
+        // Play Final Victory SFX
+        if (AudioManager.Instance != null && victorySfx != null)
+        {
+            AudioManager.Instance.PlaySFX(victorySfx);
+        }
 
         if (transition != null)
         {

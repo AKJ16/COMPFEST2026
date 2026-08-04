@@ -20,13 +20,13 @@ public class WeaponEffectsSystem : MonoBehaviour
 
     public void ResolvePlacement(WeaponInstance instance)
     {
-        // 1. Tick existing poison at the start of placement turn
+        // 1. Tick existing poison at start of placement turn
         if (currentEnemy != null)
         {
             currentEnemy.TickPoisonTurn();
         }
 
-        // 2. Resolve placement effects
+        // 2. Resolve placement effects & trigger item feedback
         switch (instance.Data.category)
         {
             case WeaponCategory.Attack:
@@ -35,10 +35,18 @@ public class WeaponEffectsSystem : MonoBehaviour
 
             case WeaponCategory.Modifier:
                 if (instance.Data.modifierType == ModifierType.Repeat)
+                {
                     ResolveHourglass(instance);
+                }
+                else
+                {
+                    // FIXED: Play placement SFX/VFX for Books (Multiplier & Addition)
+                    PlayAttackFeedback(instance.Data);
+                }
                 break;
 
             case WeaponCategory.Utility:
+                PlayAttackFeedback(instance.Data);
                 break;
         }
     }
@@ -48,13 +56,12 @@ public class WeaponEffectsSystem : MonoBehaviour
         float multiplier = 1f;
         float addition = 0f;
 
-        // Check surrounding 8-directional neighbors (orthogonal + diagonals) for Books/Modifiers
+        // Check surrounding 8-directional neighbors (orthogonal + diagonals) for Books
         var adjacentModifiers = WeaponGridManager.Instance.GetNeighborsOf(attackInstance)
             .Where(n => n.Data.category == WeaponCategory.Modifier && n.Data.modifierType != ModifierType.Repeat);
 
         foreach (var modifier in adjacentModifiers)
         {
-            // Verify this surrounding Book targets this specific Attack weapon
             if (modifier.Data.targets != null && modifier.Data.targets.Contains(attackInstance.Data))
             {
                 switch (modifier.Data.modifierType)
@@ -87,19 +94,24 @@ public class WeaponEffectsSystem : MonoBehaviour
 
     private void PlayAttackFeedback(WeaponData data)
     {
-        if (currentEnemy == null) return;
+        if (data == null) return;
 
-        Vector3 feedbackPosition = currentEnemy.transform.position;
+        Vector3 feedbackPosition = currentEnemy != null ? currentEnemy.transform.position : transform.position;
 
+        // Play weapon / item placement SFX
         if (data.attackSfx != null && AudioManager.Instance != null)
             AudioManager.Instance.PlaySFX(data.attackSfx);
 
-        if (VFXManager.Instance != null)
+        // Play weapon / item placement VFX (if assigned in WeaponData)
+        if (data.attackVfxPrefab != null && VFXManager.Instance != null)
             VFXManager.Instance.PlayWeaponEffect(data.attackVfxPrefab, feedbackPosition);
     }
 
     private void ResolveHourglass(WeaponInstance hourglassInstance)
     {
+        // FIXED: Play the Hourglass's OWN placement sound/VFX first!
+        PlayAttackFeedback(hourglassInstance.Data);
+
         var neighbors = WeaponGridManager.Instance.GetNeighborsOf(hourglassInstance)
             .Where(n => n.Data.category == WeaponCategory.Attack);
 
@@ -113,6 +125,7 @@ public class WeaponEffectsSystem : MonoBehaviour
                     currentEnemy.ApplyPoison(neighbor, neighbor.Data.poisonDamagePerTick);
             }
 
+            // Replay neighbor attack feedback
             PlayAttackFeedback(neighbor.Data);
         }
     }
