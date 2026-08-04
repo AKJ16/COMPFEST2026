@@ -99,6 +99,9 @@ public class EnemyHealth : MonoBehaviour
         if (newState == EnemyState.Dead)
         {
             _isPoisoned = false;
+
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySFX("EnemyDeath");
         }
     }
 }

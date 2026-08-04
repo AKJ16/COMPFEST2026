@@ -32,7 +32,7 @@ public class WeaponTooltipUI : MonoBehaviour
         if (_rect == null)
             _rect = gameObject.AddComponent<RectTransform>();
 
-        _rect.pivot = new Vector2(0.5f, 0f); // muncul di ATAS titik acuan
+        _rect.pivot = new Vector2(1f, 0.5f); // muncul di SAMPING KIRI titik acuan // muncul di ATAS titik acuan
         _rect.sizeDelta = new Vector2(width, 70f);
 
         _background = gameObject.GetComponent<Image>();
@@ -41,20 +41,23 @@ public class WeaponTooltipUI : MonoBehaviour
         _background.color = new Color(0f, 0f, 0f, 0.9f);
         _background.raycastTarget = false; // tooltip gak boleh nge-block klik
 
-        var vlg = gameObject.AddComponent<VerticalLayoutGroup>();
-        vlg.padding = new RectOffset((int)padding, (int)padding, (int)padding, (int)padding);
-        vlg.spacing = 4f;
-        vlg.childControlHeight = true;
-        vlg.childControlWidth = true;
-        vlg.childForceExpandHeight = false;
+        var hlg = gameObject.AddComponent<HorizontalLayoutGroup>();
+        hlg.padding = new RectOffset((int)padding, (int)padding, (int)padding, (int)padding);
+        hlg.spacing = 8f;
+        hlg.childControlWidth = true;
+        hlg.childControlHeight = true;
+        hlg.childForceExpandWidth = false;
+        hlg.childForceExpandHeight = false;
+        hlg.childAlignment = TextAnchor.MiddleLeft;
 
         var fitter = gameObject.AddComponent<ContentSizeFitter>();
+        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
         GameObject nameGO = new GameObject("NameText", typeof(RectTransform));
         nameGO.transform.SetParent(transform, false);
         _nameText = nameGO.AddComponent<TextMeshProUGUI>();
-        _nameText.fontSize = 18;
+        _nameText.fontSize = 28;
         _nameText.fontStyle = FontStyles.Bold;
         _nameText.color = Color.white;
         _nameText.raycastTarget = false;
@@ -62,7 +65,7 @@ public class WeaponTooltipUI : MonoBehaviour
         GameObject descGO = new GameObject("DescriptionText", typeof(RectTransform));
         descGO.transform.SetParent(transform, false);
         _descriptionText = descGO.AddComponent<TextMeshProUGUI>();
-        _descriptionText.fontSize = 14;
+        _descriptionText.fontSize = 22;
         _descriptionText.color = new Color(0.85f, 0.85f, 0.85f);
         _descriptionText.raycastTarget = false;
         _descriptionText.textWrappingMode = TextWrappingModes.Normal;
@@ -79,7 +82,7 @@ public class WeaponTooltipUI : MonoBehaviour
             : data.description;
 
         // Posisikan tooltip sedikit di atas slot yang di-hover.
-        _rect.position = anchorWorldPosition + new Vector3(0f, 55f, 0f);
+        _rect.position = anchorWorldPosition + new Vector3(-55f, 0f, 0f);
     }
 
     public void Hide()

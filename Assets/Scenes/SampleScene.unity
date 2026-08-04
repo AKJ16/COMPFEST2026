@@ -119,6 +119,62 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &18265717
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 18265719}
+  - component: {fileID: 18265718}
+  m_Layer: 0
+  m_Name: TestPlacer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &18265718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 18265717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e80fa2cb5a15048418898e2ef3731035, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TestPlacer
+  enemyToTest: {fileID: 1721978064}
+  stageNumberForTest: 0
+  allTestWeapons:
+  - {fileID: 11400000, guid: 5d79097466fa4fe4284dfd2cbaf1868a, type: 2}
+  - {fileID: 11400000, guid: 7bb0cb58b4bb8f146a6cf809fa2a880a, type: 2}
+  - {fileID: 11400000, guid: 21f4679b203b2c34bba7f553b5832f7e, type: 2}
+  - {fileID: 11400000, guid: 5b65aaa9fd233d14c96a59fbdae00164, type: 2}
+  - {fileID: 11400000, guid: 2cd330a07d69d4648b8f5ac88a8d9d44, type: 2}
+  - {fileID: 11400000, guid: ea09822ef08534c49ada93e35551fbd3, type: 2}
+  countPerWeapon: 5
+  weaponToPlace: {fileID: 11400000, guid: ea09822ef08534c49ada93e35551fbd3, type: 2}
+  gridPosition: {x: 0, y: 0}
+--- !u!4 &18265719
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 18265717}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.53437, y: 0.86531, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &81814839
 GameObject:
   m_ObjectHideFlags: 0
@@ -1714,7 +1770,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 3.1625, y: 14.306251, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1757,3 +1813,4 @@ SceneRoots:
   - {fileID: 1038412155}
   - {fileID: 1174645630}
   - {fileID: 908728022}
+  - {fileID: 18265719}
