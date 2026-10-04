@@ -1,221 +1,248 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using TMPro;
 
-// Handbook bergaya "Almanac" (PvZ-like): grid icon weapon di kiri (klik buat
-// pilih), detail + daftar combo di kanan. Weapon yang belum unlock di stage
-// sekarang tampil sebagai "?" dan gak bisa diklik buat lihat detail.
-public class HandbookUI : MonoBehaviour
+
+// L.I.G.M.A. Almanac: an open book on parchment with dark-brown serif ink.
+// Page 0 = intro spread. Pages 1..N = one weapon each:
+//   left  = icon, name, divider, category
+//   right = stat boxes, description, size/range diagrams, combos
+// Public API is unchanged: OpenPanel / ClosePanel / TogglePanel / NextPage / PreviousPage.
+//
+// Combos work as a discovery log. A combo shows as "??? + ???" until the game calls
+//   HandbookUI.ReportCombo(modifier, target, detail)
+// at the moment the modifier really affects the target. Discoveries are saved in
+// PlayerPrefs (one key per modifier+target pair) and read whenever a page renders.
+public partial class HandbookUI : MonoBehaviour
 {
     [Header("Data")]
-    [Tooltip("Drag SEMUA WeaponData di sini, urutan = urutan tampil di grid")]
+    [Tooltip("Drag ALL WeaponData here. With 'Sort By Default Order' on, the book orders them itself.")]
     [SerializeField] private WeaponData[] allWeapons;
-    [Tooltip("Drag Canvas (root) di sini. Jika kosong, otomatis mencari Canvas terdekat.")]
+    [Tooltip("Sword, Staff, Book Add, Book Multi, Poison Dagger, Hour Glass.")]
+    [SerializeField] private bool sortByDefaultOrder = true;
+    [Tooltip("Optional overrides for text, stat boxes and diagrams.")]
+    [SerializeField] private WeaponPageInfo[] pageTexts;
+    [Tooltip("Drag the root Canvas here. If empty, the nearest Canvas is used.")]
     [SerializeField] private Transform canvasParent;
 
-    [Header("Audio (Opsional)")]
+    [Header("Audio (Optional)")]
     [SerializeField] private AudioClip openSfx;
     [SerializeField] private AudioClip closeSfx;
+    [SerializeField] private AudioClip flipSfx;
 
-    [Header("Tombol Close (X)")]
-    [SerializeField] private Color closeButtonColor = new Color(0.5f, 0.15f, 0.15f);
-    [SerializeField] private float closeButtonFontSize = 34f;
-    [SerializeField] private Vector2 closeButtonSize = new Vector2(44f, 44f);
-    [SerializeField] private Vector2 closeButtonAnchoredPosition = new Vector2(-10f, -10f);
+    [Header("Book Look")]
+    [SerializeField] private Vector2 panelSize = new Vector2(1500f, 900f);
+    [Tooltip("Optional art for the whole book. If it already contains pages, set Page Color alpha to 0.")]
+    [SerializeField] private Sprite bookSprite;
+    [SerializeField] private Color coverColor = new Color(0.27f, 0.13f, 0.06f, 1f);
+    [SerializeField] private Color pageColor = new Color(0.90f, 0.85f, 0.70f, 1f);
+    [SerializeField] private Color spineColor = new Color(0.27f, 0.13f, 0.06f, 1f);
+    [SerializeField] private Color inkColor = new Color(0.29f, 0.14f, 0.06f, 1f);
+    [Tooltip("Divider lines, small headings and stat box borders.")]
+    [SerializeField] private Color accentColor = new Color(0.66f, 0.42f, 0.15f, 1f);
+    [SerializeField] private Color attackTagColor = new Color(0.60f, 0.15f, 0.15f, 1f);
+    [SerializeField] private Color modifierTagColor = new Color(0.20f, 0.25f, 0.55f, 1f);
 
-    [Header("Panel Utama")]
-    [SerializeField] private Vector2 panelSize = new Vector2(1700f, 900f);
-    [SerializeField] private Color panelBackgroundColor = new Color(0.09f, 0.07f, 0.05f, 0.97f);
+    [Header("Stat Boxes & Diagrams")]
+    [SerializeField] private Color chipColor = new Color(0.85f, 0.77f, 0.58f, 1f);
+    [SerializeField] private float chipValueFontSize = 46f;
+    [SerializeField] private float chipLabelFontSize = 18f;
+    [Tooltip("Colour of the item's own squares in the diagrams.")]
+    [SerializeField] private Color gridItemColor = new Color(0.40f, 0.22f, 0.10f, 1f);
+    [Tooltip("Colour of the squares the item affects (its range).")]
+    [SerializeField] private Color gridRangeColor = new Color(0.82f, 0.62f, 0.32f, 1f);
+    [SerializeField] private float diagramCellSize = 40f;
 
-    [Header("Grid Weapon (kiri)")]
-    [SerializeField] private Vector2 gridCellSize = new Vector2(160f, 160f);
-    [SerializeField] private Vector2 gridSpacing = new Vector2(20f, 20f);
-    [SerializeField] private int gridColumnCount = 2;
-    [SerializeField] private float slotFontSize = 48f;
-    [SerializeField] private Color attackWeaponColor = new Color(0.6f, 0.2f, 0.2f);
-    [SerializeField] private Color modifierWeaponColor = new Color(0.3f, 0.3f, 0.7f);
-    [SerializeField] private Color lockedSlotColor = new Color(0.2f, 0.2f, 0.2f);
+    [Header("Typography")]
+    [Tooltip("Bold serif for titles and weapon names.")]
+    [FormerlySerializedAs("headingFont")]
+    [SerializeField] private TMP_FontAsset titleFont;
+    [Tooltip("Serif for body text and subtitles. Empty = use Title Font.")]
+    [SerializeField] private TMP_FontAsset bodyFont;
+    [Tooltip("Easiest option: drag HandbookTitle.ttf here. If empty, loads Assets/Resources/HandbookTitle.")]
+    [SerializeField] private Font titleTtf;
+    [Tooltip("Easiest option: drag HandbookBody.ttf here. If empty, loads Assets/Resources/HandbookBody.")]
+    [SerializeField] private Font bodyTtf;
+    [SerializeField] private float nameFontSize = 76f;
+    [SerializeField] private float tagFontSize = 26f;
+    [Tooltip("Letter spacing of the small caps line under the divider.")]
+    [SerializeField] private float tagLetterSpacing = 10f;
+    [SerializeField] private float bodyFontSize = 32f;
+    [SerializeField] private float initialFontSize = 200f;
 
-    [Header("Panel Detail (kanan)")]
-    [SerializeField] private Color detailBackgroundColor = new Color(0.15f, 0.12f, 0.08f, 0.6f);
-    [SerializeField] private float detailTitleFontSize = 42f;
-    [SerializeField] private float detailBodyFontSize = 28f;
-    [SerializeField] private float detailSpacing = 12f;
-
-    [Header("Lore Organisasi (blurb default sebelum pilih weapon)")]
+    [Header("Intro Page")]
+    [Tooltip("Drag HandbookEmblem here. If empty, loads Assets/Resources/HandbookEmblem.")]
+    [SerializeField] private Sprite introEmblem;
+    [Tooltip("Size of the emblem inside its slot. Lower = smaller.")]
+    [Range(0.2f, 1f)]
+    [SerializeField] private float emblemScale = 0.75f;
+    [TextArea(1, 3)]
+    [SerializeField] private string introTitle = "L.I.G.M.A.\nAlmanac";
+    [SerializeField] private string introSubtitle = "Weapon Compendium";
     [TextArea(3, 6)]
     [SerializeField]
-    private string organizationBlurb =
+    private string introBlurb =
         "Published by L.I.G.M.A. (League of Interdimensional Grimoire & Magical Artifacts).\n\n" +
         "This tome was compiled to help adventurers identify weapons found within the ruins, " +
-        "along with their combination abilities. Select a weapon on the left to view its details.";
+        "along with their combination abilities. Turn the page to begin.";
 
+    [Header("Page Flip")]
+    [Tooltip("Total seconds for one page turn. 0 = instant.")]
+    [SerializeField] private float flipDuration = 0.3f;
+
+    [Header("Buttons")]
+    [Tooltip("Optional plank sprite for the < > buttons.")]
+    [SerializeField] private Sprite buttonSprite;
+    [SerializeField] private Color buttonColor = new Color(0.45f, 0.25f, 0.12f, 1f);
+    [SerializeField] private Color buttonTextColor = new Color(1f, 0.93f, 0.85f, 1f);
+    [SerializeField] private Color closeButtonColor = new Color(0.5f, 0.15f, 0.15f, 1f);
+    [SerializeField] private Vector2 navButtonSize = new Vector2(120f, 60f);
+    [SerializeField] private Vector2 closeButtonSize = new Vector2(48f, 48f);
+
+    [Header("Combo Discovery")]
+    [Tooltip("Show a small 'New combo discovered!' banner when a combo is triggered for the first time.")]
+    [SerializeField] private bool showDiscoveryToast = true;
+    [SerializeField] private float toastSeconds = 2.5f;
+    [Tooltip("Pause between two toasts when several combos are discovered at once.")]
+    [SerializeField] private float toastGapSeconds = 0.3f;
+    [Tooltip("Optional short names for combos. Anything left out uses the built-in name.")]
+    [SerializeField] private ComboNameInfo[] comboNames;
+    [SerializeField] private Vector2 toastSize = new Vector2(640f, 110f);
+    [SerializeField] private float toastFontSize = 32f;
+
+    [Header("Background Dim")]
+    [Tooltip("Full-screen overlay behind the book while it is open. Alpha = how dark.")]
+    [SerializeField] private Color dimColor = new Color(0f, 0f, 0f, 0.7f);
+    [Tooltip("Clicking the dark area outside the book closes it.")]
+    [SerializeField] private bool closeOnDimClick = true;
+
+    [Tooltip("Blur the game behind the book. Takes a screenshot, shrinks it and stretches it back up, so it works on any render pipeline with no shader.")]
+    [SerializeField] private bool blurBackground = true;
+    [Tooltip("How many times the screenshot is halved. Higher = blurrier.")]
+    [Range(1, 6)]
+    [SerializeField] private int blurAmount = 4;
+    [Tooltip("Pause the game (Time.timeScale = 0) while the book is open, and restore it on close.")]
+    [SerializeField] private bool freezeGameWhileOpen = true;
+    [Tooltip("Draw the book on its own full-screen canvas above everything, so no HUD canvas can cover the dim.")]
+    [SerializeField] private bool useOverlayCanvas = true;
+    [SerializeField] private int overlaySortingOrder = 5000;
+    [Tooltip("Shrink the book if it is bigger than the screen, so it never clips. It is never enlarged.")]
+    [SerializeField] private bool fitToScreen = true;
+    [Tooltip("How much of the screen the book may fill when it has to shrink.")]
+    [Range(0.5f, 1f)]
+    [SerializeField] private float screenFill = 0.94f;
+
+    // =========================================================
+    // STATE
+    // =========================================================
+
+    private GameObject _dimRoot;
     private GameObject _panelRoot;
-    private Transform _leftGridContainer;
-    private TextMeshProUGUI _detailTitle;
-    private TextMeshProUGUI _detailBody;
+    private RectTransform _leftPage;
+    private RectTransform _rightPage;
+    private Image _icon;
+    private TextMeshProUGUI _iconInitial;
+    private TextMeshProUGUI _nameLabel;
+    private TextMeshProUGUI _tagLabel;
+    private TextMeshProUGUI _descLabel;
+    private TextMeshProUGUI _combosLabel;
+    private RectTransform _statsRow;
+    private RectTransform _diagramArea;
+    private TextMeshProUGUI _pageNumberLabel;
+    private Button _prevButton;
+    private Button _nextButton;
+
+    private readonly List<WeaponData> _weapons = new List<WeaponData>();
+    private int _pageIndex;          // 0 = intro, 1..N = weapons
     private bool _isOpen;
+    private bool _isFlipping;
+    private Coroutine _flipRoutine;
+
+    // Toast banner for "New combo discovered!"
+    private GameObject _toastRoot;
+    private TextMeshProUGUI _toastLabel;
+    private Coroutine _toastRoutine;
+
+    // Lets the static ReportCombo reach the live book (to refresh it and show the toast).
+    private static HandbookUI s_instance;
+
+    private int TotalPages => _weapons.Count + 1;
+    private TMP_FontAsset SerifBody => bodyFont != null ? bodyFont : titleFont;
+
+    // =========================================================
+    // LIFECYCLE
+    // =========================================================
+
+    private void Awake()
+    {
+        s_instance = this;
+    }
 
     private void Start()
     {
         if (canvasParent == null)
         {
             var canvas = GetComponentInParent<Canvas>();
-            if (canvas != null) canvasParent = canvas.transform;
-            else canvasParent = transform;
+            canvasParent = canvas != null ? canvas.transform : transform;
         }
 
-        BuildPanel();
-        ShowDefaultBlurb();
+        PrepareFonts();
+        CreateUiRoot();      // own overlay canvas (see HandbookUI.Overlay.cs)
+        BuildBlurLayer();    // first child, so it sits under the dim and the book
+        BuildBook();
+        BuildToast();
+        RebuildWeaponList();
+        RenderPage();
         _panelRoot.SetActive(false);
+        _dimRoot.SetActive(false);
     }
 
-    private void BuildPanel()
+    private void OnDisable()
     {
-        var (root, rootRect, _) = CreateBox("HandbookPanel", canvasParent, panelBackgroundColor);
-        _panelRoot = root;
-        rootRect.anchorMin = rootRect.anchorMax = new Vector2(0.5f, 0.5f);
-        rootRect.pivot = new Vector2(0.5f, 0.5f);
-        rootRect.sizeDelta = panelSize;
-
-        // Close Button (X)
-        CreateAnchoredButton(_panelRoot.transform, "CloseButton", closeButtonColor, "X", closeButtonFontSize,
-            new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1),
-            closeButtonAnchoredPosition, closeButtonSize, ClosePanel);
-
-        // Left Grid Container
-        var (leftGO, leftRect, _) = CreateBox("LeftGrid", _panelRoot.transform, Color.clear);
-        _leftGridContainer = leftGO.transform;
-        leftRect.anchorMin = new Vector2(0f, 0f);
-        leftRect.anchorMax = new Vector2(0.42f, 1f);
-        leftRect.offsetMin = new Vector2(16f, 16f);
-        leftRect.offsetMax = new Vector2(-8f, -16f);
-
-        var grid = leftGO.AddComponent<GridLayoutGroup>();
-        grid.cellSize = gridCellSize;
-        grid.spacing = gridSpacing;
-        grid.childAlignment = TextAnchor.UpperCenter;
-        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = gridColumnCount;
-
-        RefreshGridSlots();
-
-        // Right Detail Container
-        var (rightGO, rightRect, _) = CreateBox("RightDetail", _panelRoot.transform, detailBackgroundColor);
-        rightRect.anchorMin = new Vector2(0.42f, 0f);
-        rightRect.anchorMax = new Vector2(1f, 1f);
-        rightRect.offsetMin = new Vector2(8f, 16f);
-        rightRect.offsetMax = new Vector2(-16f, -48f);
-
-        var vLayout = rightGO.AddComponent<VerticalLayoutGroup>();
-        vLayout.padding = new RectOffset(16, 16, 16, 16);
-        vLayout.spacing = detailSpacing;
-        vLayout.childAlignment = TextAnchor.UpperLeft;
-        vLayout.childControlHeight = true;
-        vLayout.childControlWidth = true;
-        vLayout.childForceExpandWidth = true;
-        vLayout.childForceExpandHeight = false;
-
-        _detailTitle = CreateLabel(rightGO.transform, "", detailTitleFontSize);
-        _detailTitle.fontStyle = FontStyles.Bold;
-
-        _detailBody = CreateLabel(rightGO.transform, "", detailBodyFontSize);
-        _detailBody.textWrappingMode = TextWrappingModes.Normal;
+        ResetToasts();
+        // The book lives on its own canvas, so hide it and un-freeze if this object is switched off.
+        if (_isOpen) CloseInternal();
+        else Unfreeze();
     }
 
-    private void RefreshGridSlots()
+    private void OnDestroy()
     {
-        if (_leftGridContainer == null) return;
-
-        // Destroy existing slots before rebuilding
-        foreach (Transform child in _leftGridContainer)
-        {
-            Destroy(child.gameObject);
-        }
-
-        foreach (var weapon in allWeapons)
-        {
-            if (weapon != null)
-                BuildWeaponSlot(_leftGridContainer, weapon);
-        }
-    }
-
-    private void BuildWeaponSlot(Transform parent, WeaponData weapon)
-    {
-        bool isUnlocked = StageManager.Instance == null ||
-                           weapon.unlockStage <= StageManager.Instance.CurrentStageNumber;
-
-        var bgColor = isUnlocked ? GetPlaceholderColor(weapon) : lockedSlotColor;
-        System.Action action = isUnlocked ? () => ShowWeaponDetail(weapon) : () => ShowLockedMessage();
-
-        var (slotGO, rect, bgImg) = CreateBox($"Slot_{weapon.weaponName}", parent, bgColor);
-
-        var button = slotGO.AddComponent<Button>();
-        button.targetGraphic = bgImg;
-        button.onClick.AddListener(() => action());
-
-        // Create Icon Image
-        var iconGO = new GameObject("Icon", typeof(RectTransform));
-        iconGO.transform.SetParent(slotGO.transform, false);
-
-        var iconRect = iconGO.GetComponent<RectTransform>();
-        iconRect.anchorMin = Vector2.zero;
-        iconRect.anchorMax = Vector2.one;
-        iconRect.offsetMin = new Vector2(8, 8);
-        iconRect.offsetMax = new Vector2(-8, -8);
-
-        var iconImg = iconGO.AddComponent<Image>();
-        iconImg.preserveAspect = true;
-
-        var label = CreateLabel(slotGO.transform, "", slotFontSize);
-        label.alignment = TextAlignmentOptions.Center;
-
-        if (isUnlocked)
-        {
-            if (weapon.icon != null)
-            {
-                iconImg.sprite = weapon.icon;
-                iconImg.color = Color.white;
-                label.text = "";
-            }
-            else
-            {
-                iconImg.enabled = false;
-                label.text = GetInitial(weapon.weaponName);
-            }
-        }
-        else
-        {
-            iconImg.enabled = false;
-            label.text = "?";
-            label.color = new Color(0.6f, 0.6f, 0.6f, 0.8f);
-        }
+        if (s_instance == this) s_instance = null;
+        ReleaseBackdrop();
+        Unfreeze();
+        if (_overlayCanvasGo != null) Destroy(_overlayCanvasGo);
     }
 
     // =========================================================
-    // PUBLIC CONTROLS (Hook to UI Button OnClick Events)
+    // PUBLIC CONTROLS (hook to UI Button OnClick events)
     // =========================================================
+
+    // True while the book is open. Game scripts that read input directly
+    // (Update / OnMouseDown) can check this and ignore input.
+    public static bool IsOpen => s_instance != null && s_instance._isOpen;
 
     public void OpenPanel()
     {
+        if (_isOpen) return;
         _isOpen = true;
-        if (_panelRoot != null) _panelRoot.SetActive(true);
+        Freeze();
 
-        RefreshGridSlots();
-        ShowDefaultBlurb();
-
-        if (AudioManager.Instance != null && openSfx != null)
-            AudioManager.Instance.PlaySFX(openSfx);
+        if (blurBackground && _blurImage != null && isActiveAndEnabled)
+            _openRoutine = StartCoroutine(OpenAfterCapture());   // needs the finished frame to screenshot
+        else
+            ShowBook();
     }
 
     public void ClosePanel()
     {
-        _isOpen = false;
-        if (_panelRoot != null) _panelRoot.SetActive(false);
-
-        if (AudioManager.Instance != null && closeSfx != null)
-            AudioManager.Instance.PlaySFX(closeSfx);
+        bool wasOpen = _isOpen;
+        CloseInternal();
+        if (wasOpen) PlaySfx(closeSfx);
     }
 
     public void TogglePanel()
@@ -224,114 +251,6 @@ public class HandbookUI : MonoBehaviour
         else OpenPanel();
     }
 
-    // =========================================================
-    // HELPERS
-    // =========================================================
-
-    private (GameObject go, RectTransform rect, Image img) CreateBox(string name, Transform parent, Color color)
-    {
-        var go = new GameObject(name, typeof(RectTransform));
-        go.transform.SetParent(parent, false);
-        var rect = go.GetComponent<RectTransform>();
-        var img = go.AddComponent<Image>();
-        img.color = color;
-        return (go, rect, img);
-    }
-
-    private void CreateAnchoredButton(Transform parent, string name, Color color, string label, float fontSize,
-        Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot, Vector2 anchoredPos, Vector2 size,
-        UnityEngine.Events.UnityAction onClick)
-    {
-        var (go, rect, img) = CreateBox(name, parent, color);
-        rect.anchorMin = anchorMin;
-        rect.anchorMax = anchorMax;
-        rect.pivot = pivot;
-        rect.anchoredPosition = anchoredPos;
-        rect.sizeDelta = size;
-
-        var button = go.AddComponent<Button>();
-        button.targetGraphic = img;
-        button.onClick.AddListener(onClick);
-
-        var lbl = CreateLabel(go.transform, label, fontSize);
-        lbl.alignment = TextAlignmentOptions.Center;
-    }
-
-    private TextMeshProUGUI CreateLabel(Transform parent, string text, float fontSize)
-    {
-        var go = new GameObject("Label", typeof(RectTransform));
-        go.transform.SetParent(parent, false);
-
-        var rect = go.GetComponent<RectTransform>();
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = Vector2.zero;
-        rect.offsetMax = Vector2.zero;
-
-        var tmp = go.AddComponent<TextMeshProUGUI>();
-        tmp.text = text;
-        tmp.fontSize = fontSize;
-        tmp.color = Color.white;
-
-        return tmp;
-    }
-
-    private string GetInitial(string weaponName) =>
-        string.IsNullOrEmpty(weaponName) ? "?" : weaponName.Substring(0, 1).ToUpper();
-
-    private Color GetPlaceholderColor(WeaponData weapon) =>
-        weapon.category == WeaponCategory.Attack ? attackWeaponColor : modifierWeaponColor;
-
-    private void ShowDefaultBlurb()
-    {
-        if (_detailTitle != null) _detailTitle.text = "L.I.G.M.A. Almanac";
-        if (_detailBody != null) _detailBody.text = organizationBlurb;
-    }
-
-    private void ShowLockedMessage()
-    {
-        if (_detailTitle != null) _detailTitle.text = "???";
-        if (_detailBody != null) _detailBody.text = "This weapon has not yet been discovered. Continue your adventure to unlock it.";
-    }
-
-    private void ShowWeaponDetail(WeaponData weapon)
-    {
-        if (_detailTitle != null) _detailTitle.text = weapon.weaponName;
-
-        var combos = GetCombosInvolving(weapon);
-        if (_detailBody != null)
-            _detailBody.text = combos.Count > 0 ? string.Join("\n", combos) : "No combos available for this weapon yet.";
-    }
-
-    private List<string> GetCombosInvolving(WeaponData selected)
-    {
-        var lines = new List<string>();
-
-        foreach (var other in allWeapons)
-        {
-            if (other == null || other.category != WeaponCategory.Modifier) continue;
-
-            if (other.modifierType == ModifierType.Repeat)
-            {
-                if (selected == other)
-                    lines.Add($"{other.weaponName} + Any adjacent Attack Weapon");
-                else if (selected.category == WeaponCategory.Attack)
-                    lines.Add($"{selected.weaponName} + {other.weaponName}");
-
-                continue;
-            }
-
-            if (other.targets == null) continue;
-
-            foreach (var target in other.targets)
-            {
-                if (target == null) continue;
-                if (other != selected && target != selected) continue;
-
-                lines.Add($"{other.weaponName} + {target.weaponName}");
-            }
-        }
-
-        return lines;
-    }
+    public void NextPage() => GoToPage(_pageIndex + 1);
+    public void PreviousPage() => GoToPage(_pageIndex - 1);
 }

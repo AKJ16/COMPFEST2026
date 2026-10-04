@@ -60,6 +60,9 @@ public class WeaponEffectsSystem : MonoBehaviour
         var adjacentModifiers = WeaponGridManager.Instance.GetNeighborsOf(attackInstance)
             .Where(n => n.Data.category == WeaponCategory.Modifier && n.Data.modifierType != ModifierType.Repeat);
 
+        // Books that really change this attack's damage (for the Handbook combo log).
+        var boostingBooks = new List<WeaponInstance>();
+
         foreach (var modifier in adjacentModifiers)
         {
             if (modifier.Data.targets != null && modifier.Data.targets.Contains(attackInstance.Data))
@@ -68,10 +71,14 @@ public class WeaponEffectsSystem : MonoBehaviour
                 {
                     case ModifierType.Multiplier:
                         multiplier *= modifier.Data.modifierValue;
+                        if (!Mathf.Approximately(modifier.Data.modifierValue, 1f))
+                            boostingBooks.Add(modifier);
                         break;
 
                     case ModifierType.Addition:
                         addition += modifier.Data.modifierValue;
+                        if (!Mathf.Approximately(modifier.Data.modifierValue, 0f))
+                            boostingBooks.Add(modifier);
                         break;
                 }
             }
@@ -87,9 +94,32 @@ public class WeaponEffectsSystem : MonoBehaviour
 
             if (attackInstance.Data.appliesPoison)
                 currentEnemy.ApplyPoison(attackInstance, attackInstance.Data.poisonDamagePerTick);
+
+            // The boosted hit just landed: log each book that took part as a discovered combo.
+            foreach (var book in boostingBooks)
+            {
+                HandbookUI.ReportCombo(book.Data, attackInstance.Data,
+                    BuildBookComboDetail(book.Data, attackInstance.Data, boostingBooks.Count, finalDamage));
+            }
         }
 
         PlayAttackFeedback(attackInstance.Data);
+    }
+
+    // Text saved in the Handbook the first time a book boosts a weapon, using this run's real numbers.
+    private static string BuildBookComboDetail(WeaponData book, WeaponData target, int bookCount, int finalDamage)
+    {
+        int baseDamage = target.baseDamage;
+        float v = book.modifierValue;
+
+        string detail = book.modifierType == ModifierType.Multiplier
+            ? $"{target.weaponName} damage went from {baseDamage} to {Mathf.RoundToInt(baseDamage * v)} (x{v:0.##})"
+            : $"{target.weaponName} damage went from {baseDamage} to {Mathf.RoundToInt(baseDamage + v)} (+{v:0.##})";
+
+        if (bookCount > 1)
+            detail += $". With every book in range the hit was {finalDamage}";
+
+        return detail + ".";
     }
 
     private void PlayAttackFeedback(WeaponData data)
@@ -121,8 +151,16 @@ public class WeaponEffectsSystem : MonoBehaviour
             {
                 currentEnemy.TakeDamage(neighbor.ResolvedDamage);
 
+                string detail = $"Replayed {neighbor.Data.weaponName}: {neighbor.ResolvedDamage} damage dealt again";
+
                 if (neighbor.Data.appliesPoison)
+                {
                     currentEnemy.ApplyPoison(neighbor, neighbor.Data.poisonDamagePerTick);
+                    detail += ", and its poison was applied again";
+                }
+
+                // The Hourglass replay really fired: log it as a discovered combo.
+                HandbookUI.ReportCombo(hourglassInstance.Data, neighbor.Data, detail + ".");
             }
 
             // Replay neighbor attack feedback
