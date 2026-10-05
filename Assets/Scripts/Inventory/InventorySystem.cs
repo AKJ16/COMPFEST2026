@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-// Tracks how many of each weapon the player owns and moves them onto the grid.
-// Begitu weapon berhasil ditaro: langsung di-resolve efeknya (attack instan / buff /
-// hourglass), lalu dicek apakah stage ini sudah berakhir (menang/kalah).
 public class InventorySystem : MonoBehaviour
 {
     public static InventorySystem Instance { get; private set; }
@@ -35,15 +32,11 @@ public class InventorySystem : MonoBehaviour
         return _counts.TryGetValue(data, out int c) ? c : 0;
     }
 
-    // Dipakai UI buat nampilin semua weapon yang pernah dimiliki (termasuk yang stoknya 0),
-    // supaya urutan tampilan konsisten meski stok habis lalu nambah lagi.
     public IReadOnlyDictionary<WeaponData, int> GetAllCounts()
     {
         return _counts;
     }
 
-    // True kalau masih ada minimal 1 weapon di inventory yang punya slot kosong di grid.
-    // Dipakai StageManager buat nentuin "masih bisa gerak atau enggak".
     public bool HasAnyValidMove()
     {
         foreach (var kvp in _counts)
@@ -54,15 +47,22 @@ public class InventorySystem : MonoBehaviour
         return false;
     }
 
-    // Moves one unit of the weapon from inventory onto the grid, resolves its effect
-    // immediately, then tells StageManager to check win/lose.
-    public WeaponInstance PlaceFromInventory(WeaponData data, Vector2Int origin)
+    /// <summary>
+    /// Places weapon from inventory onto the grid. Links visual object before triggering effects.
+    /// </summary>
+    public WeaponInstance PlaceFromInventory(WeaponData data, Vector2Int origin, DragDrop visual = null)
     {
         if (GetCount(data) <= 0) return null;
         if (StageManager.Instance.Result != StageResult.InProgress) return null;
 
         var instance = WeaponGridManager.Instance.TryPlace(data, origin);
         if (instance == null) return null;
+
+        // Link visual object so effects and Hourglass chain reactions can control it
+        if (visual != null)
+        {
+            instance.VisualObject = visual;
+        }
 
         _counts[data]--;
         OnCountChanged?.Invoke(data, _counts[data]);

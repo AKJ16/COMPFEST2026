@@ -67,7 +67,6 @@ public class StageManager : MonoBehaviour
     {
         Result = StageResult.InProgress;
 
-        // Play Gameplay BGM
         if (AudioManager.Instance != null && gameplayMusic != null)
         {
             AudioManager.Instance.PlayMusic(gameplayMusic);
@@ -145,6 +144,9 @@ public class StageManager : MonoBehaviour
     {
         if (Result != StageResult.InProgress) return;
 
+        // HARD LOCK: Cannot check or trigger Game Over while animations are busy!
+        if (WeaponEffectsSystem.IsBusy) return;
+
         if (_currentEnemy != null && _currentEnemy.State == EnemyState.Dead)
         {
             EndStage(StageResult.Win);
@@ -178,7 +180,6 @@ public class StageManager : MonoBehaviour
 
         if (result == StageResult.Win)
         {
-            // Play Stage Win SFX
             if (AudioManager.Instance != null && stageWinSfx != null)
             {
                 AudioManager.Instance.PlaySFX(stageWinSfx);
@@ -190,7 +191,7 @@ public class StageManager : MonoBehaviour
         {
             if (GameOverManager.Instance != null)
             {
-                GameOverManager.Instance.TriggerGameOver(1.0f);
+                GameOverManager.Instance.TriggerGameOver(0.60f);
             }
         }
     }

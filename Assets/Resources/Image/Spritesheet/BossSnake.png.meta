@@ -1,0 +1,1172 @@
+fileFormatVersion: 2
+guid: cdf8c14c653091c4a9a569367da08fa1
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -8074104563469043910
+    second: BossSnake_0
+  - first:
+      213: 8852693147154836189
+    second: BossSnake_1
+  - first:
+      213: 7504813530895943560
+    second: BossSnake_2
+  - first:
+      213: -5281548170359426603
+    second: BossSnake_3
+  - first:
+      213: 731815765215202560
+    second: BossSnake_4
+  - first:
+      213: -2792121852332786527
+    second: BossSnake_5
+  - first:
+      213: 8478025591824114048
+    second: BossSnake_6
+  - first:
+      213: 8116640246032002460
+    second: BossSnake_7
+  - first:
+      213: 4099986333718604562
+    second: BossSnake_8
+  - first:
+      213: 5260415914430887835
+    second: BossSnake_9
+  - first:
+      213: -5152485388742196499
+    second: BossSnake_10
+  - first:
+      213: -6033277391970769633
+    second: BossSnake_11
+  - first:
+      213: 907160967496602546
+    second: BossSnake_12
+  - first:
+      213: 8905194869475317640
+    second: BossSnake_13
+  - first:
+      213: 4514214252715847745
+    second: BossSnake_14
+  - first:
+      213: 4480299086116303178
+    second: BossSnake_15
+  - first:
+      213: -4864584081221200180
+    second: BossSnake_16
+  - first:
+      213: -2250500433255651123
+    second: BossSnake_17
+  - first:
+      213: 658537430732032865
+    second: BossSnake_18
+  - first:
+      213: 2378533887070743043
+    second: BossSnake_19
+  - first:
+      213: 2728974100155694074
+    second: BossSnake_20
+  - first:
+      213: 2729546110990111685
+    second: BossSnake_21
+  - first:
+      213: -7744378065351004900
+    second: BossSnake_22
+  - first:
+      213: 8129628906595219243
+    second: BossSnake_23
+  - first:
+      213: -1332637506773034482
+    second: BossSnake_24
+  - first:
+      213: 8211216855949714342
+    second: BossSnake_25
+  - first:
+      213: -3729225113186341190
+    second: BossSnake_26
+  - first:
+      213: 8610297798939202976
+    second: BossSnake_27
+  - first:
+      213: -588313584646086007
+    second: BossSnake_28
+  - first:
+      213: -1512433582804234686
+    second: BossSnake_29
+  - first:
+      213: 628055334847063832
+    second: BossSnake_30
+  - first:
+      213: 4093851364488308649
+    second: BossSnake_31
+  - first:
+      213: -2686520363300350322
+    second: BossSnake_32
+  - first:
+      213: 7746721150161080186
+    second: BossSnake_33
+  - first:
+      213: 2001726580176174812
+    second: BossSnake_34
+  - first:
+      213: 1260510217563735920
+    second: BossSnake_35
+  - first:
+      213: 1974239413041840503
+    second: BossSnake_36
+  - first:
+      213: -6970811331907799139
+    second: BossSnake_37
+  - first:
+      213: -1717545459613131101
+    second: BossSnake_38
+  - first:
+      213: 6008698352129483256
+    second: BossSnake_39
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 16384
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: BossSnake_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 4500
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a37311f8da403ff80800000000000000
+      internalID: -8074104563469043910
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_1
+      rect:
+        serializedVersion: 2
+        x: 1000
+        y: 4500
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ddae2b583851bda70800000000000000
+      internalID: 8852693147154836189
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_2
+      rect:
+        serializedVersion: 2
+        x: 2000
+        y: 4500
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8870996e424762860800000000000000
+      internalID: 7504813530895943560
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_3
+      rect:
+        serializedVersion: 2
+        x: 3000
+        y: 4500
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d1bc910ceb24b6b0800000000000000
+      internalID: -5281548170359426603
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_4
+      rect:
+        serializedVersion: 2
+        x: 4000
+        y: 4500
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 00dcea6af8ee72a00800000000000000
+      internalID: 731815765215202560
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_5
+      rect:
+        serializedVersion: 2
+        x: 5000
+        y: 4500
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1ac3916f7f36049d0800000000000000
+      internalID: -2792121852332786527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_6
+      rect:
+        serializedVersion: 2
+        x: 6000
+        y: 4500
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 081e8557b5ff7a570800000000000000
+      internalID: 8478025591824114048
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_7
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 3600
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c9d606acc4914a070800000000000000
+      internalID: 8116640246032002460
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_8
+      rect:
+        serializedVersion: 2
+        x: 1000
+        y: 3600
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 21be04d09d316e830800000000000000
+      internalID: 4099986333718604562
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_9
+      rect:
+        serializedVersion: 2
+        x: 2000
+        y: 3600
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b97f67e3760c00940800000000000000
+      internalID: 5260415914430887835
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_10
+      rect:
+        serializedVersion: 2
+        x: 3000
+        y: 3600
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: de281a586d1be78b0800000000000000
+      internalID: -5152485388742196499
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_11
+      rect:
+        serializedVersion: 2
+        x: 4000
+        y: 3600
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f15ef2c7d2e754ca0800000000000000
+      internalID: -6033277391970769633
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_12
+      rect:
+        serializedVersion: 2
+        x: 5000
+        y: 3600
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b31cb5f712e69c00800000000000000
+      internalID: 907160967496602546
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_13
+      rect:
+        serializedVersion: 2
+        x: 6000
+        y: 3600
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 88715b25d8b959b70800000000000000
+      internalID: 8905194869475317640
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_14
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 2700
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 140322d02f5b5ae30800000000000000
+      internalID: 4514214252715847745
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_15
+      rect:
+        serializedVersion: 2
+        x: 1000
+        y: 2700
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a41387bf7483d2e30800000000000000
+      internalID: 4480299086116303178
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_16
+      rect:
+        serializedVersion: 2
+        x: 2000
+        y: 2700
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cc65ac24d868d7cb0800000000000000
+      internalID: -4864584081221200180
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_17
+      rect:
+        serializedVersion: 2
+        x: 3000
+        y: 2700
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dc82fe497cd94c0e0800000000000000
+      internalID: -2250500433255651123
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_18
+      rect:
+        serializedVersion: 2
+        x: 4000
+        y: 2700
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 16bc41edd48932900800000000000000
+      internalID: 658537430732032865
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_19
+      rect:
+        serializedVersion: 2
+        x: 5000
+        y: 2700
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 30aa411e7ff320120800000000000000
+      internalID: 2378533887070743043
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_20
+      rect:
+        serializedVersion: 2
+        x: 6000
+        y: 2700
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: afb75014c734fd520800000000000000
+      internalID: 2728974100155694074
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_21
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1800
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c35d97e9bb41e520800000000000000
+      internalID: 2729546110990111685
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_22
+      rect:
+        serializedVersion: 2
+        x: 1000
+        y: 1800
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1d2d685e21768490800000000000000
+      internalID: -7744378065351004900
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_23
+      rect:
+        serializedVersion: 2
+        x: 2000
+        y: 1800
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b27fa5dfa6e32d070800000000000000
+      internalID: 8129628906595219243
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_24
+      rect:
+        serializedVersion: 2
+        x: 3000
+        y: 1800
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0a5e6a8f35818de0800000000000000
+      internalID: -1332637506773034482
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_25
+      rect:
+        serializedVersion: 2
+        x: 4000
+        y: 1800
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a32590c93a14f170800000000000000
+      internalID: 8211216855949714342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_26
+      rect:
+        serializedVersion: 2
+        x: 5000
+        y: 1800
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: abeef0194812f3cc0800000000000000
+      internalID: -3729225113186341190
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_27
+      rect:
+        serializedVersion: 2
+        x: 6000
+        y: 1800
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a559149a3ced7770800000000000000
+      internalID: 8610297798939202976
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_28
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 900
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 98222aa69e3e5d7f0800000000000000
+      internalID: -588313584646086007
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_29
+      rect:
+        serializedVersion: 2
+        x: 1000
+        y: 900
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24e059e6ba1c20be0800000000000000
+      internalID: -1512433582804234686
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_30
+      rect:
+        serializedVersion: 2
+        x: 2000
+        y: 900
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 81729dcdffc47b800800000000000000
+      internalID: 628055334847063832
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_31
+      rect:
+        serializedVersion: 2
+        x: 3000
+        y: 900
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a7e297302840d830800000000000000
+      internalID: 4093851364488308649
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_32
+      rect:
+        serializedVersion: 2
+        x: 4000
+        y: 900
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8611af96ff87bad0800000000000000
+      internalID: -2686520363300350322
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_33
+      rect:
+        serializedVersion: 2
+        x: 5000
+        y: 900
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a7f4b5997d1e18b60800000000000000
+      internalID: 7746721150161080186
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_34
+      rect:
+        serializedVersion: 2
+        x: 6000
+        y: 900
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cdebbd418bf87cb10800000000000000
+      internalID: 2001726580176174812
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_35
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8204a4517eb67f8458d46c4ab7f4028e
+      internalID: -1193574507
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_36
+      rect:
+        serializedVersion: 2
+        x: 1000
+        y: 0
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f2235fc23957bd442983d81290c37599
+      internalID: -89933645
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_37
+      rect:
+        serializedVersion: 2
+        x: 2000
+        y: 0
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9a8496192004d354c887fb7d56d1c135
+      internalID: -1874914274
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_38
+      rect:
+        serializedVersion: 2
+        x: 3000
+        y: 0
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 044f521e0d9d8d74f9cd074846191aa3
+      internalID: -667961497
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BossSnake_39
+      rect:
+        serializedVersion: 2
+        x: 4000
+        y: 0
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 255b42d817189f2448bd5f8fe0f6e7ec
+      internalID: -1128177071
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 74d7b78974b2e10418ba68cd95987092
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":1000.0,"y":900.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      BossSnake_0: -8074104563469043910
+      BossSnake_1: 8852693147154836189
+      BossSnake_10: -5152485388742196499
+      BossSnake_11: -6033277391970769633
+      BossSnake_12: 907160967496602546
+      BossSnake_13: 8905194869475317640
+      BossSnake_14: 4514214252715847745
+      BossSnake_15: 4480299086116303178
+      BossSnake_16: -4864584081221200180
+      BossSnake_17: -2250500433255651123
+      BossSnake_18: 658537430732032865
+      BossSnake_19: 2378533887070743043
+      BossSnake_2: 7504813530895943560
+      BossSnake_20: 2728974100155694074
+      BossSnake_21: 2729546110990111685
+      BossSnake_22: -7744378065351004900
+      BossSnake_23: 8129628906595219243
+      BossSnake_24: -1332637506773034482
+      BossSnake_25: 8211216855949714342
+      BossSnake_26: -3729225113186341190
+      BossSnake_27: 8610297798939202976
+      BossSnake_28: -588313584646086007
+      BossSnake_29: -1512433582804234686
+      BossSnake_3: -5281548170359426603
+      BossSnake_30: 628055334847063832
+      BossSnake_31: 4093851364488308649
+      BossSnake_32: -2686520363300350322
+      BossSnake_33: 7746721150161080186
+      BossSnake_34: 2001726580176174812
+      BossSnake_35: -1193574507
+      BossSnake_36: -89933645
+      BossSnake_37: -1874914274
+      BossSnake_38: -667961497
+      BossSnake_39: -1128177071
+      BossSnake_4: 731815765215202560
+      BossSnake_5: -2792121852332786527
+      BossSnake_6: 8478025591824114048
+      BossSnake_7: 8116640246032002460
+      BossSnake_8: 4099986333718604562
+      BossSnake_9: 5260415914430887835
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

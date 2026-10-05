@@ -34,11 +34,21 @@ public class TimerManager : MonoBehaviour
     {
         if (!isRunning) return;
 
+        // 1. Time continues counting down normally (does NOT freeze during animations)
         timeRemaining -= Time.deltaTime;
 
+        // 2. When time runs out:
         if (timeRemaining <= 0f)
         {
             timeRemaining = 0f;
+
+            // If an attack or chain reaction is still resolving, hold off on Game Over!
+            if (WeaponEffectsSystem.IsBusy)
+            {
+                return;
+            }
+
+            // Only trigger Game Over once all active animations are complete
             isRunning = false;
             Debug.Log("Time's Up!");
             onTimeUp?.Invoke();

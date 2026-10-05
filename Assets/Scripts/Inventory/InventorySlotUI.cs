@@ -94,7 +94,6 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
     {
         int addedAmount = count - CurrentCount;
 
-        // RULE: No popups on Stage 1! Only trigger popups on Stage 2+ for active slots
         bool isNotStage1 = StageManager.Instance != null && StageManager.Instance.CurrentStageNumber > 1;
 
         if (addedAmount > 0 && Data != null && gameObject.activeInHierarchy && isNotStage1)
@@ -119,7 +118,6 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
 
     private void ShowRewardPopUp(int amount)
     {
-        // Force Canvas to recalculate layout so new slot positions are accurate
         Canvas.ForceUpdateCanvases();
 
         GameObject popUpGO = new GameObject($"+{amount}_PopUp", typeof(RectTransform));
@@ -161,6 +159,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
 
         var sr = dragGO.AddComponent<SpriteRenderer>();
         sr.sprite = Data.icon;
+        sr.sortingOrder = 100; // Render above UI Canvas
 
         var col = dragGO.AddComponent<BoxCollider2D>();
         col.size = new Vector2(Data.Width, Data.Height);

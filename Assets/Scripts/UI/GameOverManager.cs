@@ -47,9 +47,14 @@ public class GameOverManager : MonoBehaviour
 
     private IEnumerator GameOverSequence(float initialDelay)
     {
+        // HARD LOCK: Wait until ALL animations & Hourglass chains are 100% finished!
+        while (WeaponEffectsSystem.IsBusy)
+        {
+            yield return null;
+        }
+
         yield return new WaitForSecondsRealtime(initialDelay);
 
-        // Play Game Over Lose SFX
         if (AudioManager.Instance != null && gameOverSfx != null)
         {
             AudioManager.Instance.PlaySFX(gameOverSfx);

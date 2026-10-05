@@ -416,6 +416,7 @@ GameObject:
   - component: {fileID: 137606166}
   - component: {fileID: 137606165}
   - component: {fileID: 137606164}
+  - component: {fileID: 137606167}
   m_Layer: 5
   m_Name: Pause Button
   m_TagString: Untagged
@@ -498,18 +499,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 2145096789}
-        m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
-        m_MethodName: PlayButtonClick
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!114 &137606165
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -548,6 +537,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 137606162}
   m_CullTransparentMesh: 1
+--- !u!114 &137606167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 137606162}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59452390ad356ee40bcd13b75c86dec4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonSound
+  customClickSfx: {fileID: 0}
 --- !u!1 &178339283
 GameObject:
   m_ObjectHideFlags: 0
@@ -695,7 +697,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1175491101805145740, guid: c4e4d228e725ece42b65332b053b9798, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1175491101805145740, guid: c4e4d228e725ece42b65332b053b9798, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -1466,6 +1468,7 @@ MonoBehaviour:
   mainPanelCanvasGroup: {fileID: 452665041}
   dimDuration: 1
   panelFadeDuration: 0.5
+  duckBGMOnShow: 1
 --- !u!225 &452665041
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -1629,6 +1632,7 @@ MonoBehaviour:
   mainPanelCanvasGroup: {fileID: 485416488}
   dimDuration: 0.3
   panelFadeDuration: 0.2
+  duckBGMOnShow: 1
 --- !u!225 &485416488
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -2438,7 +2442,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1175491101805145740, guid: c4e4d228e725ece42b65332b053b9798, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1175491101805145740, guid: c4e4d228e725ece42b65332b053b9798, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -3373,7 +3377,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1175491101805145740, guid: c4e4d228e725ece42b65332b053b9798, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1175491101805145740, guid: c4e4d228e725ece42b65332b053b9798, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -3690,7 +3694,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1175491101805145740, guid: c4e4d228e725ece42b65332b053b9798, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1175491101805145740, guid: c4e4d228e725ece42b65332b053b9798, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -4005,7 +4009,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1175491101805145740, guid: c4e4d228e725ece42b65332b053b9798, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1175491101805145740, guid: c4e4d228e725ece42b65332b053b9798, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -4370,7 +4374,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1175491101805145740, guid: c4e4d228e725ece42b65332b053b9798, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1175491101805145740, guid: c4e4d228e725ece42b65332b053b9798, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -4617,7 +4621,6 @@ Transform:
   m_Children:
   - {fileID: 135474904}
   - {fileID: 1328871383}
-  - {fileID: 2145096790}
   - {fileID: 1850498363}
   - {fileID: 1730563473}
   - {fileID: 1871075248}
@@ -5375,6 +5378,7 @@ MonoBehaviour:
   mainPanelCanvasGroup: {fileID: 1661140337}
   dimDuration: 1
   panelFadeDuration: 0.5
+  duckBGMOnShow: 1
 --- !u!225 &1661140337
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -5683,6 +5687,7 @@ GameObject:
   - component: {fileID: 1730563475}
   - component: {fileID: 1730563474}
   - component: {fileID: 1730563477}
+  - component: {fileID: 1730563478}
   m_Layer: 0
   m_Name: Enemy_Stage2
   m_TagString: Untagged
@@ -5700,7 +5705,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 1.93, z: 0}
-  m_LocalScale: {x: 0.65, y: 0.65, z: 0.65}
+  m_LocalScale: {x: 0.73, y: 0.73, z: 0.73}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1429271082}
@@ -5727,6 +5732,7 @@ MonoBehaviour:
   hurtSfx: {fileID: 8300000, guid: 2320a3cd3dbb9524f9d803ea2407ab3d, type: 3}
   poisonSfx: {fileID: 8300000, guid: 06d4a9bb46be1db42859175361008951, type: 3}
   deathSfx: {fileID: 8300000, guid: ebfca4efc92eae643b591dd65e3b03f3, type: 3}
+  playerHitSfx: {fileID: 8300000, guid: 290bfee1cab7e684dbc6fcabca3d8165, type: 3}
 --- !u!212 &1730563475
 SpriteRenderer:
   serializedVersion: 3
@@ -5776,7 +5782,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2348606713834027065, guid: 4afa8316659b85441ac9174fe232bffc, type: 3}
+  m_Sprite: {fileID: -2348606713834027065, guid: fa2710b6c30c0dd4a889d9bdd8c676ac, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -5784,7 +5790,7 @@ SpriteRenderer:
   m_Size: {x: 0.2, y: 0.2}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
 --- !u!114 &1730563476
@@ -5815,11 +5821,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIFloat
   moveSpeed: 2
-  verticalDistance: 0.1
+  verticalDistance: 0
   infinityPath: 0
   horizontalDistance: 0.1
   pulseAlpha: 0
   minAlpha: 0.5
+--- !u!95 &1730563478
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730563472}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: d61e161b2464be94f94509e5d0e1946a, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1800595165
 GameObject:
   m_ObjectHideFlags: 0
@@ -6000,6 +6028,7 @@ GameObject:
   - component: {fileID: 1850498365}
   - component: {fileID: 1850498364}
   - component: {fileID: 1850498367}
+  - component: {fileID: 1850498368}
   m_Layer: 0
   m_Name: Enemy_Stage1
   m_TagString: Untagged
@@ -6016,8 +6045,8 @@ Transform:
   m_GameObject: {fileID: 1850498362}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.86, z: 0}
-  m_LocalScale: {x: 0.9, y: 0.9, z: 0.9}
+  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1429271082}
@@ -6044,6 +6073,7 @@ MonoBehaviour:
   hurtSfx: {fileID: 8300000, guid: 2320a3cd3dbb9524f9d803ea2407ab3d, type: 3}
   poisonSfx: {fileID: 8300000, guid: 06d4a9bb46be1db42859175361008951, type: 3}
   deathSfx: {fileID: 8300000, guid: ebfca4efc92eae643b591dd65e3b03f3, type: 3}
+  playerHitSfx: {fileID: 8300000, guid: 290bfee1cab7e684dbc6fcabca3d8165, type: 3}
 --- !u!212 &1850498365
 SpriteRenderer:
   serializedVersion: 3
@@ -6093,7 +6123,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 3772233164332861457, guid: 7ba718f2000b2ef4db4f907045692bea, type: 3}
+  m_Sprite: {fileID: 3772233164332861457, guid: 35436dec1c7d24548ba65fe46a93b2b4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -6132,11 +6162,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIFloat
   moveSpeed: 2
-  verticalDistance: 0.1
+  verticalDistance: 0
   infinityPath: 0
   horizontalDistance: 0.1
   pulseAlpha: 0
   minAlpha: 0.5
+--- !u!95 &1850498368
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1850498362}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: afbb9ea39857bbb4582da2675b804769, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!224 &1855330871 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8842948348711176580, guid: c4e4d228e725ece42b65332b053b9798, type: 3}
@@ -6284,6 +6336,7 @@ GameObject:
   - component: {fileID: 1871075250}
   - component: {fileID: 1871075249}
   - component: {fileID: 1871075252}
+  - component: {fileID: 1871075253}
   m_Layer: 0
   m_Name: Enemy_Stage3
   m_TagString: Untagged
@@ -6300,8 +6353,8 @@ Transform:
   m_GameObject: {fileID: 1871075247}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.01, z: 0}
-  m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
+  m_LocalPosition: {x: -0.1, y: 2.01, z: 0}
+  m_LocalScale: {x: 0.63, y: 0.63, z: 0.63}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1429271082}
@@ -6328,6 +6381,7 @@ MonoBehaviour:
   hurtSfx: {fileID: 8300000, guid: f4d437d972c2f514c8505d444df0e8f4, type: 3}
   poisonSfx: {fileID: 8300000, guid: 06d4a9bb46be1db42859175361008951, type: 3}
   deathSfx: {fileID: 8300000, guid: 3e1bc8818ea08d34dbe24915765cdb47, type: 3}
+  playerHitSfx: {fileID: 8300000, guid: 290bfee1cab7e684dbc6fcabca3d8165, type: 3}
 --- !u!212 &1871075250
 SpriteRenderer:
   serializedVersion: 3
@@ -6377,7 +6431,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -8074104563469043910, guid: f25e180fed6b6d547a4464cbbe967cb6, type: 3}
+  m_Sprite: {fileID: -8074104563469043910, guid: cdf8c14c653091c4a9a569367da08fa1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -6418,9 +6472,31 @@ MonoBehaviour:
   moveSpeed: 2
   verticalDistance: 0.1
   infinityPath: 1
-  horizontalDistance: 0.3
+  horizontalDistance: 0.2
   pulseAlpha: 0
   minAlpha: 0.5
+--- !u!95 &1871075253
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1871075247}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: bb9dd65d5977f7d47bb11b5604be299e, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1872627105
 GameObject:
   m_ObjectHideFlags: 0
@@ -6505,7 +6581,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -658, y: 0}
+  m_AnchoredPosition: {x: -657.99994, y: 0}
   m_SizeDelta: {x: -1553.356, y: -128.1263}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1983957459
@@ -6784,9 +6860,9 @@ Canvas:
   m_GameObject: {fileID: 2022585131}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
+  m_RenderMode: 1
+  m_Camera: {fileID: 519420031}
+  m_PlaneDistance: 10
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
@@ -6809,7 +6885,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1175491101805145740, guid: c4e4d228e725ece42b65332b053b9798, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1175491101805145740, guid: c4e4d228e725ece42b65332b053b9798, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -7294,6 +7370,7 @@ MonoBehaviour:
   buttonClickSfx: {fileID: 8300000, guid: 77d659f3e2589da46a8d88a1d3eef1f1, type: 3}
   defaultMusicVolume: 0.7
   defaultSfxVolume: 1
+  duckedVolumeMultiplier: 0.3
 --- !u!4 &2145096790
 Transform:
   m_ObjectHideFlags: 0
@@ -7308,7 +7385,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1863488414}
-  m_Father: {fileID: 1429271082}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2145096791
 MonoBehaviour:
@@ -7331,3 +7408,4 @@ SceneRoots:
   - {fileID: 761278829}
   - {fileID: 1429271082}
   - {fileID: 436446007}
+  - {fileID: 2145096790}

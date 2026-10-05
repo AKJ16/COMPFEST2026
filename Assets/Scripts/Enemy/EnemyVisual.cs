@@ -7,7 +7,7 @@ public class EnemyVisual : MonoBehaviour
     [Header("Hit / Hurt Juice")]
     [SerializeField] private float hurtBounceHeight = 0.35f;
     [SerializeField] private float hurtDuration = 0.25f;
-    [SerializeField] private Color poisonColor = new Color(0.2f, 0.85f, 0.3f); // Toxic Greenish Hue
+    [SerializeField] private Color poisonColor = new Color(0.2f, 0.85f, 0.3f);
 
     [Header("Timer Out Juice")]
     [SerializeField] private float timeUpDropDistance = 0.4f;
@@ -20,14 +20,15 @@ public class EnemyVisual : MonoBehaviour
     [Header("Audio SFX (Opsional)")]
     [SerializeField] private AudioClip hurtSfx;
     [SerializeField] private AudioClip poisonSfx;
-    [SerializeField] private AudioClip deathSfx; // Added Death SFX
+    [SerializeField] private AudioClip deathSfx;
+    [Tooltip("Sound played when the enemy lunges down and hits the player upon losing.")]
+    [SerializeField] private AudioClip playerHitSfx; // Hit sound when player is attacked on loss
 
     private SpriteRenderer _spriteRenderer;
     private EnemyHealth _health;
     private Vector3 _originalPos;
     private Coroutine _currentAnimRoutine;
 
-    // Turn frame damage collectors
     private bool _gotPoisonDamageThisFrame = false;
     private bool _gotNormalDamageThisFrame = false;
     private Coroutine _damageFrameRoutine = null;
@@ -73,8 +74,10 @@ public class EnemyVisual : MonoBehaviour
 
     private void HandleDamagedDetail(int damageAmount, bool isPoison)
     {
-        if (isPoison) _gotPoisonDamageThisFrame = true;
-        else _gotNormalDamageThisFrame = true;
+        if (isPoison)
+            _gotPoisonDamageThisFrame = true;
+        else
+            _gotNormalDamageThisFrame = true;
 
         if (_damageFrameRoutine == null)
         {
@@ -94,21 +97,18 @@ public class EnemyVisual : MonoBehaviour
 
             if (_gotPoisonDamageThisFrame && _gotNormalDamageThisFrame)
             {
-                // BOTH: Poison Hue + Bounce + HURT AUDIO
                 flashColor = poisonColor;
                 shouldBounce = true;
                 sfxToPlay = hurtSfx;
             }
             else if (_gotPoisonDamageThisFrame)
             {
-                // POISON ONLY: Poison Hue + NO Bounce + POISON AUDIO
                 flashColor = poisonColor;
                 shouldBounce = false;
                 sfxToPlay = poisonSfx;
             }
             else
             {
-                // NORMAL DAMAGE ONLY: Red + Bounce + HURT AUDIO
                 flashColor = Color.red;
                 shouldBounce = true;
                 sfxToPlay = hurtSfx;
@@ -139,16 +139,29 @@ public class EnemyVisual : MonoBehaviour
     {
         if (_health != null && _health.State != EnemyState.Dead)
         {
-            StartCoroutine(DelayedBounceDownSequence(0.15f));
+            StartCoroutine(WaitAndBounceDown(0.15f));
         }
     }
 
     private void HandleStageEnded(StageResult result)
     {
-        if (result == StageResult.Lose && _health != null && _health.State != EnemyState.Dead)
+        if (result == StageResult.Lose &&
+            _health != null &&
+            _health.State != EnemyState.Dead)
         {
-            StartCoroutine(DelayedBounceDownSequence(0.6f));
+            StartCoroutine(WaitAndBounceDown(0.25f));
         }
+    }
+
+    private IEnumerator WaitAndBounceDown(float delay)
+    {
+        // Wait until all weapon effects and chains finish
+        while (WeaponEffectsSystem.IsBusy)
+        {
+            yield return null;
+        }
+
+        yield return StartCoroutine(DelayedBounceDownSequence(delay));
     }
 
     private void PlayRoutine(IEnumerator routine)
@@ -172,11 +185,15 @@ public class EnemyVisual : MonoBehaviour
             if (shouldBounce)
             {
                 float yOffset = Mathf.Sin(t * Mathf.PI) * hurtBounceHeight;
-                transform.localPosition = _originalPos + new Vector3(transform.localPosition.x, yOffset, transform.localPosition.z);
+
+                transform.localPosition = new Vector3(
+                    transform.localPosition.x,
+                    _originalPos.y + yOffset,
+                    transform.localPosition.z
+                );
             }
 
             _spriteRenderer.color = Color.Lerp(flashColor, Color.white, t);
-
             yield return null;
         }
 
@@ -199,23 +216,37 @@ public class EnemyVisual : MonoBehaviour
         float elapsed = 0f;
         _spriteRenderer.color = Color.white;
 
+        // Play the player hit SFX as the boss lunges down!
+        if (playerHitSfx != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX(playerHitSfx);
+        }
+
         while (elapsed < timeUpDuration)
         {
             elapsed += Time.unscaledDeltaTime;
             float t = elapsed / timeUpDuration;
 
             float yOffset = -Mathf.Sin(t * Mathf.PI) * timeUpDropDistance;
-            transform.localPosition = _originalPos + new Vector3(transform.localPosition.x, yOffset, transform.localPosition.z);
+
+            transform.localPosition = new Vector3(
+                transform.localPosition.x,
+                _originalPos.y + yOffset,
+                transform.localPosition.z
+            );
 
             yield return null;
         }
 
-        transform.localPosition = _originalPos + new Vector3(0f, -timeUpDropDistance * 0.4f, 0f);
+        transform.localPosition = _originalPos + new Vector3(
+            0f,
+            -timeUpDropDistance * 0.4f,
+            0f
+        );
     }
 
     private IEnumerator DeathRoutine()
     {
-        // Play death SFX on defeat
         if (deathSfx != null && AudioManager.Instance != null)
         {
             AudioManager.Instance.PlaySFX(deathSfx);
@@ -229,7 +260,12 @@ public class EnemyVisual : MonoBehaviour
             float t = elapsed / deathDuration;
 
             float yOffset = Mathf.Sin(t * Mathf.PI) * deathBounceHeight;
-            transform.localPosition = _originalPos + new Vector3(transform.localPosition.x, yOffset, transform.localPosition.z);
+
+            transform.localPosition = new Vector3(
+                transform.localPosition.x,
+                _originalPos.y + yOffset,
+                transform.localPosition.z
+            );
 
             float alpha = Mathf.Lerp(1f, 0f, t);
             _spriteRenderer.color = new Color(1f, 0f, 0f, alpha);

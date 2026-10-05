@@ -16,8 +16,14 @@ public class AudioManager : MonoBehaviour
     [Range(0f, 1f)][SerializeField] private float defaultMusicVolume = 0.7f;
     [Range(0f, 1f)][SerializeField] private float defaultSfxVolume = 1f;
 
+    [Header("Music Ducking (Menu / Win / Lose)")]
+    [Tooltip("Volume multiplier when a menu panel is open (0.3 = 30% of normal music volume)")]
+    [Range(0f, 1f)][SerializeField] private float duckedVolumeMultiplier = 0.3f;
+
     private readonly Queue<AudioSource> _sfxPool = new Queue<AudioSource>();
     private Coroutine _musicFadeRoutine;
+    private Coroutine _duckRoutine;
+    private bool _isDucked = false;
 
     public float MusicVolume { get; private set; }
     public float SFXVolume { get; private set; }
@@ -27,14 +33,17 @@ public class AudioManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
         {
             Destroy(gameObject);
             return;
         }
-        Instance = this;
 
-        // Load saved volumes or use defaults
         MusicVolume = PlayerPrefs.GetFloat(MUSIC_KEY, defaultMusicVolume);
         SFXVolume = PlayerPrefs.GetFloat(SFX_KEY, defaultSfxVolume);
 
@@ -68,42 +77,83 @@ public class AudioManager : MonoBehaviour
 
     private void ApplyMusicVolume()
     {
-        if (musicSource != null && _musicFadeRoutine == null)
+        if (musicSource != null && _musicFadeRoutine == null && _duckRoutine == null)
         {
-            musicSource.volume = MusicVolume;
+            musicSource.volume = _isDucked ? MusicVolume * duckedVolumeMultiplier : MusicVolume;
         }
+    }
+
+    #endregion
+
+    #region Music Ducking (Menu / Win / Lose)
+
+    /// <summary>
+    /// Smoothly lowers the music volume (called when Pause, Game Over, Win, or Handbook opens).
+    /// </summary>
+    public void DuckMusic(float duration = 0.3f)
+    {
+        _isDucked = true;
+        if (_duckRoutine != null) StopCoroutine(_duckRoutine);
+        _duckRoutine = StartCoroutine(DuckMusicRoutine(MusicVolume * duckedVolumeMultiplier, duration));
+    }
+
+    /// <summary>
+    /// Smoothly restores the music volume back to 100%.
+    /// </summary>
+    public void UnduckMusic(float duration = 0.3f)
+    {
+        _isDucked = false;
+        if (_duckRoutine != null) StopCoroutine(_duckRoutine);
+        _duckRoutine = StartCoroutine(DuckMusicRoutine(MusicVolume, duration));
+    }
+
+    private IEnumerator DuckMusicRoutine(float targetVolume, float duration)
+    {
+        if (musicSource == null) yield break;
+
+        float startVol = musicSource.volume;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            musicSource.volume = Mathf.Lerp(startVol, targetVolume, elapsed / duration);
+            yield return null;
+        }
+
+        musicSource.volume = targetVolume;
+        _duckRoutine = null;
     }
 
     #endregion
 
     #region Music Playback & Crossfading
 
-    /// <summary>
-    /// Fades out the current track and fades in the new track over the fadeDuration.
-    /// </summary>
     public void PlayMusic(AudioClip clip, bool loop = true, float fadeDuration = 0.8f)
     {
         if (clip == null || musicSource == null) return;
 
-        // If the same music is already playing, keep it playing seamlessly
         if (musicSource.clip == clip && musicSource.isPlaying)
         {
             musicSource.loop = loop;
             return;
         }
 
+        _isDucked = false;
         if (_musicFadeRoutine != null) StopCoroutine(_musicFadeRoutine);
         _musicFadeRoutine = StartCoroutine(CrossfadeMusicRoutine(clip, loop, fadeDuration));
     }
 
     public void FadeOutMusic(float duration = 0.5f)
     {
+        _isDucked = false;
         if (_musicFadeRoutine != null) StopCoroutine(_musicFadeRoutine);
         _musicFadeRoutine = StartCoroutine(FadeOutMusicRoutine(duration));
     }
 
     public void StopMusic()
     {
+        _isDucked = false;
         if (_musicFadeRoutine != null) StopCoroutine(_musicFadeRoutine);
         if (musicSource != null) musicSource.Stop();
     }
@@ -112,7 +162,6 @@ public class AudioManager : MonoBehaviour
     {
         float halfDuration = duration / 2f;
 
-        // 1. Fade out current music track
         if (musicSource.isPlaying && musicSource.volume > 0f && halfDuration > 0f)
         {
             float startVol = musicSource.volume;
@@ -126,12 +175,10 @@ public class AudioManager : MonoBehaviour
             }
         }
 
-        // 2. Swap music track
         musicSource.clip = newClip;
         musicSource.loop = loop;
         musicSource.Play();
 
-        // 3. Fade in new track up to saved MusicVolume
         if (halfDuration > 0f)
         {
             float elapsed = 0f;
@@ -179,7 +226,7 @@ public class AudioManager : MonoBehaviour
 
         var src = _sfxPool.Dequeue();
         src.clip = clip;
-        src.volume = volume * SFXVolume; // Scaled by SFX Volume setting
+        src.volume = volume * SFXVolume;
         src.Play();
         _sfxPool.Enqueue(src);
     }

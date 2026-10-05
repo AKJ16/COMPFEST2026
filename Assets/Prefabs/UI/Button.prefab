@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2967212176027246484}
   - component: {fileID: 8387221736298876954}
   - component: {fileID: 1175491101805145740}
+  - component: {fileID: 5608019261656286241}
   m_Layer: 5
   m_Name: Button
   m_TagString: Untagged
@@ -120,3 +121,16 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5608019261656286241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2723290945770804612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59452390ad356ee40bcd13b75c86dec4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonSound
+  customClickSfx: {fileID: 8300000, guid: 352c2be144d9a4243911d9dc7f24983e, type: 3}

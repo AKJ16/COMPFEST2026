@@ -1,0 +1,1172 @@
+fileFormatVersion: 2
+guid: 9d01a001e0f171642ac290c43c9b3cf9
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -214718152009793607
+    second: SpikyMonster 1_0
+  - first:
+      213: -2982778968498210459
+    second: SpikyMonster 1_1
+  - first:
+      213: -8578305701101575908
+    second: SpikyMonster 1_2
+  - first:
+      213: 2069946414437862668
+    second: SpikyMonster 1_3
+  - first:
+      213: -7233201361660714078
+    second: SpikyMonster 1_4
+  - first:
+      213: -4414813633199428323
+    second: SpikyMonster 1_5
+  - first:
+      213: -9017555925773529329
+    second: SpikyMonster 1_6
+  - first:
+      213: 167396328176622724
+    second: SpikyMonster 1_7
+  - first:
+      213: -7237174888920257199
+    second: SpikyMonster 1_8
+  - first:
+      213: 3171205096357112965
+    second: SpikyMonster 1_9
+  - first:
+      213: 1408753724299658382
+    second: SpikyMonster 1_10
+  - first:
+      213: 4109249880957038433
+    second: SpikyMonster 1_11
+  - first:
+      213: 605943164943409783
+    second: SpikyMonster 1_12
+  - first:
+      213: 6461159845687369065
+    second: SpikyMonster 1_13
+  - first:
+      213: -6100956832951191971
+    second: SpikyMonster 1_14
+  - first:
+      213: -6495493161247336320
+    second: SpikyMonster 1_15
+  - first:
+      213: -6838320464691640432
+    second: SpikyMonster 1_16
+  - first:
+      213: 6853530577217183433
+    second: SpikyMonster 1_17
+  - first:
+      213: -5089404632477612656
+    second: SpikyMonster 1_18
+  - first:
+      213: -8703630961532162107
+    second: SpikyMonster 1_19
+  - first:
+      213: -2309821415926677379
+    second: SpikyMonster 1_20
+  - first:
+      213: -3958824081590567925
+    second: SpikyMonster 1_21
+  - first:
+      213: -7836423049877490871
+    second: SpikyMonster 1_22
+  - first:
+      213: 5170001810126307919
+    second: SpikyMonster 1_23
+  - first:
+      213: -6890156613263784045
+    second: SpikyMonster 1_24
+  - first:
+      213: -8397432697235209573
+    second: SpikyMonster 1_25
+  - first:
+      213: 7660629215948153744
+    second: SpikyMonster 1_26
+  - first:
+      213: -1249079616677907751
+    second: SpikyMonster 1_27
+  - first:
+      213: -7077695788193873609
+    second: SpikyMonster 1_28
+  - first:
+      213: -3652622429475125926
+    second: SpikyMonster 1_29
+  - first:
+      213: -4263522698428216379
+    second: SpikyMonster 1_30
+  - first:
+      213: -6583460392572441523
+    second: SpikyMonster 1_31
+  - first:
+      213: 256257283160202777
+    second: SpikyMonster 1_32
+  - first:
+      213: -168353815348569904
+    second: SpikyMonster 1_33
+  - first:
+      213: 4027253289973091543
+    second: SpikyMonster 1_34
+  - first:
+      213: 2557164786883720769
+    second: SpikyMonster 1_35
+  - first:
+      213: -270314024042504926
+    second: SpikyMonster 1_36
+  - first:
+      213: -1609173655998633004
+    second: SpikyMonster 1_37
+  - first:
+      213: -6427809229978330129
+    second: SpikyMonster 1_38
+  - first:
+      213: 5193070292493473298
+    second: SpikyMonster 1_39
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 16384
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: SpikyMonster 1_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 4500
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9bfb0a67afa250df0800000000000000
+      internalID: -214718152009793607
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_1
+      rect:
+        serializedVersion: 2
+        x: 1000
+        y: 4500
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5697823e45a0b96d0800000000000000
+      internalID: -2982778968498210459
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_2
+      rect:
+        serializedVersion: 2
+        x: 2000
+        y: 4500
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c11e1272a6cb3f880800000000000000
+      internalID: -8578305701101575908
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_3
+      rect:
+        serializedVersion: 2
+        x: 3000
+        y: 4500
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c0d89a00c4de9bc10800000000000000
+      internalID: 2069946414437862668
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_4
+      rect:
+        serializedVersion: 2
+        x: 4000
+        y: 4500
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a367594fa18e9b90800000000000000
+      internalID: -7233201361660714078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_5
+      rect:
+        serializedVersion: 2
+        x: 5000
+        y: 4500
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d1da89b246e6bb2c0800000000000000
+      internalID: -4414813633199428323
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_6
+      rect:
+        serializedVersion: 2
+        x: 6000
+        y: 4500
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f0fcc0e99a43bd280800000000000000
+      internalID: -9017555925773529329
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_7
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 3600
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 48c1ca5d216b25200800000000000000
+      internalID: 167396328176622724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_8
+      rect:
+        serializedVersion: 2
+        x: 1000
+        y: 3600
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15de78068c3609b90800000000000000
+      internalID: -7237174888920257199
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_9
+      rect:
+        serializedVersion: 2
+        x: 2000
+        y: 3600
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 58c264ebb32620c20800000000000000
+      internalID: 3171205096357112965
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_10
+      rect:
+        serializedVersion: 2
+        x: 3000
+        y: 3600
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e84c3e06c06ec8310800000000000000
+      internalID: 1408753724299658382
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_11
+      rect:
+        serializedVersion: 2
+        x: 4000
+        y: 3600
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 16fa2c7befcf60930800000000000000
+      internalID: 4109249880957038433
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_12
+      rect:
+        serializedVersion: 2
+        x: 5000
+        y: 3600
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 772278c191eb86800800000000000000
+      internalID: 605943164943409783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_13
+      rect:
+        serializedVersion: 2
+        x: 6000
+        y: 3600
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 96d963f95a6aaa950800000000000000
+      internalID: 6461159845687369065
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_14
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 2700
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d56b3fda51c055ba0800000000000000
+      internalID: -6100956832951191971
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_15
+      rect:
+        serializedVersion: 2
+        x: 1000
+        y: 2700
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0889fda626f5bd5a0800000000000000
+      internalID: -6495493161247336320
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_16
+      rect:
+        serializedVersion: 2
+        x: 2000
+        y: 2700
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 09745c1b4c76911a0800000000000000
+      internalID: -6838320464691640432
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_17
+      rect:
+        serializedVersion: 2
+        x: 3000
+        y: 2700
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9cede489fb1ac1f50800000000000000
+      internalID: 6853530577217183433
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_18
+      rect:
+        serializedVersion: 2
+        x: 4000
+        y: 2700
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 095c1fa937dce59b0800000000000000
+      internalID: -5089404632477612656
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_19
+      rect:
+        serializedVersion: 2
+        x: 5000
+        y: 2700
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5cfa8c911cd763780800000000000000
+      internalID: -8703630961532162107
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_20
+      rect:
+        serializedVersion: 2
+        x: 6000
+        y: 2700
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d70c91109add1ffd0800000000000000
+      internalID: -2309821415926677379
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_21
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1800
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b0c3888f87e6f09c0800000000000000
+      internalID: -3958824081590567925
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_22
+      rect:
+        serializedVersion: 2
+        x: 1000
+        y: 1800
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9437e5a51ce6f3390800000000000000
+      internalID: -7836423049877490871
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_23
+      rect:
+        serializedVersion: 2
+        x: 2000
+        y: 1800
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4284b421498fb740800000000000000
+      internalID: 5170001810126307919
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_24
+      rect:
+        serializedVersion: 2
+        x: 3000
+        y: 1800
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3978a9bd01f3160a0800000000000000
+      internalID: -6890156613263784045
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_25
+      rect:
+        serializedVersion: 2
+        x: 4000
+        y: 1800
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b928b001473567b80800000000000000
+      internalID: -8397432697235209573
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_26
+      rect:
+        serializedVersion: 2
+        x: 5000
+        y: 1800
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 093a1942fa5005a60800000000000000
+      internalID: 7660629215948153744
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_27
+      rect:
+        serializedVersion: 2
+        x: 6000
+        y: 1800
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9d27bbfd4b06aaee0800000000000000
+      internalID: -1249079616677907751
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_28
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 900
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7310d6c0e29f6cd90800000000000000
+      internalID: -7077695788193873609
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_29
+      rect:
+        serializedVersion: 2
+        x: 1000
+        y: 900
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a55c288b0474f4dc0800000000000000
+      internalID: -3652622429475125926
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_30
+      rect:
+        serializedVersion: 2
+        x: 2000
+        y: 900
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5cb0f54e1bce4d4c0800000000000000
+      internalID: -4263522698428216379
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_31
+      rect:
+        serializedVersion: 2
+        x: 3000
+        y: 900
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4cadd357a9d2a4a0800000000000000
+      internalID: -6583460392572441523
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_32
+      rect:
+        serializedVersion: 2
+        x: 4000
+        y: 900
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91ededd24a86e8300800000000000000
+      internalID: 256257283160202777
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_33
+      rect:
+        serializedVersion: 2
+        x: 5000
+        y: 900
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0d8119fc813e9adf0800000000000000
+      internalID: -168353815348569904
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_34
+      rect:
+        serializedVersion: 2
+        x: 6000
+        y: 900
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7dc8e59a78da3e730800000000000000
+      internalID: 4027253289973091543
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_35
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 146775243dfdc7320800000000000000
+      internalID: 2557164786883720769
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_36
+      rect:
+        serializedVersion: 2
+        x: 1000
+        y: 0
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 22dd32bc3d6af3cf0800000000000000
+      internalID: -270314024042504926
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_37
+      rect:
+        serializedVersion: 2
+        x: 2000
+        y: 0
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4dbe84ce5111ba9e0800000000000000
+      internalID: -1609173655998633004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_38
+      rect:
+        serializedVersion: 2
+        x: 3000
+        y: 0
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: feb1a23bf85dbc6a0800000000000000
+      internalID: -6427809229978330129
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpikyMonster 1_39
+      rect:
+        serializedVersion: 2
+        x: 4000
+        y: 0
+        width: 1000
+        height: 900
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 21615bdbaed711840800000000000000
+      internalID: 5193070292493473298
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 9935d2f49359adf48a54817410faa03e
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":1000.0,"y":900.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      SpikyMonster 1_0: -214718152009793607
+      SpikyMonster 1_1: -2982778968498210459
+      SpikyMonster 1_10: 1408753724299658382
+      SpikyMonster 1_11: 4109249880957038433
+      SpikyMonster 1_12: 605943164943409783
+      SpikyMonster 1_13: 6461159845687369065
+      SpikyMonster 1_14: -6100956832951191971
+      SpikyMonster 1_15: -6495493161247336320
+      SpikyMonster 1_16: -6838320464691640432
+      SpikyMonster 1_17: 6853530577217183433
+      SpikyMonster 1_18: -5089404632477612656
+      SpikyMonster 1_19: -8703630961532162107
+      SpikyMonster 1_2: -8578305701101575908
+      SpikyMonster 1_20: -2309821415926677379
+      SpikyMonster 1_21: -3958824081590567925
+      SpikyMonster 1_22: -7836423049877490871
+      SpikyMonster 1_23: 5170001810126307919
+      SpikyMonster 1_24: -6890156613263784045
+      SpikyMonster 1_25: -8397432697235209573
+      SpikyMonster 1_26: 7660629215948153744
+      SpikyMonster 1_27: -1249079616677907751
+      SpikyMonster 1_28: -7077695788193873609
+      SpikyMonster 1_29: -3652622429475125926
+      SpikyMonster 1_3: 2069946414437862668
+      SpikyMonster 1_30: -4263522698428216379
+      SpikyMonster 1_31: -6583460392572441523
+      SpikyMonster 1_32: 256257283160202777
+      SpikyMonster 1_33: -168353815348569904
+      SpikyMonster 1_34: 4027253289973091543
+      SpikyMonster 1_35: 2557164786883720769
+      SpikyMonster 1_36: -270314024042504926
+      SpikyMonster 1_37: -1609173655998633004
+      SpikyMonster 1_38: -6427809229978330129
+      SpikyMonster 1_39: 5193070292493473298
+      SpikyMonster 1_4: -7233201361660714078
+      SpikyMonster 1_5: -4414813633199428323
+      SpikyMonster 1_6: -9017555925773529329
+      SpikyMonster 1_7: 167396328176622724
+      SpikyMonster 1_8: -7237174888920257199
+      SpikyMonster 1_9: 3171205096357112965
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -11,6 +11,10 @@ public class UIMenuTransition : MonoBehaviour
     [SerializeField] private float dimDuration = 0.3f;
     [SerializeField] private float panelFadeDuration = 0.3f;
 
+    [Header("Audio Ducking")]
+    [Tooltip("Lower BGM volume while this panel is active.")]
+    [SerializeField] private bool duckBGMOnShow = true;
+
     private CanvasGroup rootCanvasGroup;
 
     private void Awake()
@@ -59,7 +63,12 @@ public class UIMenuTransition : MonoBehaviour
     {
         ResetUI();
 
-        // Immediately block raycasts so Pause button behind dim cannot be re-clicked
+        // 1. Lower BGM volume smoothly
+        if (duckBGMOnShow && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.DuckMusic(dimDuration);
+        }
+
         if (rootCanvasGroup != null)
         {
             rootCanvasGroup.alpha = 1f;
@@ -118,6 +127,12 @@ public class UIMenuTransition : MonoBehaviour
 
     private IEnumerator HideSequence()
     {
+        // 1. Restore BGM volume back to 100%
+        if (duckBGMOnShow && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.UnduckMusic(panelFadeDuration);
+        }
+
         if (mainPanelCanvasGroup != null)
         {
             mainPanelCanvasGroup.blocksRaycasts = false;
