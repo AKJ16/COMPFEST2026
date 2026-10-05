@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -5,6 +6,11 @@ using UnityEngine;
 public class WeaponEffectsSystem : MonoBehaviour
 {
     public static WeaponEffectsSystem Instance { get; private set; }
+
+    /// <summary>
+    /// GLOBAL STATE: True while ANY weapon attack, particle effect, or Hourglass chain is actively running.
+    /// </summary>
+    public static bool IsBusy { get; private set; } = false;
 
     [SerializeField] private EnemyHealth currentEnemy;
 
@@ -16,38 +22,60 @@ public class WeaponEffectsSystem : MonoBehaviour
     public void StartStage(EnemyHealth enemy)
     {
         currentEnemy = enemy;
+        IsBusy = false;
     }
 
     public void ResolvePlacement(WeaponInstance instance)
     {
-        // 1. Tick existing poison at start of placement turn
+        StartCoroutine(ResolvePlacementRoutine(instance));
+    }
+
+    private IEnumerator ResolvePlacementRoutine(WeaponInstance instance)
+    {
+        // 1. HARD LOCK: An attack sequence has started!
+        IsBusy = true;
+
+        // 2. Tick existing poison at the start of placement turn
         if (currentEnemy != null)
         {
             currentEnemy.TickPoisonTurn();
         }
 
-        // 2. Resolve placement effects & trigger item feedback
+        // 3. Resolve placement effects based on category
         switch (instance.Data.category)
         {
             case WeaponCategory.Attack:
                 ResolveAttack(instance);
+                yield return new WaitForSeconds(0.35f);
                 break;
 
             case WeaponCategory.Modifier:
                 if (instance.Data.modifierType == ModifierType.Repeat)
                 {
-                    ResolveHourglass(instance);
+                    yield return StartCoroutine(HourglassChainRoutine(instance));
                 }
                 else
                 {
-                    // FIXED: Play placement SFX/VFX for Books (Multiplier & Addition)
                     PlayAttackFeedback(instance.Data);
+                    yield return new WaitForSeconds(0.25f);
                 }
                 break;
 
             case WeaponCategory.Utility:
                 PlayAttackFeedback(instance.Data);
+                yield return new WaitForSeconds(0.20f);
                 break;
+        }
+
+        yield return new WaitForSeconds(0.15f);
+
+        // 4. UNLOCK: All animations and chains are 100% finished!
+        IsBusy = false;
+
+        // 5. Safely check if stage ended or player lost
+        if (StageManager.Instance != null)
+        {
+            StageManager.Instance.CheckForEndOfStage();
         }
     }
 
@@ -56,11 +84,9 @@ public class WeaponEffectsSystem : MonoBehaviour
         float multiplier = 1f;
         float addition = 0f;
 
-        // Check surrounding 8-directional neighbors (orthogonal + diagonals) for Books
         var adjacentModifiers = WeaponGridManager.Instance.GetNeighborsOf(attackInstance)
             .Where(n => n.Data.category == WeaponCategory.Modifier && n.Data.modifierType != ModifierType.Repeat);
 
-        // Books that really change this attack's damage (for the Handbook combo log).
         var boostingBooks = new List<WeaponInstance>();
 
         foreach (var modifier in adjacentModifiers)
@@ -84,7 +110,6 @@ public class WeaponEffectsSystem : MonoBehaviour
             }
         }
 
-        // Formula: (BaseDamage * Multiplier) + Addition
         int finalDamage = Mathf.RoundToInt((attackInstance.Data.baseDamage * multiplier) + addition);
         attackInstance.ResolvedDamage = finalDamage;
 
@@ -95,7 +120,7 @@ public class WeaponEffectsSystem : MonoBehaviour
             if (attackInstance.Data.appliesPoison)
                 currentEnemy.ApplyPoison(attackInstance, attackInstance.Data.poisonDamagePerTick);
 
-            // The boosted hit just landed: log each book that took part as a discovered combo.
+            // Teammate's Handbook Combo Logger
             foreach (var book in boostingBooks)
             {
                 HandbookUI.ReportCombo(book.Data, attackInstance.Data,
@@ -106,7 +131,6 @@ public class WeaponEffectsSystem : MonoBehaviour
         PlayAttackFeedback(attackInstance.Data);
     }
 
-    // Text saved in the Handbook the first time a book boosts a weapon, using this run's real numbers.
     private static string BuildBookComboDetail(WeaponData book, WeaponData target, int bookCount, int finalDamage)
     {
         int baseDamage = target.baseDamage;
@@ -128,43 +152,91 @@ public class WeaponEffectsSystem : MonoBehaviour
 
         Vector3 feedbackPosition = currentEnemy != null ? currentEnemy.transform.position : transform.position;
 
-        // Play weapon / item placement SFX
         if (data.attackSfx != null && AudioManager.Instance != null)
             AudioManager.Instance.PlaySFX(data.attackSfx);
 
-        // Play weapon / item placement VFX (if assigned in WeaponData)
         if (data.attackVfxPrefab != null && VFXManager.Instance != null)
             VFXManager.Instance.PlayWeaponEffect(data.attackVfxPrefab, feedbackPosition);
     }
 
-    private void ResolveHourglass(WeaponInstance hourglassInstance)
+    private IEnumerator HourglassChainRoutine(WeaponInstance initialHourglass)
     {
-        // FIXED: Play the Hourglass's OWN placement sound/VFX first!
-        PlayAttackFeedback(hourglassInstance.Data);
+        var visitedHourglasses = new HashSet<WeaponInstance>();
+        var queue = new Queue<WeaponInstance>();
 
-        var neighbors = WeaponGridManager.Instance.GetNeighborsOf(hourglassInstance)
-            .Where(n => n.Data.category == WeaponCategory.Attack);
+        visitedHourglasses.Add(initialHourglass);
+        queue.Enqueue(initialHourglass);
 
-        foreach (var neighbor in neighbors)
+        while (queue.Count > 0)
         {
-            if (currentEnemy != null)
+            var currentHourglass = queue.Dequeue();
+
+            // 1. Play Hourglass SFX & Spin animation
+            PlayAttackFeedback(currentHourglass.Data);
+            if (currentHourglass.VisualObject != null)
             {
-                currentEnemy.TakeDamage(neighbor.ResolvedDamage);
-
-                string detail = $"Replayed {neighbor.Data.weaponName}: {neighbor.ResolvedDamage} damage dealt again";
-
-                if (neighbor.Data.appliesPoison)
-                {
-                    currentEnemy.ApplyPoison(neighbor, neighbor.Data.poisonDamagePerTick);
-                    detail += ", and its poison was applied again";
-                }
-
-                // The Hourglass replay really fired: log it as a discovered combo.
-                HandbookUI.ReportCombo(hourglassInstance.Data, neighbor.Data, detail + ".");
+                currentHourglass.VisualObject.PlayAnimation();
             }
 
-            // Replay neighbor attack feedback
-            PlayAttackFeedback(neighbor.Data);
+            // 2. Wait for Hourglass spin to complete
+            yield return new WaitForSeconds(0.40f);
+
+            // 3. Find all neighbors (8-directional)
+            var allNeighbors = WeaponGridManager.Instance.GetNeighborsOf(currentHourglass).ToList();
+
+            // A. Trigger adjacent Attack weapons SEQUENTIALLY
+            var attackNeighbors = allNeighbors.Where(n => n.Data.category == WeaponCategory.Attack);
+            foreach (var neighbor in attackNeighbors)
+            {
+                if (currentEnemy != null)
+                {
+                    currentEnemy.TakeDamage(neighbor.ResolvedDamage);
+
+                    string detail = $"Replayed {neighbor.Data.weaponName}: {neighbor.ResolvedDamage} damage dealt again";
+
+                    if (neighbor.Data.appliesPoison)
+                    {
+                        currentEnemy.ApplyPoison(neighbor, neighbor.Data.poisonDamagePerTick);
+                        detail += ", and its poison was applied again";
+                    }
+
+                    // Teammate's Handbook Combo Logger
+                    HandbookUI.ReportCombo(currentHourglass.Data, neighbor.Data, detail + ".");
+                }
+
+                PlayAttackFeedback(neighbor.Data);
+
+                if (neighbor.VisualObject != null)
+                {
+                    neighbor.VisualObject.PlayAnimation();
+                }
+
+                // Wait for individual weapon animation before next weapon strikes
+                yield return new WaitForSeconds(0.35f);
+
+                if (currentEnemy != null && currentEnemy.State == EnemyState.Dead)
+                {
+                    yield break;
+                }
+            }
+
+            // B. Chain Reaction: Queue adjacent Hourglasses
+            var adjacentHourglasses = allNeighbors.Where(n => n.Data.modifierType == ModifierType.Repeat);
+            foreach (var hNeighbor in adjacentHourglasses)
+            {
+                if (!visitedHourglasses.Contains(hNeighbor))
+                {
+                    visitedHourglasses.Add(hNeighbor);
+                    queue.Enqueue(hNeighbor);
+                }
+            }
+
+            if (queue.Count > 0)
+            {
+                yield return new WaitForSeconds(0.15f);
+            }
         }
+
+        yield return new WaitForSeconds(0.20f);
     }
 }
