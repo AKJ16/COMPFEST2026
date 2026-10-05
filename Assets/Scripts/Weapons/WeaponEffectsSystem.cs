@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -6,11 +5,6 @@ using UnityEngine;
 public class WeaponEffectsSystem : MonoBehaviour
 {
     public static WeaponEffectsSystem Instance { get; private set; }
-
-    /// <summary>
-    /// GLOBAL STATE: True while ANY weapon attack, particle effect, or Hourglass chain is actively running.
-    /// </summary>
-    public static bool IsBusy { get; private set; } = false;
 
     [SerializeField] private EnemyHealth currentEnemy;
 
@@ -22,61 +16,38 @@ public class WeaponEffectsSystem : MonoBehaviour
     public void StartStage(EnemyHealth enemy)
     {
         currentEnemy = enemy;
-        IsBusy = false; // Always reset lock on new stage
     }
 
     public void ResolvePlacement(WeaponInstance instance)
     {
-        StartCoroutine(ResolvePlacementRoutine(instance));
-    }
-
-    private IEnumerator ResolvePlacementRoutine(WeaponInstance instance)
-    {
-        // 1. HARD LOCK: An attack sequence has started!
-        IsBusy = true;
-
-        // 2. Tick existing poison at the start of placement turn
+        // 1. Tick existing poison at start of placement turn
         if (currentEnemy != null)
         {
             currentEnemy.TickPoisonTurn();
         }
 
-        // 3. Resolve placement effects based on category
+        // 2. Resolve placement effects & trigger item feedback
         switch (instance.Data.category)
         {
             case WeaponCategory.Attack:
                 ResolveAttack(instance);
-                yield return new WaitForSeconds(0.35f);
                 break;
 
             case WeaponCategory.Modifier:
                 if (instance.Data.modifierType == ModifierType.Repeat)
                 {
-                    yield return StartCoroutine(HourglassChainRoutine(instance));
+                    ResolveHourglass(instance);
                 }
                 else
                 {
+                    // FIXED: Play placement SFX/VFX for Books (Multiplier & Addition)
                     PlayAttackFeedback(instance.Data);
-                    yield return new WaitForSeconds(0.25f);
                 }
                 break;
 
             case WeaponCategory.Utility:
                 PlayAttackFeedback(instance.Data);
-                yield return new WaitForSeconds(0.20f);
                 break;
-        }
-
-        // Buffer pause to ensure visual effects settle
-        yield return new WaitForSeconds(0.15f);
-
-        // 4. UNLOCK: All animations, spins, and attacks are 100% finished!
-        IsBusy = false;
-
-        // 5. Now safely check if stage ended or player lost
-        if (StageManager.Instance != null)
-        {
-            StageManager.Instance.CheckForEndOfStage();
         }
     }
 
@@ -85,8 +56,12 @@ public class WeaponEffectsSystem : MonoBehaviour
         float multiplier = 1f;
         float addition = 0f;
 
+        // Check surrounding 8-directional neighbors (orthogonal + diagonals) for Books
         var adjacentModifiers = WeaponGridManager.Instance.GetNeighborsOf(attackInstance)
             .Where(n => n.Data.category == WeaponCategory.Modifier && n.Data.modifierType != ModifierType.Repeat);
+
+        // Books that really change this attack's damage (for the Handbook combo log).
+        var boostingBooks = new List<WeaponInstance>();
 
         foreach (var modifier in adjacentModifiers)
         {
@@ -96,15 +71,20 @@ public class WeaponEffectsSystem : MonoBehaviour
                 {
                     case ModifierType.Multiplier:
                         multiplier *= modifier.Data.modifierValue;
+                        if (!Mathf.Approximately(modifier.Data.modifierValue, 1f))
+                            boostingBooks.Add(modifier);
                         break;
 
                     case ModifierType.Addition:
                         addition += modifier.Data.modifierValue;
+                        if (!Mathf.Approximately(modifier.Data.modifierValue, 0f))
+                            boostingBooks.Add(modifier);
                         break;
                 }
             }
         }
 
+        // Formula: (BaseDamage * Multiplier) + Addition
         int finalDamage = Mathf.RoundToInt((attackInstance.Data.baseDamage * multiplier) + addition);
         attackInstance.ResolvedDamage = finalDamage;
 
@@ -114,9 +94,32 @@ public class WeaponEffectsSystem : MonoBehaviour
 
             if (attackInstance.Data.appliesPoison)
                 currentEnemy.ApplyPoison(attackInstance, attackInstance.Data.poisonDamagePerTick);
+
+            // The boosted hit just landed: log each book that took part as a discovered combo.
+            foreach (var book in boostingBooks)
+            {
+                HandbookUI.ReportCombo(book.Data, attackInstance.Data,
+                    BuildBookComboDetail(book.Data, attackInstance.Data, boostingBooks.Count, finalDamage));
+            }
         }
 
         PlayAttackFeedback(attackInstance.Data);
+    }
+
+    // Text saved in the Handbook the first time a book boosts a weapon, using this run's real numbers.
+    private static string BuildBookComboDetail(WeaponData book, WeaponData target, int bookCount, int finalDamage)
+    {
+        int baseDamage = target.baseDamage;
+        float v = book.modifierValue;
+
+        string detail = book.modifierType == ModifierType.Multiplier
+            ? $"{target.weaponName} damage went from {baseDamage} to {Mathf.RoundToInt(baseDamage * v)} (x{v:0.##})"
+            : $"{target.weaponName} damage went from {baseDamage} to {Mathf.RoundToInt(baseDamage + v)} (+{v:0.##})";
+
+        if (bookCount > 1)
+            detail += $". With every book in range the hit was {finalDamage}";
+
+        return detail + ".";
     }
 
     private void PlayAttackFeedback(WeaponData data)
@@ -125,83 +128,43 @@ public class WeaponEffectsSystem : MonoBehaviour
 
         Vector3 feedbackPosition = currentEnemy != null ? currentEnemy.transform.position : transform.position;
 
+        // Play weapon / item placement SFX
         if (data.attackSfx != null && AudioManager.Instance != null)
             AudioManager.Instance.PlaySFX(data.attackSfx);
 
+        // Play weapon / item placement VFX (if assigned in WeaponData)
         if (data.attackVfxPrefab != null && VFXManager.Instance != null)
             VFXManager.Instance.PlayWeaponEffect(data.attackVfxPrefab, feedbackPosition);
     }
 
-    private IEnumerator HourglassChainRoutine(WeaponInstance initialHourglass)
+    private void ResolveHourglass(WeaponInstance hourglassInstance)
     {
-        var visitedHourglasses = new HashSet<WeaponInstance>();
-        var queue = new Queue<WeaponInstance>();
+        // FIXED: Play the Hourglass's OWN placement sound/VFX first!
+        PlayAttackFeedback(hourglassInstance.Data);
 
-        visitedHourglasses.Add(initialHourglass);
-        queue.Enqueue(initialHourglass);
+        var neighbors = WeaponGridManager.Instance.GetNeighborsOf(hourglassInstance)
+            .Where(n => n.Data.category == WeaponCategory.Attack);
 
-        while (queue.Count > 0)
+        foreach (var neighbor in neighbors)
         {
-            var currentHourglass = queue.Dequeue();
-
-            // 1. Play Hourglass SFX & Spin animation
-            PlayAttackFeedback(currentHourglass.Data);
-            if (currentHourglass.VisualObject != null)
+            if (currentEnemy != null)
             {
-                currentHourglass.VisualObject.PlayAnimation();
-            }
+                currentEnemy.TakeDamage(neighbor.ResolvedDamage);
 
-            // 2. Wait for Hourglass spin to complete before other weapons attack
-            yield return new WaitForSeconds(0.40f);
+                string detail = $"Replayed {neighbor.Data.weaponName}: {neighbor.ResolvedDamage} damage dealt again";
 
-            // 3. Find all neighbors (8-directional)
-            var allNeighbors = WeaponGridManager.Instance.GetNeighborsOf(currentHourglass).ToList();
-
-            // A. Trigger adjacent Attack weapons SEQUENTIALLY
-            var attackNeighbors = allNeighbors.Where(n => n.Data.category == WeaponCategory.Attack);
-            foreach (var neighbor in attackNeighbors)
-            {
-                if (currentEnemy != null)
+                if (neighbor.Data.appliesPoison)
                 {
-                    currentEnemy.TakeDamage(neighbor.ResolvedDamage);
-
-                    if (neighbor.Data.appliesPoison)
-                        currentEnemy.ApplyPoison(neighbor, neighbor.Data.poisonDamagePerTick);
+                    currentEnemy.ApplyPoison(neighbor, neighbor.Data.poisonDamagePerTick);
+                    detail += ", and its poison was applied again";
                 }
 
-                PlayAttackFeedback(neighbor.Data);
-
-                if (neighbor.VisualObject != null)
-                {
-                    neighbor.VisualObject.PlayAnimation();
-                }
-
-                // Wait for each individual attack animation
-                yield return new WaitForSeconds(0.35f);
-
-                if (currentEnemy != null && currentEnemy.State == EnemyState.Dead)
-                {
-                    yield break;
-                }
+                // The Hourglass replay really fired: log it as a discovered combo.
+                HandbookUI.ReportCombo(hourglassInstance.Data, neighbor.Data, detail + ".");
             }
 
-            // B. Chain Reaction: Queue adjacent Hourglasses
-            var adjacentHourglasses = allNeighbors.Where(n => n.Data.modifierType == ModifierType.Repeat);
-            foreach (var hNeighbor in adjacentHourglasses)
-            {
-                if (!visitedHourglasses.Contains(hNeighbor))
-                {
-                    visitedHourglasses.Add(hNeighbor);
-                    queue.Enqueue(hNeighbor);
-                }
-            }
-
-            if (queue.Count > 0)
-            {
-                yield return new WaitForSeconds(0.15f);
-            }
+            // Replay neighbor attack feedback
+            PlayAttackFeedback(neighbor.Data);
         }
-
-        yield return new WaitForSeconds(0.20f);
     }
 }
