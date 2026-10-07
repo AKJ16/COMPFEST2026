@@ -45,24 +45,31 @@ public class VFXManager : MonoBehaviour
 
     public void SpawnHitEffect(Vector3 position)
     {
-        if (hitParticlesPrefab != null)
-            Instantiate(hitParticlesPrefab, position, Quaternion.identity);
+        SpawnTemporary(hitParticlesPrefab, position);
         ShakeCamera();
     }
 
     public void SpawnDeathEffect(Vector3 position)
     {
-        if (deathParticlesPrefab != null)
-            Instantiate(deathParticlesPrefab, position, Quaternion.identity);
+        SpawnTemporary(deathParticlesPrefab, position);
         ShakeCamera(0.25f, 0.2f);
     }
 
-    // BARU: buat efek spesifik per-weapon (mis. api di Staff, slash horizontal di Sword),
-    // beda dari SpawnHitEffect generic di atas. prefab boleh null (misal weapon belum
-    // punya VFX sendiri) — kalau null cuma di-skip, gak error.
+    // Efek spesifik per-weapon (mis. api di Staff, slash di Sword).
+    // prefab boleh null (weapon belum punya VFX sendiri) — kalau null cuma di-skip.
     public void PlayWeaponEffect(ParticleSystem prefab, Vector3 position)
     {
+        SpawnTemporary(prefab, position);
+    }
+
+    // Spawn efek lalu hapus otomatis setelah selesai, supaya tidak menumpuk di scene.
+    private void SpawnTemporary(ParticleSystem prefab, Vector3 position)
+    {
         if (prefab == null) return;
-        Instantiate(prefab, position, Quaternion.identity);
+
+        ParticleSystem fx = Instantiate(prefab, position, Quaternion.identity);
+        ParticleSystem.MainModule main = fx.main;
+        float lifetime = main.duration + main.startLifetime.constantMax + 0.5f;
+        Destroy(fx.gameObject, lifetime);
     }
 }

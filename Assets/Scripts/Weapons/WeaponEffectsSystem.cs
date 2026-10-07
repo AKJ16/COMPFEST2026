@@ -155,8 +155,11 @@ public class WeaponEffectsSystem : MonoBehaviour
         if (data.attackSfx != null && AudioManager.Instance != null)
             AudioManager.Instance.PlaySFX(data.attackSfx);
 
+        // A prefab assigned on the weapon asset wins; otherwise use the code-made placeholder effect.
         if (data.attackVfxPrefab != null && VFXManager.Instance != null)
             VFXManager.Instance.PlayWeaponEffect(data.attackVfxPrefab, feedbackPosition);
+        else
+            WeaponVfx.Play(data, feedbackPosition);
     }
 
     private IEnumerator HourglassChainRoutine(WeaponInstance initialHourglass)
