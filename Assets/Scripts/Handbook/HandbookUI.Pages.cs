@@ -152,29 +152,32 @@ public partial class HandbookUI
         if (introEmblem != null) return introEmblem;
         if (_emblemCache != null) return _emblemCache;
 
-        // If the PNG is imported as Sprite Mode = Multiple, it holds several sprites (pieces).
-        // Pick the biggest one, which is the whole emblem.
+        // Looks in Assets/Resources/ and in Assets/Resources/Image/.
+        // If the PNG is imported as Sprite Mode = Multiple, pick the biggest sprite (the whole emblem).
         Sprite sprite = null;
-        var all = Resources.LoadAll<Sprite>("HandbookEmblem");
-        float best = 0f;
-        for (int i = 0; i < all.Length; i++)
+        foreach (var path in new[] { "HandbookEmblem", "Image/HandbookEmblem" })
         {
-            float area = all[i].rect.width * all[i].rect.height;
-            if (area > best) { best = area; sprite = all[i]; }
-        }
+            float best = 0f;
+            foreach (var s in Resources.LoadAll<Sprite>(path))
+            {
+                float area = s.rect.width * s.rect.height;
+                if (area > best) { best = area; sprite = s; }
+            }
+            if (sprite != null) break;
 
-        if (sprite == null)
-        {
-            var tex = Resources.Load<Texture2D>("HandbookEmblem");
+            var tex = Resources.Load<Texture2D>(path);
             if (tex != null)
+            {
                 sprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height),
                     new Vector2(0.5f, 0.5f), 100f);
+                break;
+            }
         }
 
         if (sprite == null && !_emblemWarned)
         {
             _emblemWarned = true;
-            Debug.LogWarning("Handbook: emblem not found. Put HandbookEmblem.png in Assets/Resources/ " +
+            Debug.LogWarning("Handbook: emblem not found. Put HandbookEmblem.png in Assets/Resources/ (or Resources/Image/) " +
                              "or drag it into the 'Intro Emblem' field on HandbookUI.");
         }
         _emblemCache = sprite;

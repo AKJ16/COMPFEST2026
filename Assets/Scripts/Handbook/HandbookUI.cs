@@ -48,6 +48,17 @@ public partial class HandbookUI : MonoBehaviour
     [SerializeField] private Color attackTagColor = new Color(0.60f, 0.15f, 0.15f, 1f);
     [SerializeField] private Color modifierTagColor = new Color(0.20f, 0.25f, 0.55f, 1f);
 
+    [Header("Book Art (layered)")]
+    [Tooltip("Use the layered book art. Empty fields load Book_Base / Book_Left / Book_Right from Assets/Resources/Book/. Turn off to use the plain coloured book.")]
+    [SerializeField] private bool useBookArt = true;
+    [SerializeField] private Texture2D bookBaseTexture;
+    [SerializeField] private Texture2D leftPageTexture;
+    [SerializeField] private Texture2D rightPageTexture;
+    [Tooltip("Width of the book in canvas units. The height follows the art's shape.")]
+    [SerializeField] private float bookArtWidth = 1850f;
+    [Tooltip("Free space kept inside each page so text stays off the page border. X = left/right, Y = top/bottom (0.1 = 10%).")]
+    [SerializeField] private Vector2 pagePadding = new Vector2(0.10f, 0.12f);
+
     [Header("Stat Boxes & Diagrams")]
     [SerializeField] private Color chipColor = new Color(0.85f, 0.77f, 0.58f, 1f);
     [SerializeField] private float chipValueFontSize = 46f;
@@ -136,6 +147,11 @@ public partial class HandbookUI : MonoBehaviour
     [Tooltip("How much of the screen the book may fill when it has to shrink.")]
     [Range(0.5f, 1f)]
     [SerializeField] private float screenFill = 0.94f;
+    [Tooltip("With the book art: scale the book UP to fill the screen (the plain book is only ever shrunk). Turn off to keep Book Art Width.")]
+    [SerializeField] private bool fullScreenBook = true;
+    [Tooltip("How much of the screen the full-screen book fills (1 = edge to edge). Space is kept for the buttons under the book.")]
+    [Range(0.6f, 1f)]
+    [SerializeField] private float fullScreenFill = 0.97f;
 
     // =========================================================
     // STATE
@@ -145,6 +161,10 @@ public partial class HandbookUI : MonoBehaviour
     private GameObject _panelRoot;
     private RectTransform _leftPage;
     private RectTransform _rightPage;
+    private RectTransform _leftContent;    // where the page text and diagrams live (inside the padding)
+    private RectTransform _rightContent;
+    private bool _skinned;
+    private Vector2 _panelSizeActual;
     private Image _icon;
     private TextMeshProUGUI _iconInitial;
     private TextMeshProUGUI _nameLabel;

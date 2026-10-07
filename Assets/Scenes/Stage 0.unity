@@ -4925,33 +4925,71 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5b65aaa9fd233d14c96a59fbdae00164, type: 2}
   - {fileID: 11400000, guid: 2cd330a07d69d4648b8f5ac88a8d9d44, type: 2}
   - {fileID: 11400000, guid: ea09822ef08534c49ada93e35551fbd3, type: 2}
+  sortByDefaultOrder: 1
+  pageTexts: []
   canvasParent: {fileID: 2022585132}
   openSfx: {fileID: 8300000, guid: fb608000f9d0ae64099c7f87627764c4, type: 3}
   closeSfx: {fileID: 8300000, guid: 1f0590334c7757f4eaa1b34c611e8f34, type: 3}
-  closeButtonColor: {r: 0.5, g: 0.15, b: 0.15, a: 1}
-  closeButtonFontSize: 34
-  closeButtonSize: {x: 44, y: 44}
-  closeButtonAnchoredPosition: {x: -10, y: -10}
+  flipSfx: {fileID: 0}
   panelSize: {x: 1700, y: 900}
-  panelBackgroundColor: {r: 0.09, g: 0.07, b: 0.05, a: 0.97}
-  gridCellSize: {x: 160, y: 160}
-  gridSpacing: {x: 20, y: 20}
-  gridColumnCount: 2
-  slotFontSize: 48
-  attackWeaponColor: {r: 0.6, g: 0.2, b: 0.2, a: 1}
-  modifierWeaponColor: {r: 0.3, g: 0.3, b: 0.7, a: 1}
-  lockedSlotColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
-  detailBackgroundColor: {r: 0.15, g: 0.12, b: 0.08, a: 0.6}
-  detailTitleFontSize: 42
-  detailBodyFontSize: 28
-  detailSpacing: 12
-  organizationBlurb: 'Published by L.I.G.M.A. (League of Interdimensional Grimoire
-    & Magical Artifacts).
+  bookSprite: {fileID: 0}
+  coverColor: {r: 0.27, g: 0.13, b: 0.06, a: 1}
+  pageColor: {r: 0.9, g: 0.85, b: 0.7, a: 1}
+  spineColor: {r: 0.27, g: 0.13, b: 0.06, a: 1}
+  inkColor: {r: 0.29, g: 0.14, b: 0.06, a: 1}
+  accentColor: {r: 0.66, g: 0.42, b: 0.15, a: 1}
+  attackTagColor: {r: 0.6, g: 0.15, b: 0.15, a: 1}
+  modifierTagColor: {r: 0.2, g: 0.25, b: 0.55, a: 1}
+  chipColor: {r: 0.85, g: 0.77, b: 0.58, a: 1}
+  chipValueFontSize: 46
+  chipLabelFontSize: 18
+  gridItemColor: {r: 0.4, g: 0.22, b: 0.1, a: 1}
+  gridRangeColor: {r: 0.82, g: 0.62, b: 0.32, a: 1}
+  diagramCellSize: 40
+  titleFont: {fileID: 0}
+  bodyFont: {fileID: 0}
+  titleTtf: {fileID: 12800000, guid: 8b953d0c619a2520180181dfbe8ef9b6, type: 3}
+  bodyTtf: {fileID: 12800000, guid: b18439cff135bd8119485935ffe0666a, type: 3}
+  nameFontSize: 76
+  tagFontSize: 26
+  tagLetterSpacing: 10
+  bodyFontSize: 32
+  initialFontSize: 200
+  introEmblem: {fileID: 21300000, guid: 7eeb66aceaeb13728b62de04c1251fd1, type: 3}
+  emblemScale: 0.75
+  introTitle: 'L.I.G.M.A.
+
+    Almanac'
+  introSubtitle: Weapon Compendium
+  introBlurb: 'Published by L.I.G.M.A. (League of Interdimensional Grimoire & Magical
+    Artifacts).
 
 
-    This tome was compiled to help adventurers identify
-    weapons found within the ruins, along with their combination abilities. Select
-    a weapon on the left to view its details.'
+    This tome was compiled to help adventurers identify weapons
+    found within the ruins, along with their combination abilities. Turn the page
+    to begin.'
+  flipDuration: 0.3
+  buttonSprite: {fileID: 0}
+  buttonColor: {r: 0.45, g: 0.25, b: 0.12, a: 1}
+  buttonTextColor: {r: 1, g: 0.93, b: 0.85, a: 1}
+  closeButtonColor: {r: 0.5, g: 0.15, b: 0.15, a: 1}
+  navButtonSize: {x: 120, y: 60}
+  closeButtonSize: {x: 44, y: 44}
+  showDiscoveryToast: 1
+  toastSeconds: 2.5
+  toastGapSeconds: 0.3
+  comboNames: []
+  toastSize: {x: 640, y: 110}
+  toastFontSize: 32
+  dimColor: {r: 0, g: 0, b: 0, a: 0.7}
+  closeOnDimClick: 1
+  blurBackground: 1
+  blurAmount: 4
+  freezeGameWhileOpen: 1
+  useOverlayCanvas: 1
+  overlaySortingOrder: 5000
+  fitToScreen: 1
+  screenFill: 0.94
 --- !u!1 &1564958311
 GameObject:
   m_ObjectHideFlags: 0

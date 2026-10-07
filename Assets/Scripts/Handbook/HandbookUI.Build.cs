@@ -18,7 +18,7 @@ public partial class HandbookUI
 
     private TMP_FontAsset MakeFontAsset(Font ttf, string resourceName)
     {
-        var font = ttf != null ? ttf : Resources.Load<Font>(resourceName);
+        var font = ttf != null ? ttf : (Resources.Load<Font>(resourceName) ?? Resources.Load<Font>("Font/" + resourceName));
         return font != null ? TMP_FontAsset.CreateFontAsset(font) : null;
     }
 
@@ -40,29 +40,56 @@ public partial class HandbookUI
             dimButton.onClick.AddListener(ClosePanel);
         }
 
+        _skinned = useBookArt && TryLoadBookArt();
+
         // Cover / frame
-        var (root, rootRect, rootImg) = CreateBox("HandbookPanel", _uiRoot, coverColor);
+        var (root, rootRect, rootImg) = CreateBox("HandbookPanel", _uiRoot, _skinned ? Color.clear : coverColor);
         _panelRoot = root;
         rootRect.anchorMin = rootRect.anchorMax = new Vector2(0.5f, 0.5f);
         rootRect.pivot = new Vector2(0.5f, 0.5f);
-        rootRect.sizeDelta = panelSize;
-        if (bookSprite != null)
+
+        if (_skinned)
         {
-            rootImg.sprite = bookSprite;
-            rootImg.color = Color.white;
+            rootRect.sizeDelta = new Vector2(bookArtWidth, bookArtWidth * BookArtAspect);
+            rootRect.anchoredPosition = new Vector2(0f, navButtonSize.y * 0.4f);   // room for the buttons under the book
+            rootImg.color = Color.clear;   // invisible, but still blocks clicks; the art is a child below
+            CreateArtLayer("BookBase", root.transform, _artBase);
         }
+        else
+        {
+            rootRect.sizeDelta = panelSize;
+            if (bookSprite != null)
+            {
+                rootImg.sprite = bookSprite;
+                rootImg.color = Color.white;
+            }
+        }
+        _panelSizeActual = rootRect.sizeDelta;
 
-        // Pages. Pivot sits on the spine side so scaling X looks like a page turning.
-        _leftPage = CreatePage("LeftPage", root.transform,
-            new Vector2(0.025f, 0.10f), new Vector2(0.495f, 0.95f), new Vector2(1f, 0.5f));
-        _rightPage = CreatePage("RightPage", root.transform,
-            new Vector2(0.505f, 0.10f), new Vector2(0.975f, 0.95f), new Vector2(0f, 0.5f));
+        if (_skinned)
+        {
+            // Top pages: they scale on X around the spine, so they fold like a page turning.
+            _leftPage = CreateArtPage("LeftPage", root.transform, LeftPageRect, new Vector2(1f, 0.5f), _artLeft);
+            _rightPage = CreateArtPage("RightPage", root.transform, RightPageRect, new Vector2(0f, 0.5f), _artRight);
+            _leftContent = CreateContentRect(_leftPage);
+            _rightContent = CreateContentRect(_rightPage);
+        }
+        else
+        {
+            // Pages. Pivot sits on the spine side so scaling X looks like a page turning.
+            _leftPage = CreatePage("LeftPage", root.transform,
+                new Vector2(0.025f, 0.10f), new Vector2(0.495f, 0.95f), new Vector2(1f, 0.5f));
+            _rightPage = CreatePage("RightPage", root.transform,
+                new Vector2(0.505f, 0.10f), new Vector2(0.975f, 0.95f), new Vector2(0f, 0.5f));
+            _leftContent = _leftPage;
+            _rightContent = _rightPage;
 
-        // Spine
-        var (_, spineRect, _) = CreateBox("Spine", root.transform, spineColor);
-        spineRect.anchorMin = new Vector2(0.495f, 0.09f);
-        spineRect.anchorMax = new Vector2(0.505f, 0.96f);
-        spineRect.offsetMin = spineRect.offsetMax = Vector2.zero;
+            // Spine
+            var (_, spineRect, _) = CreateBox("Spine", root.transform, spineColor);
+            spineRect.anchorMin = new Vector2(0.495f, 0.09f);
+            spineRect.anchorMax = new Vector2(0.505f, 0.96f);
+            spineRect.offsetMin = spineRect.offsetMax = Vector2.zero;
+        }
 
         BuildLeftPageContent();
         BuildRightPageContent();
@@ -83,7 +110,7 @@ public partial class HandbookUI
     {
         // Emblem (intro) / weapon icon
         var iconGO = new GameObject("Icon", typeof(RectTransform));
-        iconGO.transform.SetParent(_leftPage, false);
+        iconGO.transform.SetParent(_leftContent, false);
         var iconRect = iconGO.GetComponent<RectTransform>();
         iconRect.anchorMin = new Vector2(0.15f, 0.46f);
         iconRect.anchorMax = new Vector2(0.85f, 0.97f);
@@ -93,14 +120,14 @@ public partial class HandbookUI
         _icon.raycastTarget = false;
 
         // Big letter / "?" when there is no icon
-        _iconInitial = CreateLabel(_leftPage, "", initialFontSize, inkColor,
+        _iconInitial = CreateLabel(_leftContent, "", initialFontSize, inkColor,
             new Vector2(0.15f, 0.46f), new Vector2(0.85f, 0.97f));
         _iconInitial.alignment = TextAlignmentOptions.Center;
         _iconInitial.fontStyle = titleFont != null ? FontStyles.Normal : FontStyles.Bold;
         ApplyFont(_iconInitial, titleFont);
 
         // Title / weapon name (can wrap to 2 lines on the intro page)
-        _nameLabel = CreateLabel(_leftPage, "", nameFontSize, inkColor,
+        _nameLabel = CreateLabel(_leftContent, "", nameFontSize, inkColor,
             new Vector2(0.04f, 0.23f), new Vector2(0.96f, 0.45f));
         _nameLabel.alignment = TextAlignmentOptions.Center;
         _nameLabel.fontStyle = titleFont != null ? FontStyles.Normal : FontStyles.Bold;
@@ -110,10 +137,10 @@ public partial class HandbookUI
         ApplyFont(_nameLabel, titleFont);
 
         // Ornamental divider: line - diamond - line
-        CreateDivider(_leftPage, new Vector2(0.12f, 0.175f), new Vector2(0.88f, 0.225f));
+        CreateDivider(_leftContent, new Vector2(0.12f, 0.175f), new Vector2(0.88f, 0.225f));
 
         // Subtitle / category, spaced capitals
-        _tagLabel = CreateLabel(_leftPage, "", tagFontSize, inkColor,
+        _tagLabel = CreateLabel(_leftContent, "", tagFontSize, inkColor,
             new Vector2(0.04f, 0.07f), new Vector2(0.96f, 0.16f));
         _tagLabel.alignment = TextAlignmentOptions.Center;
         _tagLabel.characterSpacing = tagLetterSpacing;
@@ -123,7 +150,7 @@ public partial class HandbookUI
     private void BuildRightPageContent()
     {
         // Stat boxes row (top)
-        var (_, statsRect, statsImg) = CreateBox("Stats", _rightPage, Color.clear);
+        var (_, statsRect, statsImg) = CreateBox("Stats", _rightContent, Color.clear);
         statsImg.raycastTarget = false;
         statsRect.anchorMin = new Vector2(0.08f, 0.82f);
         statsRect.anchorMax = new Vector2(0.92f, 0.95f);
@@ -131,7 +158,7 @@ public partial class HandbookUI
         _statsRow = statsRect;
 
         // Description (also used for the intro blurb)
-        _descLabel = CreateLabel(_rightPage, "", bodyFontSize, inkColor,
+        _descLabel = CreateLabel(_rightContent, "", bodyFontSize, inkColor,
             new Vector2(0.08f, 0.52f), new Vector2(0.92f, 0.79f));
         _descLabel.alignment = TextAlignmentOptions.TopLeft;
         _descLabel.textWrappingMode = TextWrappingModes.Normal;
@@ -145,7 +172,7 @@ public partial class HandbookUI
         ApplyFont(_descLabel, SerifBody);
 
         // Size / range diagrams (bottom left)
-        var (_, diagRect, diagImg) = CreateBox("Diagrams", _rightPage, Color.clear);
+        var (_, diagRect, diagImg) = CreateBox("Diagrams", _rightContent, Color.clear);
         diagImg.raycastTarget = false;
         diagRect.anchorMin = new Vector2(0.08f, 0.05f);
         diagRect.anchorMax = new Vector2(0.50f, 0.49f);
@@ -153,7 +180,7 @@ public partial class HandbookUI
         _diagramArea = diagRect;
 
         // Combos (bottom right)
-        _combosLabel = CreateLabel(_rightPage, "", bodyFontSize * 0.9f, inkColor,
+        _combosLabel = CreateLabel(_rightContent, "", bodyFontSize * 0.9f, inkColor,
             new Vector2(0.54f, 0.05f), new Vector2(0.92f, 0.49f));
         _combosLabel.alignment = TextAlignmentOptions.TopLeft;
         _combosLabel.textWrappingMode = TextWrappingModes.Normal;
@@ -168,24 +195,31 @@ public partial class HandbookUI
 
     private void BuildNavigation(Transform root)
     {
+        // With the book art, the buttons sit around the book body instead of on a bottom bar.
+        float w = bookArtWidth;
+        float sideGap = w * BodyLeft;            // empty strip left of the book body
+        float rightGap = w * (1f - BodyRight);   // empty strip right of the book body (the ribbon is here)
+
         // Close (top right)
         CreateAnchoredButton(root, "CloseButton", closeButtonColor, "X", 30f,
             new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1),
-            new Vector2(-12f, -12f), closeButtonSize, ClosePanel, false);
+            _skinned ? new Vector2(-rightGap + 14f, -14f) : new Vector2(-12f, -12f),
+            closeButtonSize, ClosePanel, false);
 
         // Previous (bottom left)
         _prevButton = CreateAnchoredButton(root, "PrevButton", buttonColor, "<", 36f,
-            new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0),
-            new Vector2(80f, 14f), navButtonSize, PreviousPage);
+            new Vector2(0, 0), new Vector2(0, 0), _skinned ? new Vector2(0, 1) : new Vector2(0, 0),
+            _skinned ? new Vector2(sideGap + 30f, 8f) : new Vector2(80f, 14f), navButtonSize, PreviousPage);
 
         // Next (bottom right)
         _nextButton = CreateAnchoredButton(root, "NextButton", buttonColor, ">", 36f,
-            new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0),
-            new Vector2(-80f, 14f), navButtonSize, NextPage);
+            new Vector2(1, 0), new Vector2(1, 0), _skinned ? new Vector2(1, 1) : new Vector2(1, 0),
+            _skinned ? new Vector2(-rightGap - 30f, 8f) : new Vector2(-80f, 14f), navButtonSize, NextPage);
 
-        // Page number (bottom center)
+        // Page number (bottom center, just under the book when it has art)
         _pageNumberLabel = CreateLabel(root, "", 26f, buttonTextColor,
-            new Vector2(0.4f, 0f), new Vector2(0.6f, 0.09f));
+            _skinned ? new Vector2(0.4f, -0.075f) : new Vector2(0.4f, 0f),
+            _skinned ? new Vector2(0.6f, 0.005f) : new Vector2(0.6f, 0.09f));
         _pageNumberLabel.alignment = TextAlignmentOptions.Center;
         ApplyFont(_pageNumberLabel, SerifBody);
     }

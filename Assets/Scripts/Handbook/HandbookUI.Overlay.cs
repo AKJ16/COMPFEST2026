@@ -115,9 +115,23 @@ public partial class HandbookUI
         Rect r = canvasRect.rect;
         _fitW = Screen.width;
         _fitH = Screen.height;
-        if (r.width <= 1f || r.height <= 1f || panelSize.x <= 0f || panelSize.y <= 0f) return;
+        if (r.width <= 1f || r.height <= 1f || _panelSizeActual.x <= 0f || _panelSizeActual.y <= 0f) return;
 
-        float s = Mathf.Min(1f, r.width * screenFill / panelSize.x, r.height * screenFill / panelSize.y);
+        if (_skinned && fullScreenBook)
+        {
+            // Fit the book body (not the empty strip around it) plus the buttons under it, and allow scaling up.
+            float bodyW = _panelSizeActual.x * (BodyRight - BodyLeft);
+            float overhang = Mathf.Max(0f, navButtonSize.y - 8f);       // buttons hang below the book
+            float fullH = _panelSizeActual.y + overhang;
+            float full = Mathf.Min(r.width * fullScreenFill / bodyW, r.height * fullScreenFill / fullH);
+
+            _panelRoot.transform.localScale = new Vector3(full, full, 1f);
+            // Centre book + buttons together.
+            ((RectTransform)_panelRoot.transform).anchoredPosition = new Vector2(0f, overhang * full * 0.5f);
+            return;
+        }
+
+        float s = Mathf.Min(1f, r.width * screenFill / _panelSizeActual.x, r.height * screenFill / _panelSizeActual.y);
         _panelRoot.transform.localScale = new Vector3(s, s, 1f);
     }
 
