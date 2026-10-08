@@ -130,8 +130,8 @@ public partial class HandbookUI
         var r = _descLabel.rectTransform;
         if (weaponLayout)
         {
-            r.anchorMin = new Vector2(0.08f, 0.52f);
-            r.anchorMax = new Vector2(0.92f, 0.79f);
+            r.anchorMin = new Vector2(0.05f, 0.50f);
+            r.anchorMax = new Vector2(0.95f, 0.80f);
         }
         else
         {

@@ -152,36 +152,36 @@ public partial class HandbookUI
         // Stat boxes row (top)
         var (_, statsRect, statsImg) = CreateBox("Stats", _rightContent, Color.clear);
         statsImg.raycastTarget = false;
-        statsRect.anchorMin = new Vector2(0.08f, 0.82f);
-        statsRect.anchorMax = new Vector2(0.92f, 0.95f);
+        statsRect.anchorMin = new Vector2(0.05f, 0.83f);
+        statsRect.anchorMax = new Vector2(0.95f, 0.95f);
         statsRect.offsetMin = statsRect.offsetMax = Vector2.zero;
         _statsRow = statsRect;
 
-        // Description (also used for the intro blurb)
+        // Description (EFFECT section)
         _descLabel = CreateLabel(_rightContent, "", bodyFontSize, inkColor,
-            new Vector2(0.08f, 0.52f), new Vector2(0.92f, 0.79f));
+            new Vector2(0.05f, 0.50f), new Vector2(0.95f, 0.80f));
         _descLabel.alignment = TextAlignmentOptions.TopLeft;
         _descLabel.textWrappingMode = TextWrappingModes.Normal;
         _descLabel.richText = true;
-        _descLabel.lineSpacing = 8f;
-        _descLabel.paragraphSpacing = 12f;
+        _descLabel.lineSpacing = 6f;
+        _descLabel.paragraphSpacing = 10f;
         _descLabel.enableAutoSizing = true;
         _descLabel.fontSizeMin = 18f;
         _descLabel.fontSizeMax = bodyFontSize;
         _descLabel.overflowMode = TextOverflowModes.Ellipsis;
         ApplyFont(_descLabel, SerifBody);
 
-        // Size / range diagrams (bottom left)
+        // Placement area (bottom left column: SIZE & RANGE GRID)
         var (_, diagRect, diagImg) = CreateBox("Diagrams", _rightContent, Color.clear);
         diagImg.raycastTarget = false;
-        diagRect.anchorMin = new Vector2(0.08f, 0.05f);
-        diagRect.anchorMax = new Vector2(0.50f, 0.49f);
+        diagRect.anchorMin = new Vector2(0.05f, 0.04f);
+        diagRect.anchorMax = new Vector2(0.48f, 0.47f);
         diagRect.offsetMin = diagRect.offsetMax = Vector2.zero;
         _diagramArea = diagRect;
 
-        // Combos (bottom right)
+        // Combos area (bottom right column: COMBOS)
         _combosLabel = CreateLabel(_rightContent, "", bodyFontSize * 0.9f, inkColor,
-            new Vector2(0.54f, 0.05f), new Vector2(0.92f, 0.49f));
+            new Vector2(0.52f, 0.04f), new Vector2(0.95f, 0.47f));
         _combosLabel.alignment = TextAlignmentOptions.TopLeft;
         _combosLabel.textWrappingMode = TextWrappingModes.Normal;
         _combosLabel.richText = true;
