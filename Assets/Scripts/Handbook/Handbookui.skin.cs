@@ -85,8 +85,8 @@ public partial class HandbookUI
     {
         var (_, rect, img) = CreateBox("Content", page, Color.clear);
         img.raycastTarget = false;
-        rect.anchorMin = new Vector2(pagePadding.x, pagePadding.y);
-        rect.anchorMax = new Vector2(1f - pagePadding.x, 1f - pagePadding.y);
+        rect.anchorMin = new Vector2(pagePaddingLeft, pagePaddingBottom);
+        rect.anchorMax = new Vector2(1f - pagePaddingRight, 1f - pagePaddingTop);
         rect.offsetMin = rect.offsetMax = Vector2.zero;
         return rect;
     }

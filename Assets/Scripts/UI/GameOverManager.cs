@@ -47,13 +47,27 @@ public class GameOverManager : MonoBehaviour
 
     private IEnumerator GameOverSequence(float initialDelay)
     {
-        // HARD LOCK: Wait until ALL animations & Hourglass chains are 100% finished!
+        // Wait until all attacks finish
         while (WeaponEffectsSystem.IsBusy)
         {
             yield return null;
         }
 
+        // FIX: If the player won the stage while waiting, CANCEL GAME OVER!
+        if (StageManager.Instance != null && StageManager.Instance.Result == StageResult.Win)
+        {
+            isGameOver = false;
+            yield break;
+        }
+
         yield return new WaitForSecondsRealtime(initialDelay);
+
+        // Double check again before showing game over
+        if (StageManager.Instance != null && StageManager.Instance.Result == StageResult.Win)
+        {
+            isGameOver = false;
+            yield break;
+        }
 
         if (AudioManager.Instance != null && gameOverSfx != null)
         {
@@ -117,5 +131,11 @@ public class GameOverManager : MonoBehaviour
         {
             SceneManager.LoadScene(mainMenuSceneName);
         }
+    }
+
+    public void CancelGameOver()
+    {
+        isGameOver = false;
+        StopAllCoroutines();
     }
 }

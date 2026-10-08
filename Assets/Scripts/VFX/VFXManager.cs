@@ -26,6 +26,7 @@ public class VFXManager : MonoBehaviour
     private Image _stopwatchHand;     // jarum yang berputar (anak dari wajah)
     private Coroutine _screenEffectRoutine;
     private bool _rewindActive;
+    private int _rewindSessionId = 0;
 
     private Sprite _softEdgeSprite;
     private Sprite _stopwatchSprite;
@@ -113,8 +114,12 @@ public class VFXManager : MonoBehaviour
     {
         EnsureScreenOverlay();
 
+        // Immediately stop and override any existing screen routine
         if (_screenEffectRoutine != null)
+        {
             StopCoroutine(_screenEffectRoutine);
+            _screenEffectRoutine = null;
+        }
 
         _rewindActive = true;
         _screenEffectRoutine = StartCoroutine(RewindRoutine());
@@ -216,10 +221,14 @@ public class VFXManager : MonoBehaviour
     {
         EnsureScreenOverlay();
 
-        _rewindActive = false;
+        // If an hourglass rewind is running, don't kill it with book vignette
+        if (_rewindActive) return;
 
         if (_screenEffectRoutine != null)
+        {
             StopCoroutine(_screenEffectRoutine);
+            _screenEffectRoutine = null;
+        }
 
         _screenEffectRoutine = StartCoroutine(ScreenEffectRoutine(type, duration));
     }

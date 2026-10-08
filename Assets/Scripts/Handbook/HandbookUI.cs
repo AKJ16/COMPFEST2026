@@ -56,8 +56,15 @@ public partial class HandbookUI : MonoBehaviour
     [SerializeField] private Texture2D rightPageTexture;
     [Tooltip("Width of the book in canvas units. The height follows the art's shape.")]
     [SerializeField] private float bookArtWidth = 1850f;
-    [Tooltip("Free space kept inside each page so text stays off the page border. X = left/right, Y = top/bottom (0.1 = 10%).")]
-    [SerializeField] private Vector2 pagePadding = new Vector2(0.10f, 0.12f);
+    [Header("Page Padding (0.1 = 10% of page)")]
+    [Tooltip("Left border padding.")]
+    [SerializeField] private float pagePaddingLeft = 0.10f;
+    [Tooltip("Right border padding.")]
+    [SerializeField] private float pagePaddingRight = 0.10f;
+    [Tooltip("Bottom border padding.")]
+    [SerializeField] private float pagePaddingBottom = 0.12f;
+    [Tooltip("Top border padding (decrease this to reduce top padding!).")]
+    [SerializeField] private float pagePaddingTop = 0.06f; // Set this lower (e.g. 0.05 or 0.06)
 
     [Header("Stat Boxes & Diagrams")]
     [SerializeField] private Color chipColor = new Color(0.85f, 0.77f, 0.58f, 1f);
@@ -252,8 +259,14 @@ public partial class HandbookUI : MonoBehaviour
         _isOpen = true;
         Freeze();
 
+        // Muffle BGM when Handbook opens
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.DuckMusic(0.3f);
+        }
+
         if (blurBackground && _blurImage != null && isActiveAndEnabled)
-            _openRoutine = StartCoroutine(OpenAfterCapture());   // needs the finished frame to screenshot
+            _openRoutine = StartCoroutine(OpenAfterCapture());
         else
             ShowBook();
     }
@@ -261,6 +274,12 @@ public partial class HandbookUI : MonoBehaviour
     public void ClosePanel()
     {
         bool wasOpen = _isOpen;
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.UnduckMusic(0.3f);
+        }
+
         CloseInternal();
         if (wasOpen) PlaySfx(closeSfx);
     }

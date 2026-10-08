@@ -14,14 +14,21 @@ public class WeaponData : ScriptableObject
     public WeaponCategory category;
 
     [Header("Animation")]
-    [Tooltip("Unique animation played on placement/attack. 'Auto' selects based on weapon type.")]
     public WeaponAnimType animType = WeaponAnimType.Auto;
 
-    [Header("Description (buat tooltip UI)")]
+    [Header("Usage Cap (0 = Unlimited)")]
+    [Tooltip("Max times this weapon can be placed per stage. Books default to 2.")]
+    public int maxUsagePerStage = 0;
+
+    // Helper: Books automatically default to 2 uses if maxUsagePerStage is 0
+    public int MaxUsage => maxUsagePerStage > 0 ? maxUsagePerStage : (category == WeaponCategory.Modifier && modifierType != ModifierType.Repeat ? 3 : 0);
+    public bool HasUsageCap => MaxUsage > 0;
+
+    [Header("Description")]
     [TextArea(2, 5)]
     public string description;
 
-    [Header("Sprite (placeholder until assets are ready)")]
+    [Header("Sprite")]
     public Sprite icon;
 
     [Header("Base Stats")]
@@ -38,11 +45,11 @@ public class WeaponData : ScriptableObject
     [Header("Relations")]
     public WeaponData[] targets;
 
-    [Header("Modifier Behavior (only used when category == Modifier)")]
+    [Header("Modifier Behavior")]
     public ModifierType modifierType = ModifierType.None;
     public float modifierValue;
 
-    [Header("Status Effect (Stage 2+)")]
+    [Header("Status Effect")]
     public bool appliesPoison;
     public int poisonDamagePerTick;
 

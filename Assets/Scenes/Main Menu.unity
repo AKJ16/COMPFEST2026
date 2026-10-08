@@ -384,7 +384,7 @@ MonoBehaviour:
   buttonFadeDuration: 0.5
   quitButton: {fileID: 1605873547}
   menuMusic: {fileID: 8300000, guid: 1a064d5f2a374e64c9e0f52fe5b5e5b0, type: 3}
-  gameplaySceneName: Stage 0
+  gameplaySceneName: StageTutorial
 --- !u!1 &474750353
 GameObject:
   m_ObjectHideFlags: 0
@@ -699,6 +699,7 @@ MonoBehaviour:
   buttonClickSfx: {fileID: 8300000, guid: 77d659f3e2589da46a8d88a1d3eef1f1, type: 3}
   defaultMusicVolume: 0.7
   defaultSfxVolume: 1
+  duckedVolumeMultiplier: 0.3
 --- !u!4 &581888636
 Transform:
   m_ObjectHideFlags: 0

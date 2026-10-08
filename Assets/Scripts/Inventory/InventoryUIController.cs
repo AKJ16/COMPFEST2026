@@ -50,16 +50,9 @@ public class InventoryUIController : MonoBehaviour
         {
             slot = Instantiate(slotPrefab, barContainer);
             _slots[data] = slot;
-
-            // 1. Activate slot FIRST so it is active in hierarchy if unlocked
             slot.gameObject.SetActive(IsUnlocked(data));
-
-            // 2. Setup initial slot data with count = 0
-            slot.Setup(data, 0);
-
-            // 3. Update count (triggers popup on Stage 2+ for newly unlocked weapons)
-            slot.UpdateCount(newCount);
-
+            slot.Setup(data, 0); // Setup with 0 first
+            slot.UpdateCount(newCount); // Triggers the popup for new weapons!
             slot.OnSlotClicked += HandleSlotClicked;
         }
         else

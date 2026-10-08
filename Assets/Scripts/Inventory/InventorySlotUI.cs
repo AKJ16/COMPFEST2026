@@ -22,6 +22,9 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
 
     private DragDrop activeDragObject;
 
+    [Header("Reward Popup")]
+    [SerializeField] private InventoryRewardPopUp rewardPopUpPrefab;
+
     private void Awake()
     {
         var existingIcon = transform.Find("Icon");
@@ -94,10 +97,13 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
     {
         int addedAmount = count - CurrentCount;
 
+        // Never show popups on Stage 1 (Initial start)
         bool isNotStage1 = StageManager.Instance != null && StageManager.Instance.CurrentStageNumber > 1;
 
-        if (addedAmount > 0 && Data != null && gameObject.activeInHierarchy && isNotStage1)
+        // FIX: Removed 'gameObject.activeInHierarchy' check that blocked new slots on frame 0
+        if (addedAmount > 0 && Data != null && isNotStage1)
         {
+            Debug.Log("Add");
             ShowRewardPopUp(addedAmount);
         }
 
@@ -118,18 +124,24 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
 
     private void ShowRewardPopUp(int amount)
     {
-        Canvas.ForceUpdateCanvases();
+        if (rewardPopUpPrefab == null)
+        {
+            Debug.LogWarning("[InventorySlotUI] Reward PopUp Prefab is NOT assigned in the Inspector!", this);
+            return;
+        }
 
-        GameObject popUpGO = new GameObject($"+{amount}_PopUp", typeof(RectTransform));
-
+        // Spawn inside the main Canvas so layout groups don't trap it
         Transform canvasParent = GetComponentInParent<Canvas>() != null ? GetComponentInParent<Canvas>().transform : transform;
-        popUpGO.transform.SetParent(canvasParent, false);
+        InventoryRewardPopUp popUp = Instantiate(rewardPopUpPrefab, canvasParent);
 
-        RectTransform rect = popUpGO.GetComponent<RectTransform>();
-        rect.position = transform.position + new Vector3(0f, 50f, 0f);
-        rect.sizeDelta = new Vector2(100f, 40f);
+        RectTransform popRect = popUp.GetComponent<RectTransform>();
+        RectTransform slotRect = GetComponent<RectTransform>();
 
-        var popUp = popUpGO.AddComponent<InventoryRewardPopUp>();
+        // Copy slot position and lift it 55 UI pixels above the slot
+        popRect.position = slotRect.position;
+        popRect.anchoredPosition += new Vector2(0f, 55f);
+        popRect.SetAsLastSibling(); // Ensure it renders on top of everything
+
         popUp.Setup(amount);
     }
 
@@ -148,6 +160,14 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
     #region Drag and Drop Integration
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (WeaponEffectsSystem.IsHourglassBusy) return;
+
+        // BLOCK DRAGGING IF THE STAGE USAGE LIMIT IS REACHED!
+        if (InventorySystem.Instance != null && InventorySystem.Instance.IsLimitReached(Data))
+        {
+            return;
+        }
+
         if (CurrentCount <= 0 || Data == null) return;
         if (StageManager.Instance != null && StageManager.Instance.Result != StageResult.InProgress) return;
 
@@ -159,7 +179,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
 
         var sr = dragGO.AddComponent<SpriteRenderer>();
         sr.sprite = Data.icon;
-        sr.sortingOrder = 100; // Render above UI Canvas
+        sr.sortingOrder = 100;
 
         var col = dragGO.AddComponent<BoxCollider2D>();
         col.size = new Vector2(Data.Width, Data.Height);
