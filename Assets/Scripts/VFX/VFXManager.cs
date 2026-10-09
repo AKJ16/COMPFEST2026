@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,16 @@ public class VFXManager : MonoBehaviour
     [SerializeField] private Transform cameraTransform;
     [SerializeField] private ParticleSystem hitParticlesPrefab;
     [SerializeField] private ParticleSystem deathParticlesPrefab;
+
+    [Header("Hourglass")]
+    [Tooltip("Rewind clock drawn on the middle of the enemy while the Hourglass is active.")]
+    [SerializeField] private bool showEnemyClock = true;
+    [Tooltip("The old stopwatch in the middle of the screen. Off = only the clock on the enemy.")]
+    [SerializeField] private bool showScreenStopwatch = false;
+
+    [Header("Books")]
+    [Tooltip("Small + / x signs floating along the screen border when a book boosts an attack.")]
+    [SerializeField] private bool showBorderSigns = true;
 
     // Posisi stopwatch: di tengah layar, sedikit ke bawah (satuan canvas 1920x1080).
     private const float SymbolBaseY = -60f;
@@ -31,6 +42,10 @@ public class VFXManager : MonoBehaviour
     private Sprite _softEdgeSprite;
     private Sprite _stopwatchSprite;
     private Sprite _handSprite;
+
+    private Sprite _plusSprite;
+    private RectTransform _signRoot;
+    private readonly List<Image> _signPool = new List<Image>();
 
     private enum ScreenEffectType
     {
@@ -91,14 +106,14 @@ public class VFXManager : MonoBehaviour
     // ------------------------------------------------------------------
 
     // Book of Addition: soft pink magical pressure around the ENTIRE screen.
-    public void PlayAdditionScreenEffect(float duration = 0.75f)
+    public void PlayAdditionScreenEffect(float duration = 1.1f)
     {
         PlayScreenEffect(ScreenEffectType.Addition, duration);
     }
 
     // Book of Multiplication: soft amber/orange magical pressure around the
     // ENTIRE screen. No hard rectangular border.
-    public void PlayMultiplicationScreenEffect(float duration = 0.75f)
+    public void PlayMultiplicationScreenEffect(float duration = 1.1f)
     {
         PlayScreenEffect(ScreenEffectType.Multiplication, duration);
     }
@@ -122,12 +137,14 @@ public class VFXManager : MonoBehaviour
         }
 
         _rewindActive = true;
+        if (showEnemyClock) WeaponVfxHourglass.BeginClock();
         _screenEffectRoutine = StartCoroutine(RewindRoutine());
     }
 
     public void EndHourglassRewind()
     {
         _rewindActive = false;
+        WeaponVfxHourglass.EndClock();
     }
 
     // Versi lama: tampil sebentar lalu hilang sendiri.
@@ -151,7 +168,7 @@ public class VFXManager : MonoBehaviour
         const float handSpeed = 540f; // derajat/detik, berlawanan arah jarum jam
 
         _screenEdgeFade.gameObject.SetActive(true);
-        _hourglassSymbol.gameObject.SetActive(true);
+        _hourglassSymbol.gameObject.SetActive(showScreenStopwatch);
 
         float elapsed = 0f;
         float handAngle = 0f;
@@ -256,6 +273,9 @@ public class VFXManager : MonoBehaviour
                 break;
         }
 
+        if (showBorderSigns)
+            StartCoroutine(BorderSignsRoutine(type == ScreenEffectType.Addition, effectColor, duration));
+
         float fadeIn = Mathf.Min(0.20f, duration * 0.28f);
         float fadeOut = Mathf.Min(0.34f, duration * 0.38f);
         float holdEnd = Mathf.Max(fadeIn, duration - fadeOut);
@@ -325,6 +345,18 @@ public class VFXManager : MonoBehaviour
             rect.anchorMax = Vector2.one;
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
+        }
+
+        if (_signRoot == null)
+        {
+            GameObject signRootObject = new GameObject("Border_Signs", typeof(RectTransform));
+            signRootObject.transform.SetParent(_screenCanvas.transform, false);
+
+            _signRoot = signRootObject.GetComponent<RectTransform>();
+            _signRoot.anchorMin = Vector2.zero;
+            _signRoot.anchorMax = Vector2.one;
+            _signRoot.offsetMin = Vector2.zero;
+            _signRoot.offsetMax = Vector2.zero;
         }
 
         if (_hourglassSymbol == null)
@@ -505,6 +537,188 @@ public class VFXManager : MonoBehaviour
 
         _handSprite.name = "Generated_Stopwatch_Hand";
         return _handSprite;
+    }
+
+    // ------------------------------------------------------------------
+    // BORDER SIGNS (+ for Addition, x for Multiplication)
+    // ------------------------------------------------------------------
+
+    // Small signs pop up along the four screen edges, drift inward and fade,
+    // to show "your attack has been added / multiplied".
+    private IEnumerator BorderSignsRoutine(bool plus, Color color, float duration)
+    {
+        EnsureScreenOverlay();
+
+        RectTransform canvasRect = (RectTransform)_screenCanvas.transform;
+        float halfW = canvasRect.rect.width * 0.5f;
+        float halfH = canvasRect.rect.height * 0.5f;
+
+        const int count = 18;
+        const float driftAmount = 36f;
+
+        float life = Mathf.Max(0.4f, duration * 0.6f);
+        float maxDelay = Mathf.Max(0f, duration - life);
+        Color signColor = Color.Lerp(color, Color.white, 0.25f);
+
+        Image[] signs = new Image[count];
+        Vector2[] start = new Vector2[count];
+        Vector2[] drift = new Vector2[count];
+        float[] delay = new float[count];
+        float[] baseRotation = new float[count];
+
+        for (int i = 0; i < count; i++)
+        {
+            float inset = Random.Range(40f, 120f);
+            float along = Random.Range(-0.92f, 0.92f);
+
+            // Spread evenly over the four edges: top, bottom, left, right.
+            switch (i % 4)
+            {
+                case 0:
+                    start[i] = new Vector2(along * halfW, halfH - inset);
+                    drift[i] = new Vector2(0f, -driftAmount);
+                    break;
+                case 1:
+                    start[i] = new Vector2(along * halfW, -halfH + inset);
+                    drift[i] = new Vector2(0f, driftAmount);
+                    break;
+                case 2:
+                    start[i] = new Vector2(-halfW + inset, along * halfH);
+                    drift[i] = new Vector2(driftAmount, 0f);
+                    break;
+                default:
+                    start[i] = new Vector2(halfW - inset, along * halfH);
+                    drift[i] = new Vector2(-driftAmount, 0f);
+                    break;
+            }
+
+            delay[i] = Random.Range(0f, maxDelay);
+
+            // The "x" is the same sprite turned 45 degrees.
+            baseRotation[i] = (plus ? 0f : 45f) + Random.Range(-12f, 12f);
+
+            float size = Random.Range(34f, 64f);
+            signs[i] = RentSign();
+            signs[i].rectTransform.sizeDelta = new Vector2(size, size);
+            signs[i].rectTransform.anchoredPosition = start[i];
+            signs[i].color = new Color(signColor.r, signColor.g, signColor.b, 0f);
+        }
+
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+
+            for (int i = 0; i < count; i++)
+            {
+                if (signs[i] == null) continue;
+
+                float t = (elapsed - delay[i]) / life;
+
+                if (t < 0f || t > 1f)
+                {
+                    signs[i].color = new Color(signColor.r, signColor.g, signColor.b, 0f);
+                    continue;
+                }
+
+                float alpha = Smooth01(t / 0.25f) * (1f - Smooth01((t - 0.55f) / 0.45f));
+                float scale = Mathf.Lerp(0.5f, 1f, Smooth01(t / 0.3f));
+
+                RectTransform rt = signs[i].rectTransform;
+                rt.anchoredPosition = start[i] + drift[i] * t;
+                rt.localScale = Vector3.one * scale;
+                rt.localRotation = Quaternion.Euler(0f, 0f, baseRotation[i] + t * 25f);
+
+                signs[i].color = new Color(signColor.r, signColor.g, signColor.b, 0.9f * alpha);
+            }
+
+            yield return null;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            if (signs[i] != null)
+                signs[i].gameObject.SetActive(false);
+        }
+    }
+
+    private Image RentSign()
+    {
+        for (int i = 0; i < _signPool.Count; i++)
+        {
+            Image existing = _signPool[i];
+            if (existing != null && !existing.gameObject.activeSelf)
+            {
+                existing.gameObject.SetActive(true);
+                return existing;
+            }
+        }
+
+        GameObject go = new GameObject("BorderSign");
+        go.transform.SetParent(_signRoot, false);
+
+        Image img = go.AddComponent<Image>();
+        img.sprite = GetPlusSprite();
+        img.raycastTarget = false;
+        img.color = Color.clear;
+
+        RectTransform rt = img.rectTransform;
+        rt.anchorMin = new Vector2(0.5f, 0.5f);
+        rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+
+        _signPool.Add(img);
+        return img;
+    }
+
+    // White "+" with a soft glow. Tinted per effect; turned 45 degrees it becomes "x".
+    private Sprite GetPlusSprite()
+    {
+        if (_plusSprite != null)
+            return _plusSprite;
+
+        const int size = 64;
+        const float halfArm = 24f;
+        const float halfThick = 5f;
+
+        Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        texture.wrapMode = TextureWrapMode.Clamp;
+        texture.filterMode = FilterMode.Bilinear;
+
+        Color[] pixels = new Color[size * size];
+        float c = (size - 1) * 0.5f;
+
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float dx = Mathf.Abs(x - c);
+                float dy = Mathf.Abs(y - c);
+
+                // Distance to the two crossing segments that form the plus.
+                float dH = dx <= halfArm ? dy : Mathf.Sqrt((dx - halfArm) * (dx - halfArm) + dy * dy);
+                float dV = dy <= halfArm ? dx : Mathf.Sqrt((dy - halfArm) * (dy - halfArm) + dx * dx);
+                float d = Mathf.Min(dH, dV);
+
+                float core = Mathf.Clamp01(halfThick - d + 0.5f);
+                float glow = Mathf.Clamp01(1f - d / (halfThick + 7f)) * 0.3f;
+
+                pixels[y * size + x] = new Color(1f, 1f, 1f, Mathf.Max(core, glow));
+            }
+        }
+
+        texture.SetPixels(pixels);
+        texture.Apply();
+
+        _plusSprite = Sprite.Create(
+            texture,
+            new Rect(0, 0, size, size),
+            new Vector2(0.5f, 0.5f),
+            100f);
+
+        _plusSprite.name = "Generated_Plus_Sign";
+        return _plusSprite;
     }
 
     private static float Smooth01(float t)

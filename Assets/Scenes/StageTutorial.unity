@@ -171,6 +171,50 @@ MonoBehaviour:
   mainMenuSceneName: Main Menu
   gameOverSfx: {fileID: 8300000, guid: b847c74bf8bf58046a86b79d41884fec, type: 3}
   scoreText: {fileID: 0}
+--- !u!1 &9583003
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9583004}
+  - component: {fileID: 9583005}
+  m_Layer: 0
+  m_Name: TutorialGuide
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9583004
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9583003}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 354.9351, y: 107.08311, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9583005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9583003}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae0b1b99bae6fbaa1bc846bb6c038f61, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialGuide
 --- !u!1 &95786235
 GameObject:
   m_ObjectHideFlags: 0
@@ -302,6 +346,9 @@ MonoBehaviour:
   cameraTransform: {fileID: 519420032}
   hitParticlesPrefab: {fileID: 0}
   deathParticlesPrefab: {fileID: 0}
+  showEnemyClock: 1
+  showScreenStopwatch: 0
+  showBorderSigns: 1
 --- !u!114 &135474907
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6245,7 +6292,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -657.99994, y: 0}
+  m_AnchoredPosition: {x: -657.9999, y: 0}
   m_SizeDelta: {x: -1553.356, y: -128.1263}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1983957459
@@ -7073,3 +7120,4 @@ SceneRoots:
   - {fileID: 1429271082}
   - {fileID: 436446007}
   - {fileID: 2145096790}
+  - {fileID: 9583004}
