@@ -699,6 +699,7 @@ MonoBehaviour:
   buttonClickSfx: {fileID: 8300000, guid: 77d659f3e2589da46a8d88a1d3eef1f1, type: 3}
   defaultMusicVolume: 0.7
   defaultSfxVolume: 1
+  duckedVolumeMultiplier: 0.3
 --- !u!4 &581888636
 Transform:
   m_ObjectHideFlags: 0
