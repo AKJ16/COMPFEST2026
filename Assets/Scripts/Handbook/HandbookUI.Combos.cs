@@ -179,6 +179,7 @@ public partial class HandbookUI
         ("hour",   "sword",  "Echo Strike"),
         ("hour",   "staff",  "Echo Bolt"),
         ("hour",   "poison", "Echo Venom"),
+        ("hour",   "hour",   "Time Loop"),
     };
 
     // Name shown in the book and in the toast. Order: your override in Combo Names,
@@ -276,7 +277,12 @@ public partial class HandbookUI
             if (mod.modifierType == ModifierType.Repeat)
             {
                 foreach (var w in _weapons)
-                    if (w.category == WeaponCategory.Attack) Add(mod, w);
+                {
+                    if (w.category == WeaponCategory.Attack || w.modifierType == ModifierType.Repeat)
+                    {
+                        Add(mod, w);
+                    }
+                }
                 continue;
             }
 

@@ -155,10 +155,22 @@ public class EnemyVisual : MonoBehaviour
 
     private IEnumerator WaitAndBounceDown(float delay)
     {
-        // Wait until all weapon effects and chains finish
+        // Wait until all weapon effects finish
         while (WeaponEffectsSystem.IsBusy)
         {
             yield return null;
+        }
+
+        // FIX: If the enemy was killed during the attack, CANCEL THE HIT IMMEDIATELY!
+        if (_health == null || _health.State == EnemyState.Dead || _health.CurrentHealth <= 0)
+        {
+            yield break;
+        }
+
+        // FIX: If the stage was won, do not hit the player!
+        if (StageManager.Instance != null && StageManager.Instance.Result == StageResult.Win)
+        {
+            yield break;
         }
 
         yield return StartCoroutine(DelayedBounceDownSequence(delay));
@@ -206,6 +218,12 @@ public class EnemyVisual : MonoBehaviour
         if (delayBeforeBounce > 0f)
         {
             yield return new WaitForSecondsRealtime(delayBeforeBounce);
+        }
+
+        // Double check enemy is still alive after delay
+        if (_health == null || _health.State == EnemyState.Dead || _health.CurrentHealth <= 0)
+        {
+            yield break;
         }
 
         yield return StartCoroutine(TimeUpBounceDownRoutine());

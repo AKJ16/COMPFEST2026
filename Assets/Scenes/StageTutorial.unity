@@ -360,48 +360,9 @@ MonoBehaviour:
     isBossStage: 0
     phase2MechanicDescription: IMMUNE TO POISON! Direct damage only!
     gridColumns: 4
-    gridRows: 2
+    gridRows: 4
     disabledGridCells: []
     bonusWeapons: []
-  - stageNumber: 2
-    stageEnemy: {fileID: 1730563476}
-    isBossStage: 0
-    phase2MechanicDescription: IMMUNE TO POISON! Direct damage only!
-    gridColumns: 3
-    gridRows: 3
-    disabledGridCells:
-    - {x: 2, y: 2}
-    - {x: 0, y: 0}
-    bonusWeapons:
-    - weaponData: {fileID: 11400000, guid: 5b65aaa9fd233d14c96a59fbdae00164, type: 2}
-      amount: 1
-    - weaponData: {fileID: 11400000, guid: 7bb0cb58b4bb8f146a6cf809fa2a880a, type: 2}
-      amount: 1
-    - weaponData: {fileID: 11400000, guid: ea09822ef08534c49ada93e35551fbd3, type: 2}
-      amount: 1
-  - stageNumber: 2
-    stageEnemy: {fileID: 1871075251}
-    isBossStage: 1
-    phase2MechanicDescription: IMMUNE TO POISON! Direct damage only!
-    gridColumns: 5
-    gridRows: 3
-    disabledGridCells:
-    - {x: 0, y: 0}
-    - {x: 0, y: 2}
-    - {x: 4, y: 0}
-    - {x: 2, y: 1}
-    - {x: 3, y: 2}
-    bonusWeapons:
-    - weaponData: {fileID: 11400000, guid: 5b65aaa9fd233d14c96a59fbdae00164, type: 2}
-      amount: 1
-    - weaponData: {fileID: 11400000, guid: 7bb0cb58b4bb8f146a6cf809fa2a880a, type: 2}
-      amount: 1
-    - weaponData: {fileID: 11400000, guid: 5d79097466fa4fe4284dfd2cbaf1868a, type: 2}
-      amount: 1
-    - weaponData: {fileID: 11400000, guid: 21f4679b203b2c34bba7f553b5832f7e, type: 2}
-      amount: 2
-    - weaponData: {fileID: 11400000, guid: 2cd330a07d69d4648b8f5ac88a8d9d44, type: 2}
-      amount: 1
   gameplayMusic: {fileID: 8300000, guid: be885987e0a5b5947a05983102054ef8, type: 3}
   stageWinSfx: {fileID: 0}
 --- !u!1 &137606162
@@ -2010,7 +1971,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 21f4679b203b2c34bba7f553b5832f7e, type: 2}
   - {fileID: 11400000, guid: 5b65aaa9fd233d14c96a59fbdae00164, type: 2}
   - {fileID: 11400000, guid: 7bb0cb58b4bb8f146a6cf809fa2a880a, type: 2}
-  startingAmounts: 030000000300000002000000020000000000000000000000
+  startingAmounts: 020000000000000000000000000000000000000000000000
   stageNumber: 1
 --- !u!224 &541137717 stripped
 RectTransform:
@@ -2353,10 +2314,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc8612306243c14191405b9ab6f4902, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTooltipUI
+  yOffsetPixels: 70
   width: 200
-  fontSizeTitle: 25
-  fontSizeText: 20
   padding: 10
+  tooltipRect: {fileID: 0}
+  nameText: {fileID: 0}
+  descriptionText: {fileID: 0}
+  background: {fileID: 0}
 --- !u!1 &680047690
 GameObject:
   m_ObjectHideFlags: 0
@@ -3039,7 +3003,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WinManager
   transition: {fileID: 452665040}
-  mainMenuSceneName: Main Menu
+  mainMenuSceneName: Stage1
   victorySfx: {fileID: 8300000, guid: 4036671610bd47746b31bc5d0555a564, type: 3}
   victoryText: {fileID: 0}
 --- !u!1 &1008858483
@@ -3902,6 +3866,7 @@ MonoBehaviour:
   timer: {fileID: 135474905}
   fillImage: {fileID: 712846841}
   pulseTarget: {fileID: 587019174}
+  tickSound: {fileID: 8300000, guid: ab1893062aff00f43b45e0d9b4a3d098, type: 3}
   pulseScale: 1.02
   pulseDuration: 0.5
   normalColor: {r: 1, g: 1, b: 1, a: 1}
@@ -4622,8 +4587,6 @@ Transform:
   - {fileID: 135474904}
   - {fileID: 1328871383}
   - {fileID: 1850498363}
-  - {fileID: 1730563473}
-  - {fileID: 1871075248}
   - {fileID: 460656076}
   - {fileID: 1262559634}
   - {fileID: 2104232072}
@@ -4930,7 +4893,7 @@ MonoBehaviour:
   canvasParent: {fileID: 2022585132}
   openSfx: {fileID: 8300000, guid: fb608000f9d0ae64099c7f87627764c4, type: 3}
   closeSfx: {fileID: 8300000, guid: 1f0590334c7757f4eaa1b34c611e8f34, type: 3}
-  flipSfx: {fileID: 0}
+  flipSfx: {fileID: 8300000, guid: 0ea27ed8b76ddd24f8b12edd833fe69e, type: 3}
   panelSize: {x: 1700, y: 900}
   bookSprite: {fileID: 0}
   coverColor: {r: 0.27, g: 0.13, b: 0.06, a: 1}
@@ -4940,11 +4903,20 @@ MonoBehaviour:
   accentColor: {r: 0.66, g: 0.42, b: 0.15, a: 1}
   attackTagColor: {r: 0.6, g: 0.15, b: 0.15, a: 1}
   modifierTagColor: {r: 0.2, g: 0.25, b: 0.55, a: 1}
-  chipColor: {r: 0.85, g: 0.77, b: 0.58, a: 1}
+  useBookArt: 1
+  bookBaseTexture: {fileID: 0}
+  leftPageTexture: {fileID: 0}
+  rightPageTexture: {fileID: 0}
+  bookArtWidth: 1850
+  pagePaddingLeft: 0.1
+  pagePaddingRight: 0.1
+  pagePaddingBottom: 0.12
+  pagePaddingTop: 0.1
+  chipColor: {r: 1, g: 0.9372549, b: 0.54901963, a: 1}
   chipValueFontSize: 46
   chipLabelFontSize: 18
   gridItemColor: {r: 0.4, g: 0.22, b: 0.1, a: 1}
-  gridRangeColor: {r: 0.82, g: 0.62, b: 0.32, a: 1}
+  gridRangeColor: {r: 1, g: 0.9372549, b: 0.54901963, a: 1}
   diagramCellSize: 40
   titleFont: {fileID: 0}
   bodyFont: {fileID: 0}
@@ -4955,7 +4927,7 @@ MonoBehaviour:
   tagLetterSpacing: 10
   bodyFontSize: 32
   initialFontSize: 200
-  introEmblem: {fileID: 21300000, guid: 7eeb66aceaeb13728b62de04c1251fd1, type: 3}
+  introEmblem: {fileID: 1404028623067837608, guid: 5113ae88c1c47e74787d818fbdccea05, type: 3}
   emblemScale: 0.75
   introTitle: 'L.I.G.M.A.
 
@@ -4969,11 +4941,11 @@ MonoBehaviour:
     found within the ruins, along with their combination abilities. Turn the page
     to begin.'
   flipDuration: 0.3
-  buttonSprite: {fileID: 0}
+  buttonSprite: {fileID: 3640845826674152405, guid: 5adc37474eced06418352513e52f44b5, type: 3}
   buttonColor: {r: 0.45, g: 0.25, b: 0.12, a: 1}
   buttonTextColor: {r: 1, g: 0.93, b: 0.85, a: 1}
   closeButtonColor: {r: 0.5, g: 0.15, b: 0.15, a: 1}
-  navButtonSize: {x: 120, y: 60}
+  navButtonSize: {x: 70, y: 70}
   closeButtonSize: {x: 44, y: 44}
   showDiscoveryToast: 1
   toastSeconds: 2.5
@@ -4990,6 +4962,8 @@ MonoBehaviour:
   overlaySortingOrder: 5000
   fitToScreen: 1
   screenFill: 0.94
+  fullScreenBook: 1
+  fullScreenFill: 0.97
 --- !u!1 &1564958311
 GameObject:
   m_ObjectHideFlags: 0
@@ -5712,180 +5686,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1715734470}
   m_CullTransparentMesh: 1
---- !u!1 &1730563472
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1730563473}
-  - component: {fileID: 1730563476}
-  - component: {fileID: 1730563475}
-  - component: {fileID: 1730563474}
-  - component: {fileID: 1730563477}
-  - component: {fileID: 1730563478}
-  m_Layer: 0
-  m_Name: Enemy_Stage2
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1730563473
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1730563472}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.93, z: 0}
-  m_LocalScale: {x: 0.73, y: 0.73, z: 0.73}
-  m_ConstrainProportionsScale: 1
-  m_Children: []
-  m_Father: {fileID: 1429271082}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1730563474
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1730563472}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e56005ad1368684095c9205b1a2ff7d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyVisual
-  hurtBounceHeight: 0.35
-  hurtDuration: 0.25
-  poisonColor: {r: 0.47843137, g: 1, b: 0.17254902, a: 1}
-  timeUpDropDistance: 0.6
-  timeUpDuration: 0.2
-  deathBounceHeight: 0.5
-  deathDuration: 0.6
-  hurtSfx: {fileID: 8300000, guid: 2320a3cd3dbb9524f9d803ea2407ab3d, type: 3}
-  poisonSfx: {fileID: 8300000, guid: 06d4a9bb46be1db42859175361008951, type: 3}
-  deathSfx: {fileID: 8300000, guid: ebfca4efc92eae643b591dd65e3b03f3, type: 3}
-  playerHitSfx: {fileID: 8300000, guid: 290bfee1cab7e684dbc6fcabca3d8165, type: 3}
---- !u!212 &1730563475
-SpriteRenderer:
-  serializedVersion: 3
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1730563472}
-  m_Enabled: 1
-  m_CastShadows: 0
-  m_ReceiveShadows: 0
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 0
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 0
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_Sprite: {fileID: -2348606713834027065, guid: fa2710b6c30c0dd4a889d9bdd8c676ac, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 0
-  m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 0.2, y: 0.2}
-  m_AdaptiveModeThreshold: 0.5
-  m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
-  m_SpriteSortPoint: 0
-  m_BlendShapeWeights: []
---- !u!114 &1730563476
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1730563472}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 320361237292e3d41b6487513acae50e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  maxHealth: 20
-  hasTwoPhases: 0
-  phase2ThresholdPercent: 0.5
---- !u!114 &1730563477
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1730563472}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 827ef7acb3198a14d9f5ecd8a6ee97be, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UIFloat
-  moveSpeed: 2
-  verticalDistance: 0
-  infinityPath: 0
-  horizontalDistance: 0.1
-  pulseAlpha: 0
-  minAlpha: 0.5
---- !u!95 &1730563478
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1730563472}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: d61e161b2464be94f94509e5d0e1946a, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1800595165
 GameObject:
   m_ObjectHideFlags: 0
@@ -6068,7 +5868,7 @@ GameObject:
   - component: {fileID: 1850498367}
   - component: {fileID: 1850498368}
   m_Layer: 0
-  m_Name: Enemy_Stage1
+  m_Name: Enemy_Tutorial
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6083,8 +5883,8 @@ Transform:
   m_GameObject: {fileID: 1850498362}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
-  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1429271082}
@@ -6161,7 +5961,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 3772233164332861457, guid: 35436dec1c7d24548ba65fe46a93b2b4, type: 3}
+  m_Sprite: {fileID: 4315506946141470425, guid: a932d16a449cee947b7ab0e2a63be8c4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -6184,7 +5984,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 320361237292e3d41b6487513acae50e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  maxHealth: 10
+  maxHealth: 5
   hasTwoPhases: 0
   phase2ThresholdPercent: 0.5
 --- !u!114 &1850498367
@@ -6215,7 +6015,7 @@ Animator:
   m_GameObject: {fileID: 1850498362}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: afbb9ea39857bbb4582da2675b804769, type: 2}
+  m_Controller: {fileID: 9100000, guid: 0476c99336dd5b9458e5f095531b9db5, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -6361,180 +6161,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2145096790}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1871075247
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1871075248}
-  - component: {fileID: 1871075251}
-  - component: {fileID: 1871075250}
-  - component: {fileID: 1871075249}
-  - component: {fileID: 1871075252}
-  - component: {fileID: 1871075253}
-  m_Layer: 0
-  m_Name: Enemy_Stage3
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1871075248
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1871075247}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.1, y: 2.01, z: 0}
-  m_LocalScale: {x: 0.63, y: 0.63, z: 0.63}
-  m_ConstrainProportionsScale: 1
-  m_Children: []
-  m_Father: {fileID: 1429271082}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1871075249
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1871075247}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e56005ad1368684095c9205b1a2ff7d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyVisual
-  hurtBounceHeight: 0.35
-  hurtDuration: 0.25
-  poisonColor: {r: 0.47843137, g: 1, b: 0.17254902, a: 1}
-  timeUpDropDistance: 0.6
-  timeUpDuration: 0.2
-  deathBounceHeight: 0.5
-  deathDuration: 0.6
-  hurtSfx: {fileID: 8300000, guid: f4d437d972c2f514c8505d444df0e8f4, type: 3}
-  poisonSfx: {fileID: 8300000, guid: 06d4a9bb46be1db42859175361008951, type: 3}
-  deathSfx: {fileID: 8300000, guid: 3e1bc8818ea08d34dbe24915765cdb47, type: 3}
-  playerHitSfx: {fileID: 8300000, guid: 290bfee1cab7e684dbc6fcabca3d8165, type: 3}
---- !u!212 &1871075250
-SpriteRenderer:
-  serializedVersion: 3
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1871075247}
-  m_Enabled: 1
-  m_CastShadows: 0
-  m_ReceiveShadows: 0
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 0
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 0
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_Sprite: {fileID: -8074104563469043910, guid: cdf8c14c653091c4a9a569367da08fa1, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 0
-  m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 0.2, y: 0.2}
-  m_AdaptiveModeThreshold: 0.5
-  m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
-  m_SpriteSortPoint: 0
-  m_BlendShapeWeights: []
---- !u!114 &1871075251
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1871075247}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 320361237292e3d41b6487513acae50e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  maxHealth: 30
-  hasTwoPhases: 1
-  phase2ThresholdPercent: 0.5
---- !u!114 &1871075252
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1871075247}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 827ef7acb3198a14d9f5ecd8a6ee97be, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UIFloat
-  moveSpeed: 2
-  verticalDistance: 0.1
-  infinityPath: 1
-  horizontalDistance: 0.2
-  pulseAlpha: 0
-  minAlpha: 0.5
---- !u!95 &1871075253
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1871075247}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: bb9dd65d5977f7d47bb11b5604be299e, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1872627105
 GameObject:
   m_ObjectHideFlags: 0

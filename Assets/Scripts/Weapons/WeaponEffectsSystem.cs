@@ -8,17 +8,15 @@ public class WeaponEffectsSystem : MonoBehaviour
     public static WeaponEffectsSystem Instance { get; private set; }
 
     /// <summary>
-    /// True while any weapon attack, particle effect,
-    /// or Hourglass chain is running.
+    /// True ONLY while an Hourglass rewind or Hourglass chain reaction is actively running.
+    /// Dragging is locked only when this is true.
     /// </summary>
-    public static bool IsBusy { get; private set; } = false;
+    public static bool IsHourglassBusy { get; private set; } = false;
+
+    // Backwards-compatible alias for other scripts
+    public static bool IsBusy => IsHourglassBusy;
 
     [SerializeField] private EnemyHealth currentEnemy;
-
-
-    // =========================================================
-    // UNITY
-    // =========================================================
 
     private void Awake()
     {
@@ -31,799 +29,332 @@ public class WeaponEffectsSystem : MonoBehaviour
         Instance = this;
     }
 
-
-    // =========================================================
-    // STAGE
-    // =========================================================
-
     public void StartStage(EnemyHealth enemy)
     {
         currentEnemy = enemy;
-        IsBusy = false;
+        IsHourglassBusy = false;
     }
-
-
-    // =========================================================
-    // PLACEMENT
-    // =========================================================
 
     public void ResolvePlacement(WeaponInstance instance)
     {
         if (instance == null || instance.Data == null)
             return;
 
-        StartCoroutine(
-            ResolvePlacementRoutine(instance)
-        );
+        StartCoroutine(ResolvePlacementRoutine(instance));
     }
 
-
-    private IEnumerator ResolvePlacementRoutine(
-        WeaponInstance instance)
+    private IEnumerator ResolvePlacementRoutine(WeaponInstance instance)
     {
-        IsBusy = true;
-
-
-        // =====================================================
         // 1. TICK EXISTING POISON
-        // =====================================================
-
         if (currentEnemy != null)
         {
             currentEnemy.TickPoisonTurn();
         }
 
-
-        // =====================================================
         // 2. RESOLVE WEAPON
-        // =====================================================
-
         switch (instance.Data.category)
         {
-            // -------------------------------------------------
-            // ATTACK
-            // -------------------------------------------------
-
             case WeaponCategory.Attack:
-
                 ResolveAttack(instance);
-
-                yield return new WaitForSeconds(0.35f);
-
+                yield return new WaitForSeconds(0.20f);
                 break;
 
-
-            // -------------------------------------------------
-            // MODIFIER
-            // -------------------------------------------------
-
             case WeaponCategory.Modifier:
-
-                if (instance.Data.modifierType ==
-                    ModifierType.Repeat)
+                if (instance.Data.modifierType == ModifierType.Repeat)
                 {
+                    // LOCK DRAGGING ONLY DURING HOURGLASS REWIND
+                    IsHourglassBusy = true;
+
                     if (VFXManager.Instance != null)
                     {
                         VFXManager.Instance.BeginHourglassRewind();
                     }
 
-                    yield return StartCoroutine(
-                        HourglassChainRoutine(instance)
-                    );
+                    yield return StartCoroutine(HourglassChainRoutine(instance));
 
                     if (VFXManager.Instance != null)
                     {
                         VFXManager.Instance.EndHourglassRewind();
                     }
+
+                    // UNLOCK DRAGGING
+                    IsHourglassBusy = false;
                 }
                 else
                 {
-                    PlayBookScreenFeedback(
-                        instance.Data
-                    );
-
-                    yield return new WaitForSeconds(
-                        0.30f
-                    );
+                    PlayBookScreenFeedback(instance.Data);
+                    PlayAttackFeedback(instance.Data);
+                    yield return new WaitForSeconds(0.15f);
                 }
-
                 break;
 
-
-            // -------------------------------------------------
-            // UTILITY
-            // -------------------------------------------------
-
             case WeaponCategory.Utility:
-
-                PlayAttackFeedback(
-                    instance.Data
-                );
-
-                yield return new WaitForSeconds(
-                    0.20f
-                );
-
+                PlayAttackFeedback(instance.Data);
+                yield return new WaitForSeconds(0.15f);
                 break;
         }
 
-
-        // =====================================================
-        // 3. SMALL BUFFER
-        // =====================================================
-
-        yield return new WaitForSeconds(0.15f);
-
-
-        // =====================================================
-        // 4. UNLOCK
-        // =====================================================
-
-        IsBusy = false;
-
-
-        // =====================================================
-        // 5. CHECK STAGE
-        // =====================================================
-
-        if (StageManager.Instance != null)
+        // 3. CHECK STAGE (Only if no Hourglass chain is running)
+        if (StageManager.Instance != null && !IsHourglassBusy)
         {
             StageManager.Instance.CheckForEndOfStage();
         }
     }
 
-
-    // =========================================================
-    // ATTACK RESOLUTION
-    // =========================================================
-
-    private void ResolveAttack(
-        WeaponInstance attackInstance)
+    private void ResolveAttack(WeaponInstance attackInstance)
     {
-        if (attackInstance == null ||
-            attackInstance.Data == null)
-        {
+        if (attackInstance == null || attackInstance.Data == null)
             return;
-        }
-
 
         float multiplier = 1f;
         float addition = 0f;
 
+        var adjacentModifiers = WeaponGridManager.Instance
+            .GetNeighborsOf(attackInstance)
+            .Where(n => n != null && n.Data != null &&
+                        n.Data.category == WeaponCategory.Modifier &&
+                        n.Data.modifierType != ModifierType.Repeat);
 
-        // -----------------------------------------------------
-        // FIND ADJACENT BOOKS
-        // -----------------------------------------------------
-
-        var adjacentModifiers =
-            WeaponGridManager.Instance
-                .GetNeighborsOf(attackInstance)
-                .Where(
-                    n =>
-                        n != null &&
-                        n.Data != null &&
-                        n.Data.category ==
-                            WeaponCategory.Modifier &&
-                        n.Data.modifierType !=
-                            ModifierType.Repeat
-                );
-
-
-        var boostingBooks =
-            new List<WeaponInstance>();
-
-
-        // -----------------------------------------------------
-        // APPLY BOOK EFFECTS
-        // -----------------------------------------------------
+        var boostingBooks = new List<WeaponInstance>();
 
         foreach (var modifier in adjacentModifiers)
         {
-            if (modifier.Data.targets == null)
+            if (modifier.Data.targets == null || !modifier.Data.targets.Contains(attackInstance.Data))
                 continue;
-
-
-            if (!modifier.Data.targets.Contains(
-                attackInstance.Data))
-            {
-                continue;
-            }
-
 
             switch (modifier.Data.modifierType)
             {
                 case ModifierType.Multiplier:
-
-                    multiplier *=
-                        modifier.Data.modifierValue;
-
-                    if (!Mathf.Approximately(
-                        modifier.Data.modifierValue,
-                        1f))
-                    {
-                        boostingBooks.Add(
-                            modifier
-                        );
-                    }
-
+                    multiplier *= modifier.Data.modifierValue;
+                    if (!Mathf.Approximately(modifier.Data.modifierValue, 1f))
+                        boostingBooks.Add(modifier);
                     break;
 
-
                 case ModifierType.Addition:
-
-                    addition +=
-                        modifier.Data.modifierValue;
-
-                    if (!Mathf.Approximately(
-                        modifier.Data.modifierValue,
-                        0f))
-                    {
-                        boostingBooks.Add(
-                            modifier
-                        );
-                    }
-
+                    addition += modifier.Data.modifierValue;
+                    if (!Mathf.Approximately(modifier.Data.modifierValue, 0f))
+                        boostingBooks.Add(modifier);
                     break;
             }
         }
 
-
-        // -----------------------------------------------------
-        // FINAL DAMAGE
-        // -----------------------------------------------------
-
-        int finalDamage =
-            Mathf.RoundToInt(
-                (attackInstance.Data.baseDamage *
-                 multiplier) +
-                addition
-            );
-
-
-        // IMPORTANT:
-        // Save damage snapshot for Hourglass.
-        attackInstance.ResolvedDamage =
-            finalDamage;
-
-
-        // -----------------------------------------------------
-        // DAMAGE ENEMY
-        // -----------------------------------------------------
+        int finalDamage = Mathf.RoundToInt((attackInstance.Data.baseDamage * multiplier) + addition);
+        attackInstance.ResolvedDamage = finalDamage;
 
         if (currentEnemy != null)
         {
-            currentEnemy.TakeDamage(
-                finalDamage
-            );
+            currentEnemy.TakeDamage(finalDamage);
 
-
-            // Poison
             if (attackInstance.Data.appliesPoison)
             {
-                currentEnemy.ApplyPoison(
-                    attackInstance,
-                    attackInstance.Data.poisonDamagePerTick
-                );
+                currentEnemy.ApplyPoison(attackInstance, attackInstance.Data.poisonDamagePerTick);
             }
-
-
-            // -------------------------------------------------
-            // HANDBOOK
-            // -------------------------------------------------
 
             foreach (var book in boostingBooks)
             {
                 HandbookUI.ReportCombo(
                     book.Data,
                     attackInstance.Data,
-                    BuildBookComboDetail(
-                        book.Data,
-                        attackInstance.Data,
-                        boostingBooks.Count,
-                        finalDamage
-                    )
+                    BuildBookComboDetail(book.Data, attackInstance.Data, boostingBooks.Count, finalDamage)
                 );
             }
         }
 
-
-        // -----------------------------------------------------
-        // VFX + SFX
-        // -----------------------------------------------------
-
-        PlayAttackFeedback(
-            attackInstance.Data
-        );
+        PlayAttackFeedback(attackInstance.Data);
     }
 
-
-    // =========================================================
-    // BOOK COMBO DETAIL
-    // =========================================================
-
-    private static string BuildBookComboDetail(
-        WeaponData book,
-        WeaponData target,
-        int bookCount,
-        int finalDamage)
+    private static string BuildBookComboDetail(WeaponData book, WeaponData target, int bookCount, int finalDamage)
     {
-        int baseDamage =
-            target.baseDamage;
+        int baseDamage = target.baseDamage;
+        float value = book.modifierValue;
 
-        float value =
-            book.modifierValue;
-
-
-        string detail;
-
-
-        if (book.modifierType ==
-            ModifierType.Multiplier)
-        {
-            detail =
-                $"{target.weaponName} damage went from " +
-                $"{baseDamage} to " +
-                $"{Mathf.RoundToInt(baseDamage * value)} " +
-                $"(x{value:0.##})";
-        }
-        else
-        {
-            detail =
-                $"{target.weaponName} damage went from " +
-                $"{baseDamage} to " +
-                $"{Mathf.RoundToInt(baseDamage + value)} " +
-                $"(+{value:0.##})";
-        }
-
+        string detail = book.modifierType == ModifierType.Multiplier
+            ? $"{target.weaponName} damage went from {baseDamage} to {Mathf.RoundToInt(baseDamage * value)} (x{value:0.##})"
+            : $"{target.weaponName} damage went from {baseDamage} to {Mathf.RoundToInt(baseDamage + value)} (+{value:0.##})";
 
         if (bookCount > 1)
         {
-            detail +=
-                $". With every book in range the hit was " +
-                $"{finalDamage}";
+            detail += $". With every book in range the hit was {finalDamage}";
         }
-
 
         return detail + ".";
     }
 
-
-    // =========================================================
-    // BOOK SCREEN FEEDBACK
-    // =========================================================
-
-    private void PlayBookScreenFeedback(
-        WeaponData data)
+    private void PlayBookScreenFeedback(WeaponData data)
     {
-        if (data == null ||
-            VFXManager.Instance == null)
-        {
+        if (data == null || VFXManager.Instance == null)
             return;
-        }
 
-
-        if (data.modifierType ==
-            ModifierType.Addition)
+        if (data.modifierType == ModifierType.Addition)
         {
-            VFXManager.Instance
-                .PlayAdditionScreenEffect();
+            VFXManager.Instance.PlayAdditionScreenEffect();
         }
-        else if (data.modifierType ==
-                 ModifierType.Multiplier)
+        else if (data.modifierType == ModifierType.Multiplier)
         {
-            VFXManager.Instance
-                .PlayMultiplicationScreenEffect();
+            VFXManager.Instance.PlayMultiplicationScreenEffect();
         }
-        else if (data.modifierType ==
-                 ModifierType.Repeat)
+        else if (data.modifierType == ModifierType.Repeat)
         {
-            VFXManager.Instance
-                .PlayHourglassScreenEffect();
+            VFXManager.Instance.PlayHourglassScreenEffect();
         }
     }
 
-
-    // =========================================================
-    // ATTACK VFX / SFX
-    // =========================================================
-
-    private void PlayAttackFeedback(
-        WeaponData data)
+    private void PlayAttackFeedback(WeaponData data)
     {
         if (data == null)
             return;
 
-
-        Vector3 feedbackPosition =
-            currentEnemy != null
-                ? currentEnemy.transform.position
-                : transform.position;
-
+        Vector3 feedbackPosition = currentEnemy != null
+            ? currentEnemy.transform.position
+            : transform.position;
 
         feedbackPosition.z = 0f;
 
-
-        // -----------------------------------------------------
-        // SOUND
-        // -----------------------------------------------------
-
-        if (data.attackSfx != null &&
-            AudioManager.Instance != null)
+        if (data.attackSfx != null && AudioManager.Instance != null)
         {
-            AudioManager.Instance.PlaySFX(
-                data.attackSfx
-            );
+            AudioManager.Instance.PlaySFX(data.attackSfx);
         }
 
+        string weaponName = !string.IsNullOrEmpty(data.weaponName)
+            ? data.weaponName.ToLower()
+            : (data.name != null ? data.name.ToLower() : "");
 
-        // -----------------------------------------------------
-        // WEAPON NAME
-        // -----------------------------------------------------
-
-        string weaponName = "";
-
-
-        if (!string.IsNullOrEmpty(
-            data.weaponName))
+        if (weaponName.Contains("sword") || weaponName.Contains("pedang") || weaponName.Contains("blade"))
         {
-            weaponName =
-                data.weaponName.ToLower();
-        }
-        else if (data.name != null)
-        {
-            weaponName =
-                data.name.ToLower();
-        }
-
-
-        Debug.Log(
-            "[WeaponEffectsSystem] Attack Feedback: " +
-            weaponName
-        );
-
-
-        // =====================================================
-        // SWORD
-        // =====================================================
-
-        if (weaponName.Contains("sword") ||
-            weaponName.Contains("pedang") ||
-            weaponName.Contains("blade"))
-        {
-            Debug.Log(
-                "[WeaponEffectsSystem] >>> SWORD VFX"
-            );
-
-            WeaponVfxSword.Play(
-                feedbackPosition
-            );
-
+            WeaponVfxSword.Play(feedbackPosition);
             return;
         }
 
-
-        // =====================================================
-        // POISON DAGGER
-        // =====================================================
-
-        if ((weaponName.Contains("poison") &&
-             weaponName.Contains("dagger")) ||
-            weaponName.Contains("poisondagger") ||
-            weaponName.Contains("poison_dagger") ||
-            weaponName.Contains("belati") ||
-            weaponName.Contains("dagger") ||
-            weaponName.Contains("knife"))
+        if (weaponName.Contains("poison") || weaponName.Contains("dagger") || weaponName.Contains("knife") || data.appliesPoison)
         {
-            Debug.Log(
-                "[WeaponEffectsSystem] >>> POISON DAGGER VFX"
-            );
-
-            WeaponVfxPoison.Play(
-                feedbackPosition
-            );
-
+            WeaponVfxPoison.Play(feedbackPosition);
             return;
         }
 
-
-        // =====================================================
-        // STAFF
-        // =====================================================
-
-        if (weaponName.Contains("staff") ||
-            weaponName.Contains("tongkat") ||
-            weaponName.Contains("wand"))
+        if (weaponName.Contains("staff") || weaponName.Contains("tongkat") || weaponName.Contains("wand"))
         {
-            Debug.Log(
-                "[WeaponEffectsSystem] >>> STAFF VFX"
-            );
-
-            WeaponVfxStaff.Play(
-                feedbackPosition
-            );
-
+            WeaponVfxStaff.Play(feedbackPosition);
             return;
         }
 
-
-        // =====================================================
-        // HOURGLASS
-        // =====================================================
-
-        if (weaponName.Contains("hourglass") ||
-            weaponName.Contains("hour glass") ||
-            weaponName.Contains("glass") ||
-            weaponName.Contains("jam pasir") ||
-            data.modifierType ==
-                ModifierType.Repeat)
+        if (weaponName.Contains("hourglass") || weaponName.Contains("glass") || data.modifierType == ModifierType.Repeat)
         {
-            Debug.Log(
-                "[WeaponEffectsSystem] >>> HOURGLASS VFX"
-            );
-
-            WeaponVfxHourglass.Play(
-                feedbackPosition
-            );
-
+            WeaponVfxHourglass.Play(feedbackPosition);
             return;
         }
 
-
-        // =====================================================
-        // ADDITION BOOK
-        // =====================================================
-
-        if (weaponName.Contains("addition") ||
-            weaponName.Contains("book of addition") ||
-            weaponName.Contains("add") ||
-            weaponName.Contains("penambahan"))
+        if (data.modifierType == ModifierType.Addition || weaponName.Contains("addition") || weaponName.Contains("add"))
         {
-            Debug.Log(
-                "[WeaponEffectsSystem] >>> ADDITION BOOK VFX"
-            );
-
-            WeaponVfxBooks.PlayAddition(
-                feedbackPosition
-            );
-
+            WeaponVfxBooks.PlayAddition(feedbackPosition);
             return;
         }
 
-
-        // =====================================================
-        // MULTIPLIER BOOK
-        // =====================================================
-
-        if (weaponName.Contains("multiplier") ||
-            weaponName.Contains("multiplication") ||
-            weaponName.Contains("book of multiplier") ||
-            weaponName.Contains("multiply") ||
-            weaponName.Contains("perkalian"))
+        if (data.modifierType == ModifierType.Multiplier || weaponName.Contains("multi") || weaponName.Contains("multiply"))
         {
-            Debug.Log(
-                "[WeaponEffectsSystem] >>> MULTIPLIER BOOK VFX"
-            );
-
-            WeaponVfxBooks.PlayMultiplier(
-                feedbackPosition
-            );
-
+            WeaponVfxBooks.PlayMultiplier(feedbackPosition);
             return;
         }
-
-
-        // =====================================================
-        // FALLBACK
-        // =====================================================
-
-        Debug.Log(
-            "[WeaponEffectsSystem] >>> GENERIC VFX"
-        );
-
 
         if (WeaponVfx.Instance != null)
         {
-            WeaponVfx.Instance.Play(
-                data,
-                feedbackPosition
-            );
+            WeaponVfx.Instance.Play(data, feedbackPosition);
         }
     }
 
-
-    // =========================================================
-    // HOURGLASS CHAIN
-    // =========================================================
-
-    private IEnumerator HourglassChainRoutine(
-        WeaponInstance initialHourglass)
+    private IEnumerator HourglassChainRoutine(WeaponInstance initialHourglass)
     {
-        var visitedHourglasses =
-            new HashSet<WeaponInstance>();
+        var visitedHourglasses = new HashSet<WeaponInstance>();
+        var queue = new Queue<WeaponInstance>();
 
-        var queue =
-            new Queue<WeaponInstance>();
-
-
-        visitedHourglasses.Add(
-            initialHourglass
-        );
-
-        queue.Enqueue(
-            initialHourglass
-        );
-
+        visitedHourglasses.Add(initialHourglass);
+        queue.Enqueue(initialHourglass);
 
         while (queue.Count > 0)
         {
-            var currentHourglass =
-                queue.Dequeue();
+            var currentHourglass = queue.Dequeue();
 
-
-            // -------------------------------------------------
-            // HOURGLASS VFX
-            // -------------------------------------------------
-
-            PlayAttackFeedback(
-                currentHourglass.Data
-            );
-
-
+            // 1. Play Hourglass SFX & Spin animation ONCE
+            PlayAttackFeedback(currentHourglass.Data);
             if (currentHourglass.VisualObject != null)
             {
-                currentHourglass.VisualObject
-                    .PlayAnimation();
+                currentHourglass.VisualObject.PlayAnimation();
             }
 
+            // Snappy spin wait (reduced from 1.10s down to 0.30s)
+            yield return new WaitForSeconds(0.30f);
 
-            yield return new WaitForSeconds(
-                0.70f
+            // 2. Find neighbors
+            var allNeighbors = WeaponGridManager.Instance
+                .GetNeighborsOf(currentHourglass)
+                .ToList();
+
+            // 3. Replay attack weapons sequentially with snappy delay
+            var attackNeighbors = allNeighbors.Where(
+                n => n != null && n.Data != null &&
+                     n.Data.category == WeaponCategory.Attack &&
+                     n.Data.modifierType != ModifierType.Repeat &&
+                     !visitedHourglasses.Contains(n)
             );
-
-
-            // -------------------------------------------------
-            // FIND NEIGHBORS
-            // -------------------------------------------------
-
-            var allNeighbors =
-                WeaponGridManager.Instance
-                    .GetNeighborsOf(
-                        currentHourglass
-                    )
-                    .ToList();
-
-
-            // -------------------------------------------------
-            // REPLAY ATTACK WEAPONS
-            // -------------------------------------------------
-
-            var attackNeighbors =
-                allNeighbors.Where(
-                    n =>
-                        n != null &&
-                        n.Data != null &&
-                        n.Data.category ==
-                            WeaponCategory.Attack
-                );
-
 
             foreach (var neighbor in attackNeighbors)
             {
-                // IMPORTANT:
-                // Use saved damage.
-                // Do NOT recalculate buffs.
-
-                int replayDamage =
-                    neighbor.ResolvedDamage;
-
+                int replayDamage = neighbor.ResolvedDamage;
 
                 if (currentEnemy != null)
                 {
-                    currentEnemy.TakeDamage(
-                        replayDamage
-                    );
+                    currentEnemy.TakeDamage(replayDamage);
 
-
-                    string detail =
-                        $"Replayed {neighbor.Data.weaponName}: " +
-                        $"{replayDamage} damage dealt again";
-
+                    string detail = $"Replayed {neighbor.Data.weaponName}: {neighbor.ResolvedDamage} damage dealt again";
 
                     if (neighbor.Data.appliesPoison)
                     {
-                        currentEnemy.ApplyPoison(
-                            neighbor,
-                            neighbor.Data.poisonDamagePerTick
-                        );
-
-                        detail +=
-                            ", and its poison was applied again";
+                        currentEnemy.ApplyPoison(neighbor, neighbor.Data.poisonDamagePerTick);
+                        detail += ", and its poison was applied again";
                     }
 
-
-                    HandbookUI.ReportCombo(
-                        currentHourglass.Data,
-                        neighbor.Data,
-                        detail + "."
-                    );
+                    HandbookUI.ReportCombo(currentHourglass.Data, neighbor.Data, detail + ".");
                 }
 
-
-                // -------------------------------------------------
-                // REPLAY VFX
-                // -------------------------------------------------
-
-                PlayAttackFeedback(
-                    neighbor.Data
-                );
-
+                PlayAttackFeedback(neighbor.Data);
 
                 if (neighbor.VisualObject != null)
                 {
-                    neighbor.VisualObject
-                        .PlayAnimation();
+                    neighbor.VisualObject.PlayAnimation();
                 }
 
+                // Snappy delay between sequential weapon attacks (reduced to 0.22s)
+                yield return new WaitForSeconds(0.22f);
 
-                yield return new WaitForSeconds(
-                    0.80f
-                );
-
-
-                // -------------------------------------------------
-                // STOP IF ENEMY DEAD
-                // -------------------------------------------------
-
-                if (currentEnemy != null &&
-                    currentEnemy.State ==
-                        EnemyState.Dead)
+                if (currentEnemy != null && currentEnemy.State == EnemyState.Dead)
                 {
                     yield break;
                 }
             }
 
-
-            // -------------------------------------------------
-            // QUEUE OTHER HOURGLASSES
-            // -------------------------------------------------
-
-            var adjacentHourglasses =
-                allNeighbors.Where(
-                    n =>
-                        n != null &&
-                        n.Data != null &&
-                        n.Data.modifierType ==
-                            ModifierType.Repeat
-                );
-
+            // 4. Queue other Hourglasses
+            var adjacentHourglasses = allNeighbors.Where(
+                n => n != null && n.Data != null &&
+                     n.Data.modifierType == ModifierType.Repeat &&
+                     !visitedHourglasses.Contains(n)
+            );
 
             foreach (var hNeighbor in adjacentHourglasses)
             {
-                if (!visitedHourglasses.Contains(
-                    hNeighbor))
-                {
-                    visitedHourglasses.Add(
-                        hNeighbor
-                    );
+                visitedHourglasses.Add(hNeighbor);
 
-                    queue.Enqueue(
-                        hNeighbor
-                    );
-                }
+                HandbookUI.ReportCombo(currentHourglass.Data, hNeighbor.Data,
+                    "Replayed Hourglass: Chained into another Hourglass, repeating its entire sequence.");
+
+                queue.Enqueue(hNeighbor);
             }
-
 
             if (queue.Count > 0)
             {
-                yield return new WaitForSeconds(
-                    0.40f
-                );
+                // Snappy transition to chained hourglass
+                yield return new WaitForSeconds(0.10f);
             }
         }
 
-
-        yield return new WaitForSeconds(
-            0.30f
-        );
+        yield return new WaitForSeconds(0.15f);
     }
 }

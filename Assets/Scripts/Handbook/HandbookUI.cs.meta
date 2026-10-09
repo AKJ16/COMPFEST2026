@@ -9,11 +9,14 @@ MonoImporter:
   - closeSfx: {instanceID: 0}
   - flipSfx: {instanceID: 0}
   - bookSprite: {instanceID: 0}
+  - bookBaseTexture: {instanceID: 0}
+  - leftPageTexture: {instanceID: 0}
+  - rightPageTexture: {instanceID: 0}
   - titleFont: {instanceID: 0}
   - bodyFont: {instanceID: 0}
   - titleTtf: {fileID: 12800000, guid: 8b953d0c619a2520180181dfbe8ef9b6, type: 3}
   - bodyTtf: {fileID: 12800000, guid: b18439cff135bd8119485935ffe0666a, type: 3}
-  - introEmblem: {fileID: 21300000, guid: 7eeb66aceaeb13728b62de04c1251fd1, type: 3}
+  - introEmblem: {fileID: 1404028623067837608, guid: 5113ae88c1c47e74787d818fbdccea05, type: 3}
   - buttonSprite: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}

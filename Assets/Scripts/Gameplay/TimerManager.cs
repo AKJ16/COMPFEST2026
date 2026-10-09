@@ -42,13 +42,18 @@ public class TimerManager : MonoBehaviour
         {
             timeRemaining = 0f;
 
-            // If an attack or chain reaction is still resolving, hold off on Game Over!
             if (WeaponEffectsSystem.IsBusy)
             {
                 return;
             }
 
-            // Only trigger Game Over once all active animations are complete
+            // FIX: If the boss was killed or stage was won, do not trigger Time's Up!
+            if (StageManager.Instance != null && StageManager.Instance.Result == StageResult.Win)
+            {
+                isRunning = false;
+                return;
+            }
+
             isRunning = false;
             Debug.Log("Time's Up!");
             onTimeUp?.Invoke();

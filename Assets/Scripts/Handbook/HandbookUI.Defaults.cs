@@ -52,7 +52,7 @@ public partial class HandbookUI
         new DefaultEntry("add", new PageData
         {
             effect = "Adds +2 damage to a Staff inside its 3x3 area. It takes up one square, " +
-                     "and the Hourglass can redo its placement.",
+                     "Can only be placed 2 times per stage.",
             stats = new List<StatChip> { Chip("+2", "Staff Damage"), Chip("1", "Square"), Chip("3x3", "Range") },
             footprint = new Vector2Int(1, 1),
             range = new Vector2Int(3, 3),
@@ -61,7 +61,7 @@ public partial class HandbookUI
         new DefaultEntry("multi", new PageData
         {
             effect = "Multiplies the damage of a Staff inside its 3x3 area by 2. It takes up one square, " +
-                     "and the Hourglass can redo its placement.",
+                     "Can only be placed 2 times per stage.",
             stats = new List<StatChip> { Chip("x2", "Staff Damage"), Chip("1", "Square"), Chip("3x3", "Range") },
             footprint = new Vector2Int(1, 1),
             range = new Vector2Int(3, 3),

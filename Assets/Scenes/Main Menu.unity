@@ -384,7 +384,7 @@ MonoBehaviour:
   buttonFadeDuration: 0.5
   quitButton: {fileID: 1605873547}
   menuMusic: {fileID: 8300000, guid: 1a064d5f2a374e64c9e0f52fe5b5e5b0, type: 3}
-  gameplaySceneName: Stage 0
+  gameplaySceneName: StageTutorial
 --- !u!1 &474750353
 GameObject:
   m_ObjectHideFlags: 0

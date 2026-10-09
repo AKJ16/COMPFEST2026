@@ -206,15 +206,29 @@ public partial class HandbookUI
             _skinned ? new Vector2(-rightGap + 14f, -14f) : new Vector2(-12f, -12f),
             closeButtonSize, ClosePanel, false);
 
-        // Previous (bottom left)
-        _prevButton = CreateAnchoredButton(root, "PrevButton", buttonColor, "<", 36f,
-            new Vector2(0, 0), new Vector2(0, 0), _skinned ? new Vector2(0, 1) : new Vector2(0, 0),
-            _skinned ? new Vector2(sideGap + 30f, 8f) : new Vector2(80f, 14f), navButtonSize, PreviousPage);
+        // Previous (bottom left) - Center-pivoted and flipped horizontally (scale.x = -1) to face left
+        Vector2 prevPivot = new Vector2(0.5f, 0.5f);
+        Vector2 prevPos = _skinned
+            ? new Vector2(sideGap + 30f + navButtonSize.x * 0.5f, 8f - navButtonSize.y * 0.5f)
+            : new Vector2(80f + navButtonSize.x * 0.5f, 14f + navButtonSize.y * 0.5f);
 
-        // Next (bottom right)
-        _nextButton = CreateAnchoredButton(root, "NextButton", buttonColor, ">", 36f,
-            new Vector2(1, 0), new Vector2(1, 0), _skinned ? new Vector2(1, 1) : new Vector2(1, 0),
-            _skinned ? new Vector2(-rightGap - 30f, 8f) : new Vector2(-80f, 14f), navButtonSize, NextPage);
+        _prevButton = CreateAnchoredButton(root, "PrevButton", buttonColor, "", 0f,
+            new Vector2(0, 0), new Vector2(0, 0), prevPivot,
+            prevPos, navButtonSize, PreviousPage);
+
+        // Flip the sprite horizontally so it points left!
+        _prevButton.transform.localScale = new Vector3(-1f, 1f, 1f);
+
+
+        // Next (bottom right) - Center-pivoted, text removed
+        Vector2 nextPivot = new Vector2(0.5f, 0.5f);
+        Vector2 nextPos = _skinned
+            ? new Vector2(-rightGap - 30f - navButtonSize.x * 0.5f, 8f - navButtonSize.y * 0.5f)
+            : new Vector2(-80f - navButtonSize.x * 0.5f, 14f + navButtonSize.y * 0.5f);
+
+        _nextButton = CreateAnchoredButton(root, "NextButton", buttonColor, "", 0f,
+            new Vector2(1, 0), new Vector2(1, 0), nextPivot,
+            nextPos, navButtonSize, NextPage);
 
         // Page number (bottom center, just under the book when it has art)
         _pageNumberLabel = CreateLabel(root, "", 26f, buttonTextColor,

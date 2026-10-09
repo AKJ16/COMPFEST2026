@@ -7,6 +7,7 @@ public class InventorySystem : MonoBehaviour
     public static InventorySystem Instance { get; private set; }
 
     private readonly Dictionary<WeaponData, int> _counts = new Dictionary<WeaponData, int>();
+    private readonly Dictionary<WeaponData, int> _stageUsage = new Dictionary<WeaponData, int>();
 
     public event Action<WeaponData, int> OnCountChanged;
 
@@ -18,6 +19,32 @@ public class InventorySystem : MonoBehaviour
     public void ResetInventory()
     {
         _counts.Clear();
+        _stageUsage.Clear();
+    }
+
+    /// <summary>
+    /// Resets the book usage limits at the start of every stage.
+    /// </summary>
+    public void ResetStageUsage()
+    {
+        _stageUsage.Clear();
+    }
+
+    public int GetUsage(WeaponData data)
+    {
+        return _stageUsage.TryGetValue(data, out int u) ? u : 0;
+    }
+
+    public int GetRemainingUses(WeaponData data)
+    {
+        if (!data.HasUsageCap) return int.MaxValue;
+        return Mathf.Max(0, data.MaxUsage - GetUsage(data));
+    }
+
+    public bool IsLimitReached(WeaponData data)
+    {
+        if (!data.HasUsageCap) return false;
+        return GetUsage(data) >= data.MaxUsage;
     }
 
     public void AddWeapon(WeaponData data, int amount = 1)
@@ -41,34 +68,34 @@ public class InventorySystem : MonoBehaviour
     {
         foreach (var kvp in _counts)
         {
-            if (kvp.Value > 0 && WeaponGridManager.Instance.HasAnyEmptyCellFor(kvp.Key))
+            // Do NOT count weapons that have reached their stage limit!
+            if (kvp.Value > 0 && !IsLimitReached(kvp.Key) && WeaponGridManager.Instance.HasAnyEmptyCellFor(kvp.Key))
                 return true;
         }
         return false;
     }
 
-    /// <summary>
-    /// Places weapon from inventory onto the grid. Links visual object before triggering effects.
-    /// </summary>
     public WeaponInstance PlaceFromInventory(WeaponData data, Vector2Int origin, DragDrop visual = null)
     {
         if (GetCount(data) <= 0) return null;
-        if (StageManager.Instance.Result != StageResult.InProgress) return null;
+        if (IsLimitReached(data)) return null;
+        if (StageManager.Instance != null && StageManager.Instance.Result != StageResult.InProgress) return null;
 
         var instance = WeaponGridManager.Instance.TryPlace(data, origin);
         if (instance == null) return null;
 
-        // Link visual object so effects and Hourglass chain reactions can control it
         if (visual != null)
         {
             instance.VisualObject = visual;
         }
 
+        // Increment stage placement usage
+        _stageUsage[data] = GetUsage(data) + 1;
+
         _counts[data]--;
         OnCountChanged?.Invoke(data, _counts[data]);
 
         WeaponEffectsSystem.Instance.ResolvePlacement(instance);
-        StageManager.Instance.CheckForEndOfStage();
 
         return instance;
     }

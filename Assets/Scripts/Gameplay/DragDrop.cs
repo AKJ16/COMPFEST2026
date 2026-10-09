@@ -98,6 +98,12 @@ public class DragDrop : MonoBehaviour
     {
         isDragging = false;
 
+        if (WeaponEffectsSystem.IsHourglassBusy)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         if (GridManager.Instance != null && data != null)
         {
             GridManager.Instance.ClearHover();

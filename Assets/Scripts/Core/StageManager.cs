@@ -60,12 +60,18 @@ public class StageManager : MonoBehaviour
     public void StartStage(int stageNumber, EnemyHealth enemy)
     {
         _currentStageIndex = Mathf.Max(0, stageNumber - 1);
-        SetupStageInternal(_currentStageIndex, enemy, isInitialStart: true);
+        SetupStageInternal(_currentStageIndex, enemy);
     }
 
-    private void SetupStageInternal(int stageIndex, EnemyHealth overrideEnemy = null, bool isInitialStart = false)
+    private void SetupStageInternal(int stageIndex, EnemyHealth overrideEnemy = null)
     {
         Result = StageResult.InProgress;
+
+        // Reset Book usage limits for this new stage!
+        if (InventorySystem.Instance != null)
+        {
+            InventorySystem.Instance.ResetStageUsage();
+        }
 
         if (AudioManager.Instance != null && gameplayMusic != null)
         {
@@ -103,17 +109,6 @@ public class StageManager : MonoBehaviour
             GridManager.Instance.SetGridDimensions(targetColumns, targetRows, targetDisabled);
         }
 
-        if (!isInitialStart && stageIndex < stages.Count && stages[stageIndex].bonusWeapons != null)
-        {
-            foreach (var reward in stages[stageIndex].bonusWeapons)
-            {
-                if (reward.weaponData != null)
-                {
-                    InventorySystem.Instance.AddWeapon(reward.weaponData, reward.amount);
-                }
-            }
-        }
-
         WeaponEffectsSystem.Instance.StartStage(_currentEnemy);
 
         if (_currentEnemy != null)
@@ -140,19 +135,38 @@ public class StageManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Grants bonus weapons for the current stage so popups appear on screen.
+    /// </summary>
+    public void GrantStageBonusWeapons(int stageIndex)
+    {
+        if (stageIndex < stages.Count && stages[stageIndex].bonusWeapons != null)
+        {
+            foreach (var reward in stages[stageIndex].bonusWeapons)
+            {
+                if (reward.weaponData != null)
+                {
+                    InventorySystem.Instance.AddWeapon(reward.weaponData, reward.amount);
+                }
+            }
+        }
+    }
+
     public void CheckForEndOfStage()
     {
         if (Result != StageResult.InProgress) return;
 
-        // HARD LOCK: Cannot check or trigger Game Over while animations are busy!
+        // NEVER check for Game Over while attacks or Hourglasses are still resolving!
         if (WeaponEffectsSystem.IsBusy) return;
 
-        if (_currentEnemy != null && _currentEnemy.State == EnemyState.Dead)
+        // 1. ALWAYS check if the boss died first!
+        if (_currentEnemy != null && (_currentEnemy.State == EnemyState.Dead || _currentEnemy.CurrentHealth <= 0))
         {
             EndStage(StageResult.Win);
             return;
         }
 
+        // 2. Only lose if the boss is definitely alive AND you have no moves left
         if (!InventorySystem.Instance.HasAnyValidMove())
         {
             EndStage(StageResult.Lose);
@@ -161,7 +175,8 @@ public class StageManager : MonoBehaviour
 
     private void HandleEnemyStateChanged(EnemyState state)
     {
-        if (state == EnemyState.Dead && Result == StageResult.InProgress)
+        // FIX: If the boss dies, WIN ALWAYS WINS (even if Lose was pending)!
+        if (state == EnemyState.Dead)
         {
             EndStage(StageResult.Win);
         }
@@ -180,6 +195,12 @@ public class StageManager : MonoBehaviour
 
         if (result == StageResult.Win)
         {
+            // CRITICAL FIX: Instantly cancel and abort any Game Over that was waiting!
+            if (GameOverManager.Instance != null)
+            {
+                GameOverManager.Instance.CancelGameOver();
+            }
+
             if (AudioManager.Instance != null && stageWinSfx != null)
             {
                 AudioManager.Instance.PlaySFX(stageWinSfx);
@@ -206,6 +227,7 @@ public class StageManager : MonoBehaviour
         {
             if (LoadingManager.Instance != null)
             {
+                // 1. Fade out to black and set up board
                 LoadingManager.Instance.FadeOutIn(() =>
                 {
                     if (StageBannerUI.Instance != null)
@@ -216,11 +238,18 @@ public class StageManager : MonoBehaviour
                     _currentStageIndex = nextIndex;
                     SetupStageInternal(_currentStageIndex);
                 });
+
+                // 2. WAIT for black screen to finish fading in (approx 0.5s)
+                yield return new WaitForSecondsRealtime(0.5f);
+
+                // 3. NOW award bonus weapons on screen so the +1 popup floats up visibly!
+                GrantStageBonusWeapons(_currentStageIndex);
             }
             else
             {
                 _currentStageIndex = nextIndex;
                 SetupStageInternal(_currentStageIndex);
+                GrantStageBonusWeapons(_currentStageIndex);
             }
         }
         else

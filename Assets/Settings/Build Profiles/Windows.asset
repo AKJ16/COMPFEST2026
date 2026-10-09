@@ -26,7 +26,10 @@ MonoBehaviour:
     m_path: Assets/Scenes/Main Menu.unity
     m_guid: bcecac9865ffd974faac69ac8953184f
   - m_enabled: 1
-    m_path: Assets/Scenes/Stage 0.unity
+    m_path: Assets/Scenes/StageTutorial.unity
+    m_guid: 49495ab468a0ced4596069b8ec006469
+  - m_enabled: 1
+    m_path: Assets/Scenes/Stage1.unity
     m_guid: c2362102de0a7c049bfc1e9b45825cb0
   m_HasScriptingDefines: 0
   m_ScriptingDefines: []
