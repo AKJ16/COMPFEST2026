@@ -374,10 +374,8 @@ MonoBehaviour:
     - {x: 0, y: 0}
     bonusWeapons:
     - weaponData: {fileID: 11400000, guid: 5b65aaa9fd233d14c96a59fbdae00164, type: 2}
-      amount: 1
+      amount: 2
     - weaponData: {fileID: 11400000, guid: 7bb0cb58b4bb8f146a6cf809fa2a880a, type: 2}
-      amount: 1
-    - weaponData: {fileID: 11400000, guid: ea09822ef08534c49ada93e35551fbd3, type: 2}
       amount: 1
   - stageNumber: 2
     stageEnemy: {fileID: 1871075251}
@@ -392,8 +390,6 @@ MonoBehaviour:
     - {x: 2, y: 1}
     - {x: 3, y: 2}
     bonusWeapons:
-    - weaponData: {fileID: 11400000, guid: 5b65aaa9fd233d14c96a59fbdae00164, type: 2}
-      amount: 1
     - weaponData: {fileID: 11400000, guid: 7bb0cb58b4bb8f146a6cf809fa2a880a, type: 2}
       amount: 1
     - weaponData: {fileID: 11400000, guid: 5d79097466fa4fe4284dfd2cbaf1868a, type: 2}
@@ -401,6 +397,8 @@ MonoBehaviour:
     - weaponData: {fileID: 11400000, guid: 21f4679b203b2c34bba7f553b5832f7e, type: 2}
       amount: 2
     - weaponData: {fileID: 11400000, guid: 2cd330a07d69d4648b8f5ac88a8d9d44, type: 2}
+      amount: 1
+    - weaponData: {fileID: 11400000, guid: ea09822ef08534c49ada93e35551fbd3, type: 2}
       amount: 1
   gameplayMusic: {fileID: 8300000, guid: be885987e0a5b5947a05983102054ef8, type: 3}
   stageWinSfx: {fileID: 0}

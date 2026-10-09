@@ -29,8 +29,14 @@ MonoBehaviour:
     m_path: Assets/Scenes/StageTutorial.unity
     m_guid: 49495ab468a0ced4596069b8ec006469
   - m_enabled: 1
-    m_path: Assets/Scenes/Stage1.unity
+    m_path: Assets/Scenes/Stage1.1.unity
     m_guid: c2362102de0a7c049bfc1e9b45825cb0
+  - m_enabled: 1
+    m_path: Assets/Scenes/Stage1.2.unity
+    m_guid: bc8535bfbae02f949b466c5973177d56
+  - m_enabled: 1
+    m_path: Assets/Scenes/Stage1.3.unity
+    m_guid: 7b544a6fd2a5004458785f684b59bcdf
   m_HasScriptingDefines: 0
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:
