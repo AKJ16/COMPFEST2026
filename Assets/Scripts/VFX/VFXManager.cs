@@ -37,7 +37,7 @@ public class VFXManager : MonoBehaviour
     private Image _stopwatchHand;     // jarum yang berputar (anak dari wajah)
     private Coroutine _screenEffectRoutine;
     private bool _rewindActive;
-    private int _rewindSessionId = 0;
+    //private int _rewindSessionId = 0;
 
     private Sprite _softEdgeSprite;
     private Sprite _stopwatchSprite;

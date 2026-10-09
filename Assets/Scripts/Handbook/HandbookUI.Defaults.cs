@@ -38,7 +38,7 @@ public partial class HandbookUI
         {
             effect = "A reliable blade that hits hard for its size. It takes up two squares, " +
                      "and the Hourglass can redo its placement.",
-            stats = new List<StatChip> { Chip("3", "Damage"), Chip("2", "Squares") },
+            stats = new List<StatChip> { Chip("4", "Damage"), Chip("2", "Squares") },
             footprint = new Vector2Int(2, 1),
         }),
         new DefaultEntry("staff", new PageData

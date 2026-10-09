@@ -4,33 +4,34 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Panduan tutorial untuk scene StageTutorial.
-//
-// - Panduan muncul sebagai scroll (gulungan kertas) yang terbuka dari atas.
-// - Panah kuning berdenyut menunjuk ke Timer, HP musuh, buku Almanac,
-//   slot senjata, dan grid.
-// - Ada satu langkah yang menampilkan gambar musuh yang kena serang.
-// - Timer dihentikan selama panduan tampil, lalu dimulai ulang di akhir.
-//
-// Semua UI dibuat lewat kode, jadi tidak ada yang perlu diatur di Inspector.
-// Pasang script ini di GameObject kosong di scene StageTutorial.
+// Panduan tutorial untuk scene StageTutorial (Stage 1, 2, 3).
 public class TutorialGuide : MonoBehaviour
 {
-    // ------------------------------------------------------------------
-    // Angka yang boleh kamu ubah kalau tampilannya kurang pas
-    // (satuan: canvas 1920 x 1080)
-    // ------------------------------------------------------------------
-    private const float ScrollTopY = 385f;      // posisi atas scroll dari tengah layar (naik = lebih tinggi)
-    private const float ScrollWidth = 840f;     // lebar batang gulungan
-    private const float ScrollHeight = 400f;    // tinggi total scroll saat terbuka
-    private const float RodHeight = 32f;        // tebal batang gulungan
-    private const float PaperWidth = 780f;      // lebar kertas
-    private const float ArrowGap = 10f;         // jarak ujung panah ke target
-    private const float StartDelay = 1.2f;      // jeda sebelum panduan muncul
+    public static TutorialGuide Instance { get; private set; }
 
-    // Gambar musuh kena serang: Assets/Resources/Tutorial/TutorialEnemyHit.png
+    /// <summary>
+    /// True while any tutorial scroll is active on screen.
+    /// </summary>
+    public static bool IsTutorialActive { get; private set; } = false;
+
+    [Header("Audio SFX (Opsional)")]
+    [Tooltip("Sound played when the scroll rolls open and rolls closed.")]
+    [SerializeField] private AudioClip scrollSfx;
+    [Tooltip("Sound played when advancing to the next tutorial page.")]
+    [SerializeField] private AudioClip pageTurnSfx;
+
+    // ------------------------------------------------------------------
+    // Layout Settings (satuan canvas 1920 x 1080)
+    // ------------------------------------------------------------------
+    private const float ScrollTopY = 385f;
+    private const float ScrollWidth = 840f;
+    private const float ScrollHeight = 400f;
+    private const float RodHeight = 32f;
+    private const float PaperWidth = 780f;
+    private const float ArrowGap = 10f;
+    private const float StartDelay = 1.2f;
+
     private const string HitImageResource = "Tutorial/TutorialEnemyHit";
-
     private const float PaperHeight = ScrollHeight - 2f * RodHeight;
 
     private enum ArrowSide { None, Above, Below, Left, Right }
@@ -50,6 +51,7 @@ public class TutorialGuide : MonoBehaviour
 
     private Canvas _canvas;
     private RectTransform _canvasRect;
+    private CanvasGroup _scrollCanvasGroup;
     private RectTransform _paperMask;
     private RectTransform _bottomRod;
     private CanvasGroup _content;
@@ -69,56 +71,111 @@ public class TutorialGuide : MonoBehaviour
 
     private bool _advance;
     private bool _skip;
+    private int _lastKnownStage = -1;
+    private Coroutine _currentRunRoutine;
 
     // ------------------------------------------------------------------
-    // Mulai
+    // Lifecycle
     // ------------------------------------------------------------------
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+
+        BuildUI();
+    }
 
     private void Start()
     {
-        BuildSteps();
-        StartCoroutine(Run());
+        int initialStage = StageManager.Instance != null ? StageManager.Instance.CurrentStageNumber : 1;
+        _lastKnownStage = initialStage;
+        PlayTutorialForStage(initialStage);
     }
 
     private void OnDestroy()
     {
+        IsTutorialActive = false;
         if (_canvas != null)
             Destroy(_canvas.gameObject);
     }
 
-    private void BuildSteps()
+    // ------------------------------------------------------------------
+    // Steps Configuration Per Stage
+    // ------------------------------------------------------------------
+
+    private void BuildSteps(int stageNumber)
     {
-        AddStep("Welcome to GridMancer!",
-            "This quick guide shows you the basics. Press Next to continue.",
-            TargetKind.None, null, ArrowSide.None, false);
+        _steps.Clear();
 
-        AddStep("TIMER",
-            "This bar is your time. When it runs out, you lose, so think fast!",
-            TargetKind.Named, "Timer Container", ArrowSide.Left, false);
+        switch (stageNumber)
+        {
+            // ==========================================================
+            // STAGE 1: BASIC TUTORIAL
+            // ==========================================================
+            case 1:
+                AddStep("Welcome to GridMancer!",
+                    "This quick guide shows you the basics. Press Next to continue.",
+                    TargetKind.None, null, ArrowSide.None, false);
 
-        AddStep("ENEMY HP",
-            "This is the enemy's health. Bring it down to 0 to win the stage.",
-            TargetKind.Named, "Health Container", ArrowSide.Right, false);
+                AddStep("TIMER",
+                    "This bar is your time. When it runs out, you lose, so think fast!",
+                    TargetKind.Named, "Timer Container", ArrowSide.Left, false);
 
-        AddStep("ALMANAC BOOK",
-            "Open this book to read about every weapon, like its damage, and the combos you have discovered.",
-            TargetKind.Named, "HandBook Button", ArrowSide.Below, false);
+                AddStep("ENEMY HP",
+                    "This is the enemy's health. Bring it down to 0 to win the stage.",
+                    TargetKind.Named, "Health Container", ArrowSide.Right, false);
 
-        AddStep("YOUR WEAPONS",
-            "These are the weapons you can use. Click one to pick it up, then place it on the grid.",
-            TargetKind.FirstInventorySlot, null, ArrowSide.Left, false);
+                AddStep("ALMANAC BOOK",
+                    "Open this book to read about every weapon, like its damage, and the combos you have discovered.",
+                    TargetKind.Named, "HandBook Button", ArrowSide.Below, false);
 
-        AddStep("THE GRID",
-            "These squares are where you place your weapons. A weapon attacks the enemy the moment you place it!",
-            TargetKind.Grid, null, ArrowSide.Left, false);
+                AddStep("YOUR WEAPONS",
+                    "These are the weapons you can use. Click one to pick it up, then place it on the grid.",
+                    TargetKind.FirstInventorySlot, null, ArrowSide.Left, false);
 
-        AddStep("THE ATTACK",
-            "Every weapon you place hits the enemy and deals its damage. Like this!",
-            TargetKind.None, null, ArrowSide.None, true);
+                AddStep("THE GRID",
+                    "These squares are where you place your weapons. A weapon attacks the enemy the moment you place it!",
+                    TargetKind.Grid, null, ArrowSide.Left, false);
 
-        AddStep("NOW YOU TRY",
-            "Place both Swords on the grid and defeat the enemy before time runs out!",
-            TargetKind.None, null, ArrowSide.None, false);
+                AddStep("THE ATTACK",
+                    "Every weapon you place is PERMANENT and deals its damage!",
+                    TargetKind.None, null, ArrowSide.None, true);
+
+                AddStep("NOW YOU TRY",
+                    "Place both Swords on the grid and defeat the enemy before time runs out!",
+                    TargetKind.None, null, ArrowSide.None, false);
+                break;
+
+            // ==========================================================
+            // STAGE 2: WEAPON COMBOS & MODIFIERS (2 PAGES)
+            // ==========================================================
+            case 2:
+                AddStep("WEAPON COMBOS",
+                    "Certain weapons can combo together! Items like Books are Modifiers that don't attack directly, but boost the power of other weapons.",
+                    TargetKind.FirstInventorySlot, null, ArrowSide.Left, false);
+
+                AddStep("TRY IT OUT!",
+                    "Place the Book on the grid first, then place the Staff adjascent to it to trigger a devastating combo!",
+                    TargetKind.Grid, null, ArrowSide.Left, false);
+                break;
+
+            // ==========================================================
+            // STAGE 3: ARRANGE & COMBINE (1 PAGE ONLY)
+            // ==========================================================
+            case 3:
+                AddStep("ARRANGE & COMBINE",
+                    "Now it's your turn! Arrange and combine your weapons carefully on the grid to create powerful synergies and defeat the enemy!",
+                    TargetKind.Grid, null, ArrowSide.Left, false);
+                break;
+
+            default:
+                break;
+        }
     }
 
     private void AddStep(string title, string body, TargetKind kind, string targetName, ArrowSide side, bool showHitImage)
@@ -134,13 +191,42 @@ public class TutorialGuide : MonoBehaviour
         });
     }
 
+    public void PlayTutorialForStage(int stageNumber)
+    {
+        BuildSteps(stageNumber);
+
+        if (_currentRunRoutine != null)
+            StopCoroutine(_currentRunRoutine);
+
+        if (_steps.Count > 0)
+        {
+            IsTutorialActive = true;
+
+            if (_canvas == null) BuildUI();
+            _canvas.gameObject.SetActive(true);
+
+            PauseTimer();
+            SetPaperHeight(0f);
+            if (_scrollCanvasGroup != null) _scrollCanvasGroup.alpha = 0f;
+            if (_content != null) _content.alpha = 0f;
+            if (_arrow != null) _arrow.gameObject.SetActive(false);
+
+            _currentRunRoutine = StartCoroutine(Run());
+        }
+        else
+        {
+            IsTutorialActive = false;
+            if (_canvas != null) _canvas.gameObject.SetActive(false);
+            if (_arrow != null) _arrow.gameObject.SetActive(false);
+        }
+    }
+
     // ------------------------------------------------------------------
-    // Alur utama
+    // Main Flow
     // ------------------------------------------------------------------
 
     private IEnumerator Run()
     {
-        // Tunggu sampai stage benar-benar mulai (musuh dan grid sudah dibuat).
         float waited = 0f;
         while (waited < 3f && (StageManager.Instance == null || StageManager.Instance.CurrentEnemy == null))
         {
@@ -148,13 +234,13 @@ public class TutorialGuide : MonoBehaviour
             yield return null;
         }
 
-        // Beri waktu supaya banner "Stage" selesai tampil.
         yield return new WaitForSecondsRealtime(StartDelay);
 
-        PauseTimer();
-        BuildUI();
-
+        _skip = false;
         _content.alpha = 0f;
+
+        PlaySound(scrollSfx);
+
         yield return Roll(true);
 
         for (int i = 0; i < _steps.Count && !_skip; i++)
@@ -171,6 +257,11 @@ public class TutorialGuide : MonoBehaviour
 
     private IEnumerator ShowStep(int index)
     {
+        if (index > 0)
+        {
+            PlaySound(pageTurnSfx);
+        }
+
         Step step = _steps[index];
 
         yield return FadeContent(0f, 0.12f);
@@ -197,11 +288,16 @@ public class TutorialGuide : MonoBehaviour
             _arrow.gameObject.SetActive(false);
 
         yield return FadeContent(0f, 0.15f);
+
+        PlaySound(scrollSfx);
+
         yield return Roll(false);
 
         if (_canvas != null)
-            Destroy(_canvas.gameObject);
+            _canvas.gameObject.SetActive(false);
 
+        // UNLOCK TUTORIAL AND RESUME TIMER
+        IsTutorialActive = false;
         ResumeTimer();
     }
 
@@ -220,11 +316,14 @@ public class TutorialGuide : MonoBehaviour
         _content.alpha = to;
     }
 
-    // Scroll terbuka (open = true) atau tergulung lagi (open = false).
     private IEnumerator Roll(bool open)
     {
-        float from = open ? 0f : PaperHeight;
-        float to = open ? PaperHeight : 0f;
+        float fromH = open ? 0f : PaperHeight;
+        float toH = open ? PaperHeight : 0f;
+
+        float fromAlpha = open ? 0f : 1f;
+        float toAlpha = open ? 1f : 0f;
+
         const float duration = 0.55f;
         float t = 0f;
 
@@ -232,11 +331,22 @@ public class TutorialGuide : MonoBehaviour
         {
             t += Time.unscaledDeltaTime;
             float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / duration));
-            SetPaperHeight(Mathf.Lerp(from, to, k));
+
+            SetPaperHeight(Mathf.Lerp(fromH, toH, k));
+
+            if (_scrollCanvasGroup != null)
+            {
+                _scrollCanvasGroup.alpha = Mathf.Lerp(fromAlpha, toAlpha, k);
+            }
+
             yield return null;
         }
 
-        SetPaperHeight(to);
+        SetPaperHeight(toH);
+        if (_scrollCanvasGroup != null)
+        {
+            _scrollCanvasGroup.alpha = toAlpha;
+        }
     }
 
     private void SetPaperHeight(float h)
@@ -245,14 +355,21 @@ public class TutorialGuide : MonoBehaviour
         _bottomRod.anchoredPosition = new Vector2(0f, -(RodHeight + h));
     }
 
+    private void PlaySound(AudioClip clip)
+    {
+        if (clip != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX(clip);
+        }
+    }
+
     // ------------------------------------------------------------------
-    // Timer
+    // Timer Controls
     // ------------------------------------------------------------------
 
     private void PauseTimer()
     {
         if (TimerManager.Instance == null) return;
-
         TimerManager.Instance.StopTimer();
         TimerManager.Instance.ResetTimer();
     }
@@ -260,13 +377,12 @@ public class TutorialGuide : MonoBehaviour
     private void ResumeTimer()
     {
         if (TimerManager.Instance == null) return;
-
         TimerManager.Instance.ResetTimer();
         TimerManager.Instance.StartTimer();
     }
 
     // ------------------------------------------------------------------
-    // Panah
+    // Arrow Controls
     // ------------------------------------------------------------------
 
     private void PlaceArrow(Step step)
@@ -296,13 +412,12 @@ public class TutorialGuide : MonoBehaviour
                 _arrowDir = new Vector2(1f, 0f);
                 break;
 
-            default: // Right
+            default:
                 _arrowTip = new Vector2(r.xMax + ArrowGap, center.y);
                 _arrowDir = new Vector2(-1f, 0f);
                 break;
         }
 
-        // Gambar panah menunjuk ke atas; putar supaya menunjuk ke arah target.
         float angle = Mathf.Atan2(_arrowDir.y, _arrowDir.x) * Mathf.Rad2Deg - 90f;
         _arrow.localRotation = Quaternion.Euler(0f, 0f, angle);
         _arrow.anchoredPosition = _arrowTip;
@@ -311,85 +426,97 @@ public class TutorialGuide : MonoBehaviour
 
     private void Update()
     {
+        // 1. Stage transition detection
+        if (StageManager.Instance != null)
+        {
+            int currentStage = StageManager.Instance.CurrentStageNumber;
+            if (currentStage != _lastKnownStage)
+            {
+                _lastKnownStage = currentStage;
+                PlayTutorialForStage(currentStage);
+            }
+        }
+
+        // 2. HARD LOCK TIMER: Keep timer paused continuously while tutorial is active!
+        if (IsTutorialActive && TimerManager.Instance != null)
+        {
+            TimerManager.Instance.StopTimer();
+            TimerManager.Instance.ResetTimer();
+        }
+
+        // 3. Arrow wave animation
         if (_arrow == null || !_arrow.gameObject.activeSelf) return;
 
         float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 5f);
-
-        // Panah maju-mundur ke arah target sambil membesar-mengecil.
         _arrow.anchoredPosition = _arrowTip - _arrowDir * (wave * 18f);
 
         float s = 1f + 0.10f * wave;
         _arrow.localScale = new Vector3(s, s, 1f);
-
         _arrowImage.color = new Color(1f, 1f, 1f, 0.8f + 0.2f * (1f - wave));
     }
 
-    // Mencari kotak target di koordinat canvas panduan.
     private bool TryGetTargetRect(Step step, out Rect localRect)
     {
         localRect = default(Rect);
-
         Vector2 screenMin;
         Vector2 screenMax;
 
         switch (step.kind)
         {
             case TargetKind.Named:
-            {
-                GameObject go = GameObject.Find(step.targetName);
-                if (go == null) { Debug.LogWarning("[TutorialGuide] Objek tidak ditemukan: " + step.targetName); return false; }
-
-                RectTransform rt = go.transform as RectTransform;
-                if (rt == null) return false;
-
-                GetScreenRect(rt, out screenMin, out screenMax);
-                break;
-            }
-
-            case TargetKind.FirstInventorySlot:
-            {
-                GameObject bar = GameObject.Find("Inventory Bar");
-                if (bar == null) { Debug.LogWarning("[TutorialGuide] 'Inventory Bar' tidak ditemukan."); return false; }
-
-                RectTransform target = bar.transform as RectTransform;
-
-                for (int i = 0; i < bar.transform.childCount; i++)
                 {
-                    Transform child = bar.transform.GetChild(i);
-                    if (child.gameObject.activeInHierarchy && child is RectTransform)
-                    {
-                        target = (RectTransform)child;
-                        break;
-                    }
+                    GameObject go = GameObject.Find(step.targetName);
+                    if (go == null) return false;
+
+                    RectTransform rt = go.transform as RectTransform;
+                    if (rt == null) return false;
+
+                    GetScreenRect(rt, out screenMin, out screenMax);
+                    break;
                 }
 
-                if (target == null) return false;
+            case TargetKind.FirstInventorySlot:
+                {
+                    GameObject bar = GameObject.Find("Inventory Bar");
+                    if (bar == null) return false;
 
-                GetScreenRect(target, out screenMin, out screenMax);
-                break;
-            }
+                    RectTransform target = null;
+                    for (int i = 0; i < bar.transform.childCount; i++)
+                    {
+                        Transform child = bar.transform.GetChild(i);
+                        if (child.gameObject.activeInHierarchy && child is RectTransform)
+                        {
+                            target = (RectTransform)child;
+                            break;
+                        }
+                    }
+
+                    if (target == null) return false;
+                    GetScreenRect(target, out screenMin, out screenMax);
+                    break;
+                }
 
             case TargetKind.Grid:
-            {
-                if (GridManager.Instance == null) { Debug.LogWarning("[TutorialGuide] GridManager tidak ditemukan."); return false; }
+                {
+                    if (GridManager.Instance == null) return false;
 
-                Renderer[] renderers = GridManager.Instance.GetComponentsInChildren<Renderer>();
-                if (renderers.Length == 0) return false;
+                    Renderer[] renderers = GridManager.Instance.GetComponentsInChildren<Renderer>();
+                    if (renderers.Length == 0) return false;
 
-                Bounds b = renderers[0].bounds;
-                for (int i = 1; i < renderers.Length; i++)
-                    b.Encapsulate(renderers[i].bounds);
+                    Bounds b = renderers[0].bounds;
+                    for (int i = 1; i < renderers.Length; i++)
+                        b.Encapsulate(renderers[i].bounds);
 
-                Camera cam = Camera.main;
-                if (cam == null) return false;
+                    Camera cam = Camera.main;
+                    if (cam == null) return false;
 
-                Vector3 p0 = cam.WorldToScreenPoint(b.min);
-                Vector3 p1 = cam.WorldToScreenPoint(b.max);
+                    Vector3 p0 = cam.WorldToScreenPoint(b.min);
+                    Vector3 p1 = cam.WorldToScreenPoint(b.max);
 
-                screenMin = new Vector2(Mathf.Min(p0.x, p1.x), Mathf.Min(p0.y, p1.y));
-                screenMax = new Vector2(Mathf.Max(p0.x, p1.x), Mathf.Max(p0.y, p1.y));
-                break;
-            }
+                    screenMin = new Vector2(Mathf.Min(p0.x, p1.x), Mathf.Min(p0.y, p1.y));
+                    screenMax = new Vector2(Mathf.Max(p0.x, p1.x), Mathf.Max(p0.y, p1.y));
+                    break;
+                }
 
             default:
                 return false;
@@ -397,7 +524,6 @@ public class TutorialGuide : MonoBehaviour
 
         Vector2 a;
         Vector2 c;
-
         RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRect, screenMin, null, out a);
         RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRect, screenMax, null, out c);
 
@@ -408,7 +534,6 @@ public class TutorialGuide : MonoBehaviour
         return true;
     }
 
-    // Kotak elemen UI di koordinat layar (bisa Overlay maupun Screen Space - Camera).
     private static void GetScreenRect(RectTransform rt, out Vector2 min, out Vector2 max)
     {
         Camera cam = null;
@@ -417,7 +542,6 @@ public class TutorialGuide : MonoBehaviour
         if (canvas != null)
         {
             canvas = canvas.rootCanvas;
-
             if (canvas.renderMode != RenderMode.ScreenSpaceOverlay)
             {
                 cam = canvas.worldCamera != null ? canvas.worldCamera : Camera.main;
@@ -439,12 +563,11 @@ public class TutorialGuide : MonoBehaviour
     }
 
     // ------------------------------------------------------------------
-    // Membuat UI lewat kode
+    // Procedural UI Construction
     // ------------------------------------------------------------------
 
     private void BuildUI()
     {
-        // Font: pakai font yang sama dengan teks HP di game kalau ada.
         GameObject healthText = GameObject.Find("Health Text");
         if (healthText != null)
         {
@@ -452,18 +575,12 @@ public class TutorialGuide : MonoBehaviour
             if (tmp != null) _font = tmp.font;
         }
 
-        // Gambar musuh kena serang (opsional).
         Texture2D tex = Resources.Load<Texture2D>(HitImageResource);
         if (tex != null)
         {
             _hitSprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
         }
-        else
-        {
-            Debug.LogWarning("[TutorialGuide] Gambar tidak ditemukan di Assets/Resources/" + HitImageResource + ".png");
-        }
 
-        // Canvas
         GameObject canvasGo = new GameObject("Tutorial Canvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
         _canvas = canvasGo.GetComponent<Canvas>();
         _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -477,7 +594,7 @@ public class TutorialGuide : MonoBehaviour
 
         _canvasRect = canvasGo.GetComponent<RectTransform>();
 
-        // Penghalang klik: selama panduan, pemain tidak bisa menekan tombol lain.
+        // Transparent full-screen click blocker
         GameObject blocker = new GameObject("Click Blocker", typeof(RectTransform), typeof(Image));
         blocker.transform.SetParent(canvasGo.transform, false);
         Stretch(blocker.GetComponent<RectTransform>());
@@ -485,15 +602,16 @@ public class TutorialGuide : MonoBehaviour
         blockerImage.color = new Color(0f, 0f, 0f, 0f);
         blockerImage.raycastTarget = true;
 
-        // Sprite buatan kode
         Sprite paperSprite = MakePaperSprite();
         Sprite rodSprite = MakeRodSprite();
         Sprite buttonSprite = MakeRoundedSprite(48, 16, new Color(0.45f, 0.27f, 0.12f, 1f), new Color(0.2f, 0.1f, 0.03f, 1f), 3);
         Sprite arrowSprite = MakeArrowSprite();
 
-        // Scroll: akar (atas tetap, terbuka ke bawah)
-        GameObject rootGo = new GameObject("Scroll", typeof(RectTransform));
+        GameObject rootGo = new GameObject("Scroll", typeof(RectTransform), typeof(CanvasGroup));
         rootGo.transform.SetParent(canvasGo.transform, false);
+        _scrollCanvasGroup = rootGo.GetComponent<CanvasGroup>();
+        _scrollCanvasGroup.alpha = 0f;
+
         RectTransform root = rootGo.GetComponent<RectTransform>();
         root.anchorMin = new Vector2(0.5f, 0.5f);
         root.anchorMax = new Vector2(0.5f, 0.5f);
@@ -501,7 +619,6 @@ public class TutorialGuide : MonoBehaviour
         root.anchoredPosition = new Vector2(0f, ScrollTopY);
         root.sizeDelta = new Vector2(ScrollWidth, ScrollHeight);
 
-        // Kertas (dipotong oleh mask supaya terlihat membuka)
         GameObject maskGo = new GameObject("Paper Mask", typeof(RectTransform), typeof(RectMask2D));
         maskGo.transform.SetParent(rootGo.transform, false);
         _paperMask = maskGo.GetComponent<RectTransform>();
@@ -520,11 +637,9 @@ public class TutorialGuide : MonoBehaviour
         paperImage.sprite = paperSprite;
         paperImage.raycastTarget = false;
 
-        // Batang gulungan atas dan bawah
         CreateRod("Top Rod", rootGo.transform, rodSprite, 0f);
         _bottomRod = CreateRod("Bottom Rod", rootGo.transform, rodSprite, -RodHeight);
 
-        // Teks utama
         Color ink = new Color(0.24f, 0.13f, 0.05f, 1f);
 
         _text = MakeText("Text", contentGo.transform, 34f, TextAlignmentOptions.TopLeft, ink, false);
@@ -534,7 +649,6 @@ public class TutorialGuide : MonoBehaviour
         _textRect = _text.rectTransform;
         Stretch(_textRect);
 
-        // Gambar musuh kena serang
         GameObject hitGo = new GameObject("Hit Image", typeof(RectTransform), typeof(Image));
         hitGo.transform.SetParent(contentGo.transform, false);
         RectTransform hitRect = hitGo.GetComponent<RectTransform>();
@@ -549,28 +663,24 @@ public class TutorialGuide : MonoBehaviour
         _hitImage.raycastTarget = false;
         hitGo.SetActive(false);
 
-        // Nomor langkah
         _counter = MakeText("Counter", contentGo.transform, 24f, TextAlignmentOptions.Center, new Color(0.24f, 0.13f, 0.05f, 0.7f), false);
         SetBottomAnchored(_counter.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 34f), new Vector2(140f, 36f));
 
-        // Tombol Next
         Button next = MakeButton("Next Button", contentGo.transform, buttonSprite, "Next >", 30f, new Color(1f, 0.93f, 0.75f, 1f), out _nextLabel);
         SetBottomAnchored((RectTransform)next.transform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-34f, 22f), new Vector2(190f, 54f));
         next.onClick.AddListener(() => _advance = true);
 
-        // Tombol Skip
         TextMeshProUGUI skipLabel;
         Button skip = MakeButton("Skip Button", contentGo.transform, null, "Skip tutorial", 22f, new Color(0.24f, 0.13f, 0.05f, 0.75f), out skipLabel);
         SetBottomAnchored((RectTransform)skip.transform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(34f, 28f), new Vector2(190f, 40f));
         skip.onClick.AddListener(() => _skip = true);
 
-        // Panah
         GameObject arrowGo = new GameObject("Arrow", typeof(RectTransform), typeof(Image));
         arrowGo.transform.SetParent(canvasGo.transform, false);
         _arrow = arrowGo.GetComponent<RectTransform>();
         _arrow.anchorMin = new Vector2(0.5f, 0.5f);
         _arrow.anchorMax = new Vector2(0.5f, 0.5f);
-        _arrow.pivot = new Vector2(0.5f, 0.958f); // ujung panah
+        _arrow.pivot = new Vector2(0.5f, 0.958f);
         _arrow.sizeDelta = new Vector2(70f, 105f);
         _arrowImage = arrowGo.GetComponent<Image>();
         _arrowImage.sprite = arrowSprite;
@@ -578,6 +688,7 @@ public class TutorialGuide : MonoBehaviour
         arrowGo.SetActive(false);
 
         SetPaperHeight(0f);
+        _canvas.gameObject.SetActive(false);
     }
 
     private RectTransform CreateRod(string name, Transform parent, Sprite sprite, float y)
@@ -630,7 +741,7 @@ public class TutorialGuide : MonoBehaviour
         }
         else
         {
-            img.color = new Color(1f, 1f, 1f, 0f); // tombol tak terlihat, hanya teks
+            img.color = new Color(1f, 1f, 1f, 0f);
         }
 
         Button button = go.GetComponent<Button>();
@@ -651,7 +762,6 @@ public class TutorialGuide : MonoBehaviour
         rt.offsetMax = Vector2.zero;
     }
 
-    // Menempel di tengah-atas induk.
     private static void SetTopAnchored(RectTransform rt, float width, float height, float y)
     {
         rt.anchorMin = new Vector2(0.5f, 1f);
@@ -670,11 +780,6 @@ public class TutorialGuide : MonoBehaviour
         rt.sizeDelta = size;
     }
 
-    // ------------------------------------------------------------------
-    // Sprite buatan kode (tidak perlu file gambar)
-    // ------------------------------------------------------------------
-
-    // Kertas perkamen: krem dengan tepi agak gelap dan sedikit bercak.
     private static Sprite MakePaperSprite()
     {
         const int size = 128;
@@ -695,7 +800,6 @@ public class TutorialGuide : MonoBehaviour
 
                 float d = Mathf.Max(Mathf.Abs(nx - 0.5f), Mathf.Abs(ny - 0.5f)) * 2f;
                 float edge = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.70f, 1f, d));
-
                 float noise = (Mathf.PerlinNoise(nx * 6f, ny * 6f) - 0.5f) * 0.10f;
 
                 Color c = Color.Lerp(baseColor, edgeColor, edge * 0.85f);
@@ -712,7 +816,6 @@ public class TutorialGuide : MonoBehaviour
         return Sprite.Create(tex, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), 100f);
     }
 
-    // Batang gulungan: silinder kayu dengan ujung membulat (9-slice horizontal).
     private static Sprite MakeRodSprite()
     {
         const int w = 64;
@@ -730,7 +833,7 @@ public class TutorialGuide : MonoBehaviour
         {
             float v = (y + 0.5f) / h;
             float shade = Mathf.Lerp(0.45f, 1.2f, Mathf.Sin(v * Mathf.PI));
-            shade += Mathf.Exp(-Mathf.Pow((v - 0.68f) / 0.08f, 2f)) * 0.25f; // kilau
+            shade += Mathf.Exp(-Mathf.Pow((v - 0.68f) / 0.08f, 2f)) * 0.25f;
 
             for (int x = 0; x < w; x++)
             {
@@ -756,7 +859,6 @@ public class TutorialGuide : MonoBehaviour
         return Sprite.Create(tex, new Rect(0f, 0f, w, h), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(cap, 0f, cap, 0f));
     }
 
-    // Persegi membulat untuk tombol (9-slice).
     private static Sprite MakeRoundedSprite(int size, int radius, Color fill, Color outline, int outlineWidth)
     {
         Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
@@ -791,7 +893,6 @@ public class TutorialGuide : MonoBehaviour
         return Sprite.Create(tex, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(radius, radius, radius, radius));
     }
 
-    // Panah kuning menunjuk ke atas dengan garis tepi cokelat tua.
     private static Sprite MakeArrowSprite()
     {
         const int w = 64;
@@ -805,7 +906,6 @@ public class TutorialGuide : MonoBehaviour
             for (int x = 0; x < w; x++)
             {
                 float dx = Mathf.Abs(x + 0.5f - w * 0.5f);
-
                 bool head = y >= 46 && dx <= (h - 4 - y) * (28f / 46f);
                 bool stem = y >= 4 && y < 46 && dx <= 11f;
 
@@ -857,7 +957,21 @@ public class TutorialGuide : MonoBehaviour
         tex.SetPixels(px);
         tex.Apply();
 
-        // Pivot di ujung panah.
         return Sprite.Create(tex, new Rect(0f, 0f, w, h), new Vector2(0.5f, 0.958f), 100f);
+    }
+
+    public void DismissImmediately()
+    {
+        if (_currentRunRoutine != null)
+            StopCoroutine(_currentRunRoutine);
+
+        if (_arrow != null)
+            _arrow.gameObject.SetActive(false);
+
+        if (_canvas != null)
+            _canvas.gameObject.SetActive(false);
+
+        IsTutorialActive = false;
+        ResumeTimer();
     }
 }

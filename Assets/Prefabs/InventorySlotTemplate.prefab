@@ -190,6 +190,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventorySlotUI
   slotSize: 80
+  slotHoverSfx: {fileID: 8300000, guid: 82df63f132597d14c81aa55481ab4d9a, type: 3}
+  slotGrabSfx: {fileID: 8300000, guid: ba852e767a7d608449cde336ec10a17e, type: 3}
   rewardPopUpPrefab: {fileID: 398566370720857257, guid: 3166d2d430af92b47a7ce8b585d2932c, type: 3}
 --- !u!222 &2438233262299414744
 CanvasRenderer:

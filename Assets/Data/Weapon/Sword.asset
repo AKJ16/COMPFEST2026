@@ -15,7 +15,8 @@ MonoBehaviour:
   weaponName: Sword
   category: 0
   animType: 0
-  description: Deal 3 Damage.
+  maxUsagePerStage: 0
+  description: Deal 4 Damage.
   icon: {fileID: 712035800519618848, guid: 5c660fb56c26c2640b752c524b4df931, type: 3}
   baseDamage: 4
   gridSize: 2

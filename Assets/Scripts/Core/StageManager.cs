@@ -36,6 +36,11 @@ public class StageManager : MonoBehaviour
 {
     public static StageManager Instance { get; private set; }
 
+    [Header("Stage Settings")]
+    [Tooltip("Check this if this is a tutorial scene. (Auto-detects if scene name contains 'tutorial')")]
+    [SerializeField] private bool isTutorialScene = false;
+    public bool IsTutorialScene => isTutorialScene || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.ToLower().Contains("tutorial");
+
     [Header("Stage Configurations")]
     [SerializeField] private List<StageConfig> stages = new List<StageConfig>();
 
@@ -45,6 +50,8 @@ public class StageManager : MonoBehaviour
 
     private EnemyHealth _currentEnemy;
     private int _currentStageIndex = 0;
+    private bool _isStageEnding = false; // LOCK: Prevents multiple EndStage calls from overlapping
+    private Coroutine _advanceRoutine;
 
     public StageResult Result { get; private set; } = StageResult.InProgress;
     public int CurrentStageNumber => _currentStageIndex + 1;
@@ -60,14 +67,16 @@ public class StageManager : MonoBehaviour
     public void StartStage(int stageNumber, EnemyHealth enemy)
     {
         _currentStageIndex = Mathf.Max(0, stageNumber - 1);
-        SetupStageInternal(_currentStageIndex, enemy);
+        SetupStageInternal(_currentStageIndex, enemy, isInitialStart: true);
     }
 
-    private void SetupStageInternal(int stageIndex, EnemyHealth overrideEnemy = null)
+    private void SetupStageInternal(int stageIndex, EnemyHealth overrideEnemy = null, bool isInitialStart = false)
     {
         Result = StageResult.InProgress;
+        _isStageEnding = false; // Reset lock for the new stage
+        _currentStageIndex = stageIndex;
 
-        // Reset Book usage limits for this new stage!
+        // Reset Book usage limits for this stage
         if (InventorySystem.Instance != null)
         {
             InventorySystem.Instance.ResetStageUsage();
@@ -109,6 +118,21 @@ public class StageManager : MonoBehaviour
             GridManager.Instance.SetGridDimensions(targetColumns, targetRows, targetDisabled);
         }
 
+        // Add Stage Bonus Weapons for THIS specific stage
+        if (!isInitialStart && stageIndex < stages.Count && stages[stageIndex].bonusWeapons != null)
+        {
+            Debug.Log($"[StageManager] Setting up Stage {stageIndex + 1}. Granting rewards for Stage {stageIndex + 1}...");
+
+            foreach (var reward in stages[stageIndex].bonusWeapons)
+            {
+                if (reward.weaponData != null && reward.amount > 0)
+                {
+                    InventorySystem.Instance.AddWeapon(reward.weaponData, reward.amount);
+                    Debug.Log($"[StageManager] Granted +{reward.amount} {reward.weaponData.weaponName} for Stage {stageIndex + 1}");
+                }
+            }
+        }
+
         WeaponEffectsSystem.Instance.StartStage(_currentEnemy);
 
         if (_currentEnemy != null)
@@ -135,38 +159,20 @@ public class StageManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Grants bonus weapons for the current stage so popups appear on screen.
-    /// </summary>
-    public void GrantStageBonusWeapons(int stageIndex)
-    {
-        if (stageIndex < stages.Count && stages[stageIndex].bonusWeapons != null)
-        {
-            foreach (var reward in stages[stageIndex].bonusWeapons)
-            {
-                if (reward.weaponData != null)
-                {
-                    InventorySystem.Instance.AddWeapon(reward.weaponData, reward.amount);
-                }
-            }
-        }
-    }
-
     public void CheckForEndOfStage()
     {
-        if (Result != StageResult.InProgress) return;
-
-        // NEVER check for Game Over while attacks or Hourglasses are still resolving!
+        // Ignore if stage is already ending or animations are active
+        if (Result != StageResult.InProgress || _isStageEnding) return;
         if (WeaponEffectsSystem.IsBusy) return;
 
-        // 1. ALWAYS check if the boss died first!
+        // 1. Check Win
         if (_currentEnemy != null && (_currentEnemy.State == EnemyState.Dead || _currentEnemy.CurrentHealth <= 0))
         {
             EndStage(StageResult.Win);
             return;
         }
 
-        // 2. Only lose if the boss is definitely alive AND you have no moves left
+        // 2. Check Lose
         if (!InventorySystem.Instance.HasAnyValidMove())
         {
             EndStage(StageResult.Lose);
@@ -175,7 +181,6 @@ public class StageManager : MonoBehaviour
 
     private void HandleEnemyStateChanged(EnemyState state)
     {
-        // FIX: If the boss dies, WIN ALWAYS WINS (even if Lose was pending)!
         if (state == EnemyState.Dead)
         {
             EndStage(StageResult.Win);
@@ -184,6 +189,10 @@ public class StageManager : MonoBehaviour
 
     private void EndStage(StageResult result)
     {
+        // FIX: Prevent multiple/rapid calls from overlapping
+        if (_isStageEnding) return;
+        _isStageEnding = true;
+
         Result = result;
         OnStageEnded?.Invoke(result);
 
@@ -195,7 +204,6 @@ public class StageManager : MonoBehaviour
 
         if (result == StageResult.Win)
         {
-            // CRITICAL FIX: Instantly cancel and abort any Game Over that was waiting!
             if (GameOverManager.Instance != null)
             {
                 GameOverManager.Instance.CancelGameOver();
@@ -206,7 +214,8 @@ public class StageManager : MonoBehaviour
                 AudioManager.Instance.PlaySFX(stageWinSfx);
             }
 
-            StartCoroutine(AdvanceToNextStageSequence());
+            if (_advanceRoutine != null) StopCoroutine(_advanceRoutine);
+            _advanceRoutine = StartCoroutine(AdvanceToNextStageSequence());
         }
         else if (result == StageResult.Lose)
         {
@@ -227,7 +236,6 @@ public class StageManager : MonoBehaviour
         {
             if (LoadingManager.Instance != null)
             {
-                // 1. Fade out to black and set up board
                 LoadingManager.Instance.FadeOutIn(() =>
                 {
                     if (StageBannerUI.Instance != null)
@@ -235,21 +243,12 @@ public class StageManager : MonoBehaviour
                         StageBannerUI.Instance.ResetBanner();
                     }
 
-                    _currentStageIndex = nextIndex;
-                    SetupStageInternal(_currentStageIndex);
+                    SetupStageInternal(nextIndex);
                 });
-
-                // 2. WAIT for black screen to finish fading in (approx 0.5s)
-                yield return new WaitForSecondsRealtime(0.5f);
-
-                // 3. NOW award bonus weapons on screen so the +1 popup floats up visibly!
-                GrantStageBonusWeapons(_currentStageIndex);
             }
             else
             {
-                _currentStageIndex = nextIndex;
-                SetupStageInternal(_currentStageIndex);
-                GrantStageBonusWeapons(_currentStageIndex);
+                SetupStageInternal(nextIndex);
             }
         }
         else
@@ -261,5 +260,7 @@ public class StageManager : MonoBehaviour
                 WinManager.Instance.TriggerWin(0.8f);
             }
         }
+
+        _advanceRoutine = null;
     }
 }

@@ -97,4 +97,26 @@ public class WinManager : MonoBehaviour
             SceneManager.LoadScene(mainMenuSceneName);
         }
     }
+
+    /// <summary>
+    /// Loads a random gameplay stage from the StageRandomizer pool.
+    /// Hook this to your Win Panel's 'Continue' button!
+    /// </summary>
+    public void ContinueGame()
+    {
+        Time.timeScale = 1f;
+
+        if (StageRandomizer.Instance != null)
+        {
+            StageRandomizer.Instance.LoadRandomStage();
+        }
+        else if (LoadingManager.Instance != null)
+        {
+            LoadingManager.Instance.LoadScene(mainMenuSceneName);
+        }
+        else
+        {
+            SceneManager.LoadScene(mainMenuSceneName);
+        }
+    }
 }

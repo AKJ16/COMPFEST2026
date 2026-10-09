@@ -24,6 +24,14 @@ public class LoadingManager : MonoBehaviour
             return;
         }
 
+        // FIX: Force loading canvas sorting order to 32000 so it ALWAYS covers tutorials & buttons!
+        Canvas canvas = GetComponentInChildren<Canvas>();
+        if (canvas != null)
+        {
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 32000;
+        }
+
         if (canvasGroup != null)
         {
             canvasGroup.alpha = 0f;

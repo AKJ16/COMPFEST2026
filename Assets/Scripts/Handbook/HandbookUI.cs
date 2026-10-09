@@ -116,6 +116,8 @@ public partial class HandbookUI : MonoBehaviour
     [Header("Buttons")]
     [Tooltip("Optional plank sprite for the < > buttons.")]
     [SerializeField] private Sprite buttonSprite;
+    [Tooltip("Custom image sprite for the close / exit button.")]
+    [SerializeField] private Sprite closeButtonSprite;
     [SerializeField] private Color buttonColor = new Color(0.45f, 0.25f, 0.12f, 1f);
     [SerializeField] private Color buttonTextColor = new Color(1f, 0.93f, 0.85f, 1f);
     [SerializeField] private Color closeButtonColor = new Color(0.5f, 0.15f, 0.15f, 1f);

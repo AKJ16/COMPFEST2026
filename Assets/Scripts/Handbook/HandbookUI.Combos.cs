@@ -302,7 +302,17 @@ public partial class HandbookUI
         return $"<size=75%><color=#{accent}><b><cspace=0.15em>{title.ToUpper()}</cspace></b></color></size>";
     }
 
-    private bool IsUnlocked(WeaponData weapon) =>
-        StageManager.Instance == null ||
-        weapon.unlockStage <= StageManager.Instance.CurrentStageNumber;
+    private bool IsUnlocked(WeaponData weapon)
+    {
+        if (InventorySystem.Instance == null || weapon == null) return false;
+
+        // In Tutorial: Only reveal in Almanac if the player has actually possessed it!
+        if (StageManager.Instance != null && StageManager.Instance.IsTutorialScene)
+        {
+            return InventorySystem.Instance.HasEverPossessed(weapon);
+        }
+
+        return StageManager.Instance == null ||
+               weapon.unlockStage <= StageManager.Instance.CurrentStageNumber;
+    }
 }

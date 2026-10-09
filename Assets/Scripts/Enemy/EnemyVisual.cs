@@ -21,8 +21,7 @@ public class EnemyVisual : MonoBehaviour
     [SerializeField] private AudioClip hurtSfx;
     [SerializeField] private AudioClip poisonSfx;
     [SerializeField] private AudioClip deathSfx;
-    [Tooltip("Sound played when the enemy lunges down and hits the player upon losing.")]
-    [SerializeField] private AudioClip playerHitSfx; // Hit sound when player is attacked on loss
+    [SerializeField] private AudioClip playerHitSfx;
 
     private SpriteRenderer _spriteRenderer;
     private EnemyHealth _health;
@@ -32,6 +31,7 @@ public class EnemyVisual : MonoBehaviour
     private bool _gotPoisonDamageThisFrame = false;
     private bool _gotNormalDamageThisFrame = false;
     private Coroutine _damageFrameRoutine = null;
+    private bool _isSubscribedToGlobalEvents = false;
 
     private void Awake()
     {
@@ -45,31 +45,75 @@ public class EnemyVisual : MonoBehaviour
         _originalPos = transform.localPosition;
     }
 
+    private void OnEnable()
+    {
+        SubscribeGlobalEvents();
+    }
+
     private void Start()
     {
-        _health.OnStateChanged += HandleStateChanged;
-        _health.OnDamagedDetail += HandleDamagedDetail;
+        // Retry in Start() to guarantee singletons are ready!
+        SubscribeGlobalEvents();
 
-        if (StageManager.Instance != null)
-            StageManager.Instance.OnStageEnded += HandleStageEnded;
+        if (_health != null)
+        {
+            _health.OnStateChanged += HandleStateChanged;
+            _health.OnDamagedDetail += HandleDamagedDetail;
+        }
+    }
 
-        if (TimerManager.Instance != null)
-            TimerManager.Instance.onTimeUp.AddListener(HandleTimeUp);
+    private void OnDisable()
+    {
+        UnsubscribeGlobalEvents();
     }
 
     private void OnDestroy()
     {
+        UnsubscribeGlobalEvents();
+
         if (_health != null)
         {
             _health.OnStateChanged -= HandleStateChanged;
             _health.OnDamagedDetail -= HandleDamagedDetail;
         }
+    }
+
+    private void SubscribeGlobalEvents()
+    {
+        if (_isSubscribedToGlobalEvents) return;
+
+        bool subscribedToStage = false;
+        bool subscribedToTimer = false;
+
+        if (StageManager.Instance != null)
+        {
+            StageManager.Instance.OnStageEnded += HandleStageEnded;
+            subscribedToStage = true;
+        }
+
+        if (TimerManager.Instance != null)
+        {
+            TimerManager.Instance.onTimeUp.AddListener(HandleTimeUp);
+            subscribedToTimer = true;
+        }
+
+        if (subscribedToStage && subscribedToTimer)
+        {
+            _isSubscribedToGlobalEvents = true;
+        }
+    }
+
+    private void UnsubscribeGlobalEvents()
+    {
+        if (!_isSubscribedToGlobalEvents) return;
 
         if (StageManager.Instance != null)
             StageManager.Instance.OnStageEnded -= HandleStageEnded;
 
         if (TimerManager.Instance != null)
             TimerManager.Instance.onTimeUp.RemoveListener(HandleTimeUp);
+
+        _isSubscribedToGlobalEvents = false;
     }
 
     private void HandleDamagedDetail(int damageAmount, bool isPoison)
@@ -137,7 +181,9 @@ public class EnemyVisual : MonoBehaviour
 
     private void HandleTimeUp()
     {
-        if (_health != null && _health.State != EnemyState.Dead)
+        if (!gameObject.activeInHierarchy) return;
+
+        if (_health != null && _health.State != EnemyState.Dead && _health.CurrentHealth > 0)
         {
             StartCoroutine(WaitAndBounceDown(0.15f));
         }
@@ -145,9 +191,12 @@ public class EnemyVisual : MonoBehaviour
 
     private void HandleStageEnded(StageResult result)
     {
+        if (!gameObject.activeInHierarchy) return;
+
         if (result == StageResult.Lose &&
             _health != null &&
-            _health.State != EnemyState.Dead)
+            _health.State != EnemyState.Dead &&
+            _health.CurrentHealth > 0)
         {
             StartCoroutine(WaitAndBounceDown(0.25f));
         }
@@ -155,25 +204,32 @@ public class EnemyVisual : MonoBehaviour
 
     private IEnumerator WaitAndBounceDown(float delay)
     {
-        // Wait until all weapon effects finish
+        // Wait until all weapon effects and hourglass chains finish
         while (WeaponEffectsSystem.IsBusy)
         {
             yield return null;
         }
 
-        // FIX: If the enemy was killed during the attack, CANCEL THE HIT IMMEDIATELY!
+        // Cancel if the enemy died or stage was won in the meantime
         if (_health == null || _health.State == EnemyState.Dead || _health.CurrentHealth <= 0)
         {
             yield break;
         }
 
-        // FIX: If the stage was won, do not hit the player!
         if (StageManager.Instance != null && StageManager.Instance.Result == StageResult.Win)
         {
             yield break;
         }
 
-        yield return StartCoroutine(DelayedBounceDownSequence(delay));
+        if (delay > 0f)
+        {
+            yield return new WaitForSecondsRealtime(delay);
+        }
+
+        if (_health != null && _health.State != EnemyState.Dead && _health.CurrentHealth > 0)
+        {
+            PlayRoutine(TimeUpBounceDownRoutine());
+        }
     }
 
     private void PlayRoutine(IEnumerator routine)
@@ -198,9 +254,10 @@ public class EnemyVisual : MonoBehaviour
             {
                 float yOffset = Mathf.Sin(t * Mathf.PI) * hurtBounceHeight;
 
+                // FIX: Calculated cleanly from _originalPos.y
                 transform.localPosition = new Vector3(
                     transform.localPosition.x,
-                    _originalPos.y + yOffset,
+                    transform.localPosition.y + yOffset,
                     transform.localPosition.z
                 );
             }
@@ -213,28 +270,11 @@ public class EnemyVisual : MonoBehaviour
         _spriteRenderer.color = Color.white;
     }
 
-    private IEnumerator DelayedBounceDownSequence(float delayBeforeBounce)
-    {
-        if (delayBeforeBounce > 0f)
-        {
-            yield return new WaitForSecondsRealtime(delayBeforeBounce);
-        }
-
-        // Double check enemy is still alive after delay
-        if (_health == null || _health.State == EnemyState.Dead || _health.CurrentHealth <= 0)
-        {
-            yield break;
-        }
-
-        yield return StartCoroutine(TimeUpBounceDownRoutine());
-    }
-
     private IEnumerator TimeUpBounceDownRoutine()
     {
         float elapsed = 0f;
         _spriteRenderer.color = Color.white;
 
-        // Play the player hit SFX as the boss lunges down!
         if (playerHitSfx != null && AudioManager.Instance != null)
         {
             AudioManager.Instance.PlaySFX(playerHitSfx);
@@ -247,19 +287,20 @@ public class EnemyVisual : MonoBehaviour
 
             float yOffset = -Mathf.Sin(t * Mathf.PI) * timeUpDropDistance;
 
+            // FIX: Calculated cleanly from _originalPos.y
             transform.localPosition = new Vector3(
                 transform.localPosition.x,
-                _originalPos.y + yOffset,
+                transform.localPosition.y + yOffset,
                 transform.localPosition.z
             );
 
             yield return null;
         }
 
-        transform.localPosition = _originalPos + new Vector3(
-            0f,
-            -timeUpDropDistance * 0.4f,
-            0f
+        transform.localPosition = new Vector3(
+            _originalPos.x,
+            _originalPos.y - (timeUpDropDistance * 0.4f),
+            _originalPos.z
         );
     }
 
@@ -279,9 +320,10 @@ public class EnemyVisual : MonoBehaviour
 
             float yOffset = Mathf.Sin(t * Mathf.PI) * deathBounceHeight;
 
+            // FIX: Calculated cleanly from _originalPos.y
             transform.localPosition = new Vector3(
                 transform.localPosition.x,
-                _originalPos.y + yOffset,
+                transform.localPosition.y + yOffset,
                 transform.localPosition.z
             );
 

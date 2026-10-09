@@ -25,7 +25,9 @@ public class GridManager : MonoBehaviour
     [SerializeField] private List<Vector2Int> initialDisabledCells = new List<Vector2Int>();
 
     [Header("Audio SFX")]
-    [SerializeField] private AudioClip placeItemSfx; // Drag your grid snap audio clip here!
+    [SerializeField] private AudioClip placeItemSfx;
+    [Tooltip("Sound played whenever dragged weapons activate/hover over new grid cells.")]
+    [SerializeField] private AudioClip cellHoverSfx; // Grid Cell Activation SFX
 
     [Header("Gizmo Visualization Colors")]
     [SerializeField] private Color gridColor = Color.cyan;
@@ -37,6 +39,7 @@ public class GridManager : MonoBehaviour
     private Vector3 gridOrigin;
 
     private List<Vector2Int> currentlyHoveredCoords = new List<Vector2Int>();
+    private Vector2Int _lastHoverCoord = new Vector2Int(-9999, -9999);
 
     private void Awake()
     {
@@ -182,7 +185,6 @@ public class GridManager : MonoBehaviour
 
     public void OccupyCells(int gridX, int gridY, int width, int height)
     {
-        // Play Grid Placement Snap Sound Effect
         if (placeItemSfx != null && AudioManager.Instance != null)
         {
             AudioManager.Instance.PlaySFX(placeItemSfx);
@@ -211,10 +213,19 @@ public class GridManager : MonoBehaviour
     #region Hover System
     public void UpdateHover(DragDrop item, Vector3 worldPos)
     {
-        ClearHover();
-
         Vector2Int gridCoord = WorldToGridPosition(worldPos, item.Width, item.Height);
+
+        // PLAY SOUND ONLY WHEN MOVING TO A NEW GRID COORDINATE
+        bool positionChanged = (gridCoord != _lastHoverCoord);
+        if (positionChanged)
+        {
+            _lastHoverCoord = gridCoord;
+        }
+
+        ClearHoverVisualsOnly();
+
         bool isValidPlacement = CanPlaceItem(gridCoord.x, gridCoord.y, item.Width, item.Height, item.Data);
+        bool anyCellActivated = false;
 
         for (int x = 0; x < item.Width; x++)
         {
@@ -229,13 +240,20 @@ public class GridManager : MonoBehaviour
                     {
                         cellViews[targetX, targetY].SetHover(true, isValidPlacement);
                         currentlyHoveredCoords.Add(new Vector2Int(targetX, targetY));
+                        anyCellActivated = true;
                     }
                 }
             }
         }
+
+        // Play grid activation SFX once as you move onto active tiles
+        if (positionChanged && anyCellActivated && cellHoverSfx != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX(cellHoverSfx);
+        }
     }
 
-    public void ClearHover()
+    private void ClearHoverVisualsOnly()
     {
         foreach (var coord in currentlyHoveredCoords)
         {
@@ -245,6 +263,12 @@ public class GridManager : MonoBehaviour
             }
         }
         currentlyHoveredCoords.Clear();
+    }
+
+    public void ClearHover()
+    {
+        ClearHoverVisualsOnly();
+        _lastHoverCoord = new Vector2Int(-9999, -9999);
     }
     #endregion
 

@@ -9,6 +9,9 @@ public class InventorySystem : MonoBehaviour
     private readonly Dictionary<WeaponData, int> _counts = new Dictionary<WeaponData, int>();
     private readonly Dictionary<WeaponData, int> _stageUsage = new Dictionary<WeaponData, int>();
 
+    // Tracks weapons the player has actually received with amount > 0
+    private readonly HashSet<WeaponData> _unlockedWeapons = new HashSet<WeaponData>();
+
     public event Action<WeaponData, int> OnCountChanged;
 
     private void Awake()
@@ -20,14 +23,20 @@ public class InventorySystem : MonoBehaviour
     {
         _counts.Clear();
         _stageUsage.Clear();
+        _unlockedWeapons.Clear();
     }
 
-    /// <summary>
-    /// Resets the book usage limits at the start of every stage.
-    /// </summary>
     public void ResetStageUsage()
     {
         _stageUsage.Clear();
+    }
+
+    /// <summary>
+    /// Returns true if the player has ever actually possessed this weapon (amount > 0).
+    /// </summary>
+    public bool HasEverPossessed(WeaponData data)
+    {
+        return data != null && _unlockedWeapons.Contains(data);
     }
 
     public int GetUsage(WeaponData data)
@@ -49,6 +58,14 @@ public class InventorySystem : MonoBehaviour
 
     public void AddWeapon(WeaponData data, int amount = 1)
     {
+        if (data == null) return;
+
+        // ONLY unlock/discover if actually granted (amount > 0)
+        if (amount > 0)
+        {
+            _unlockedWeapons.Add(data);
+        }
+
         _counts.TryGetValue(data, out int current);
         _counts[data] = current + amount;
         OnCountChanged?.Invoke(data, _counts[data]);
@@ -68,7 +85,6 @@ public class InventorySystem : MonoBehaviour
     {
         foreach (var kvp in _counts)
         {
-            // Do NOT count weapons that have reached their stage limit!
             if (kvp.Value > 0 && !IsLimitReached(kvp.Key) && WeaponGridManager.Instance.HasAnyEmptyCellFor(kvp.Key))
                 return true;
         }
@@ -89,7 +105,6 @@ public class InventorySystem : MonoBehaviour
             instance.VisualObject = visual;
         }
 
-        // Increment stage placement usage
         _stageUsage[data] = GetUsage(data) + 1;
 
         _counts[data]--;

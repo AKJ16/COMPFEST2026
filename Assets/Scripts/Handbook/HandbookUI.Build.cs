@@ -195,42 +195,44 @@ public partial class HandbookUI
 
     private void BuildNavigation(Transform root)
     {
-        // With the book art, the buttons sit around the book body instead of on a bottom bar.
         float w = bookArtWidth;
-        float sideGap = w * BodyLeft;            // empty strip left of the book body
-        float rightGap = w * (1f - BodyRight);   // empty strip right of the book body (the ribbon is here)
+        float sideGap = w * BodyLeft;
+        float rightGap = w * (1f - BodyRight);
 
-        // Close (top right)
-        CreateAnchoredButton(root, "CloseButton", closeButtonColor, "X", 30f,
+        // 1. Close Button (top right) - Label set to "" (removes the "X")
+        var closeBtn = CreateAnchoredButton(root, "CloseButton", closeButtonColor, "", 0f,
             new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1),
             _skinned ? new Vector2(-rightGap + 14f, -14f) : new Vector2(-12f, -12f),
             closeButtonSize, ClosePanel, false);
 
-        // Previous (bottom left) - Center-pivoted and flipped horizontally (scale.x = -1) to face left
-        Vector2 prevPivot = new Vector2(0.5f, 0.5f);
-        Vector2 prevPos = _skinned
-            ? new Vector2(sideGap + 30f + navButtonSize.x * 0.5f, 8f - navButtonSize.y * 0.5f)
-            : new Vector2(80f + navButtonSize.x * 0.5f, 14f + navButtonSize.y * 0.5f);
+        // Apply custom exit icon sprite if assigned
+        if (closeButtonSprite != null)
+        {
+            var img = closeBtn.GetComponent<Image>();
+            if (img != null)
+            {
+                img.sprite = closeButtonSprite;
+                img.color = Color.white;
+                img.preserveAspect = true;
+            }
+        }
 
+        // 2. Previous Button (bottom left)
         _prevButton = CreateAnchoredButton(root, "PrevButton", buttonColor, "", 0f,
-            new Vector2(0, 0), new Vector2(0, 0), prevPivot,
-            prevPos, navButtonSize, PreviousPage);
-
-        // Flip the sprite horizontally so it points left!
+            new Vector2(0, 0), new Vector2(0, 0), new Vector2(0.5f, 0.5f),
+            _skinned ? new Vector2(sideGap + 30f + navButtonSize.x * 0.5f, 8f + navButtonSize.y * 0.5f)
+                     : new Vector2(80f + navButtonSize.x * 0.5f, 14f + navButtonSize.y * 0.5f),
+            navButtonSize, PreviousPage);
         _prevButton.transform.localScale = new Vector3(-1f, 1f, 1f);
 
-
-        // Next (bottom right) - Center-pivoted, text removed
-        Vector2 nextPivot = new Vector2(0.5f, 0.5f);
-        Vector2 nextPos = _skinned
-            ? new Vector2(-rightGap - 30f - navButtonSize.x * 0.5f, 8f - navButtonSize.y * 0.5f)
-            : new Vector2(-80f - navButtonSize.x * 0.5f, 14f + navButtonSize.y * 0.5f);
-
+        // 3. Next Button (bottom right)
         _nextButton = CreateAnchoredButton(root, "NextButton", buttonColor, "", 0f,
-            new Vector2(1, 0), new Vector2(1, 0), nextPivot,
-            nextPos, navButtonSize, NextPage);
+            new Vector2(1, 0), new Vector2(1, 0), new Vector2(0.5f, 0.5f),
+            _skinned ? new Vector2(-rightGap - 30f - navButtonSize.x * 0.5f, 8f + navButtonSize.y * 0.5f)
+                     : new Vector2(-80f - navButtonSize.x * 0.5f, 14f + navButtonSize.y * 0.5f),
+            navButtonSize, NextPage);
 
-        // Page number (bottom center, just under the book when it has art)
+        // 4. Page number (bottom center)
         _pageNumberLabel = CreateLabel(root, "", 26f, buttonTextColor,
             _skinned ? new Vector2(0.4f, -0.075f) : new Vector2(0.4f, 0f),
             _skinned ? new Vector2(0.6f, 0.005f) : new Vector2(0.6f, 0.09f));

@@ -8,6 +8,15 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
     [Header("Slot Size")]
     [SerializeField] private float slotSize = 80f;
 
+    [Header("Audio SFX")]
+    [Tooltip("Sound played when hovering over this weapon slot.")]
+    [SerializeField] private AudioClip slotHoverSfx;
+    [Tooltip("Sound played when grabbing/picking up this weapon to drag.")]
+    [SerializeField] private AudioClip slotGrabSfx;
+
+    [Header("Reward Popup")]
+    [SerializeField] private InventoryRewardPopUp rewardPopUpPrefab;
+
     private Image _backgroundImage;
     private Image _iconImage;
     private TextMeshProUGUI _countText;
@@ -21,9 +30,6 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
     public event System.Action<InventorySlotUI> OnSlotClicked;
 
     private DragDrop activeDragObject;
-
-    [Header("Reward Popup")]
-    [SerializeField] private InventoryRewardPopUp rewardPopUpPrefab;
 
     private void Awake()
     {
@@ -97,13 +103,10 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
     {
         int addedAmount = count - CurrentCount;
 
-        // Never show popups on Stage 1 (Initial start)
         bool isNotStage1 = StageManager.Instance != null && StageManager.Instance.CurrentStageNumber > 1;
 
-        // FIX: Removed 'gameObject.activeInHierarchy' check that blocked new slots on frame 0
         if (addedAmount > 0 && Data != null && isNotStage1)
         {
-            Debug.Log("Add");
             ShowRewardPopUp(addedAmount);
         }
 
@@ -124,23 +127,17 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
 
     private void ShowRewardPopUp(int amount)
     {
-        if (rewardPopUpPrefab == null)
-        {
-            Debug.LogWarning("[InventorySlotUI] Reward PopUp Prefab is NOT assigned in the Inspector!", this);
-            return;
-        }
+        if (rewardPopUpPrefab == null) return;
 
-        // Spawn inside the main Canvas so layout groups don't trap it
         Transform canvasParent = GetComponentInParent<Canvas>() != null ? GetComponentInParent<Canvas>().transform : transform;
         InventoryRewardPopUp popUp = Instantiate(rewardPopUpPrefab, canvasParent);
 
         RectTransform popRect = popUp.GetComponent<RectTransform>();
         RectTransform slotRect = GetComponent<RectTransform>();
 
-        // Copy slot position and lift it 55 UI pixels above the slot
         popRect.position = slotRect.position;
         popRect.anchoredPosition += new Vector2(0f, 55f);
-        popRect.SetAsLastSibling(); // Ensure it renders on top of everything
+        popRect.SetAsLastSibling();
 
         popUp.Setup(amount);
     }
@@ -162,16 +159,19 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
     {
         if (WeaponEffectsSystem.IsHourglassBusy) return;
 
-        // BLOCK DRAGGING IF THE STAGE USAGE LIMIT IS REACHED!
         if (InventorySystem.Instance != null && InventorySystem.Instance.IsLimitReached(Data))
-        {
             return;
-        }
 
         if (CurrentCount <= 0 || Data == null) return;
         if (StageManager.Instance != null && StageManager.Instance.Result != StageResult.InProgress) return;
 
         WeaponTooltipUI.Instance.Hide();
+
+        // 1. PLAY WEAPON GRAB SFX
+        if (slotGrabSfx != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX(slotGrabSfx);
+        }
 
         GameObject dragGO = new GameObject($"Drag_{Data.weaponName}");
         Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(new Vector3(eventData.position.x, eventData.position.y, 10f));
@@ -201,6 +201,13 @@ public class InventorySlotUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (Data == null || activeDragObject != null) return;
+
+        // 2. PLAY WEAPON HOVER SFX (only if we have stock)
+        if (CurrentCount > 0 && slotHoverSfx != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX(slotHoverSfx);
+        }
+
         WeaponTooltipUI.Instance.Show(Data, transform.position);
     }
 

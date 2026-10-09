@@ -72,8 +72,21 @@ public class InventoryUIController : MonoBehaviour
 
     private bool IsUnlocked(WeaponData data)
     {
+        if (InventorySystem.Instance == null || data == null) return false;
+
+        // 1. If currently in stock (> 0), always show
+        if (InventorySystem.Instance.GetCount(data) > 0)
+            return true;
+
+        // 2. In Tutorial: If count is 0, ONLY show if the player actually possessed it before!
+        if (StageManager.Instance != null && StageManager.Instance.IsTutorialScene)
+        {
+            return InventorySystem.Instance.HasEverPossessed(data);
+        }
+
+        // 3. Main Campaign: Unlocked if stage reached AND was actually possessed before
         int currentStage = StageManager.Instance != null ? StageManager.Instance.CurrentStageNumber : 1;
-        return data.unlockStage <= currentStage;
+        return data.unlockStage <= currentStage && InventorySystem.Instance.HasEverPossessed(data);
     }
 
     private void HandleSlotClicked(InventorySlotUI clickedSlot)
